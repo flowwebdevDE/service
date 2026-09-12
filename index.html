@@ -6,15 +6,15 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://dsjhaivwhjtcynwkthiu.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'none'; worker-src 'self' blob:; upgrade-insecure-requests">
   <meta name="referrer" content="no-referrer">
 <title>MYVELO Service · Garantiefälle</title>
-  <link rel="stylesheet" href="assets/css/app.css?v=7.10">
+  <link rel="stylesheet" href="assets/css/app.css?v=7.10.2">
   <script src="assets/js/auth-guard.js?v=7.4.2"></script>
-  <script src="assets/js/security-bootstrap.js?v=7.10"></script>
+  <script src="assets/js/security-bootstrap.js?v=7.10.2"></script>
 </head>
 <body class="flow-employee">
   <div class="flow-shell">
     <aside class="flow-sidebar" id="flowSidebar">
       <div class="flow-brand">
-        <img class="brand-logo-image brand-logo-image--sidebar" src="assets/brand/myvelo-logo.png?v=7.0" width="118" height="22" alt="MYVELO" onerror="this.style.display='none'">
+        <img class="brand-logo-image brand-logo-image--sidebar" src="assets/brand/myvelo-logo.png?v=7.0" width="118" height="22" alt="MYVELO" data-hide-on-error>
         <span class="flow-brand-sub">SERVICE</span>
       </div>
 
@@ -141,7 +141,7 @@
         <label class="flow-block-field">
           <span>Kunden-E-Mail *</span>
           <input name="customer_email" type="email" required autocomplete="email" placeholder="kunde@beispiel.de">
-          <small>Link und sechsstelliger Verifizierungscode werden automatisch an diese Adresse gesendet.</small>
+          <small>Die Adresse wird für die manuelle Zusendung von Link und Verifizierungscode verwendet.</small>
         </label>
 
         <div class="flow-create-pair">
@@ -250,6 +250,6 @@
     </div>
   </dialog>
 
-  <script type="module" src="assets/js/admin.js?v=7.10"></script>
+  <script type="module" src="assets/js/admin.js?v=7.10.2"></script>
 </body>
 </html>

@@ -14,3 +14,14 @@
     }
   }
 })();
+
+
+document.addEventListener("error", (event) => {
+  const target = event.target;
+  if (
+    target instanceof HTMLImageElement &&
+    target.matches("[data-hide-on-error]")
+  ) {
+    target.hidden = true;
+  }
+}, true);
