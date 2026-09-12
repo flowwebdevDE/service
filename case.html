@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="de" class="auth-pending">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Vorgang · MYVELO Service</title>
+  <link rel="stylesheet" href="assets/css/app.css?v=7.5">
+  <script src="assets/js/auth-guard.js?v=7.4.2"></script>
+</head>
+<body class="flow-employee">
+  <div class="flow-shell">
+    <aside class="flow-sidebar" id="flowSidebar">
+      <div class="flow-brand">
+        <img class="brand-logo-image brand-logo-image--sidebar" src="assets/brand/myvelo-logo.png?v=7.0" width="118" height="22" alt="MYVELO" onerror="this.style.display='none'">
+        <span class="flow-brand-sub">SERVICE</span>
+      </div>
+      <nav class="flow-nav">
+        <a class="flow-nav-item" href="index.html">
+          <span class="flow-nav-dot"></span>
+          <span>Vorgänge</span>
+        </a>
+        <a class="flow-nav-item is-active" href="#">
+          <span class="flow-nav-dot"></span>
+          <span id="sidebarCaseRef">Aktuell</span>
+        </a>
+      </nav>
+      <div class="flow-sidebar-spacer"></div>
+      <button class="flow-nav-item" id="logout-button" type="button">
+        <span class="flow-nav-dot flow-nav-dot--muted"></span>
+        <span>Abmelden</span>
+      </button>
+    </aside>
+
+    <div class="flow-main">
+      <header class="flow-topbar">
+        <div class="flow-topbar-left">
+          <button class="flow-burger" id="mobileMenuButton" type="button" aria-label="Menü">
+            <span></span><span></span><span></span>
+          </button>
+          <div>
+            <strong id="case-title">Garantiefall</strong>
+            <span>Shopify <b id="shopify-ref">–</b></span>
+          </div>
+        </div>
+      </header>
+
+      <main class="flow-workspace flow-workspace--detail">
+        
+        <section class="flow-status-panel">
+          <div class="flow-status-panel__copy">
+            <span>Garantiefall-Status</span>
+            <strong id="service-status-label">Wartet auf Kunde</strong>
+          </div>
+
+          <select id="service-status-select" aria-label="Garantiefall-Status">
+            <option value="waiting_customer">Wartet auf Kunde</option>
+            <option value="customer_confirmed">Vom Kunden bestätigt</option>
+            <option value="in_progress">In Bearbeitung</option>
+            <option value="resolved">Abgeschlossen</option>
+          </select>
+        </section>
+
+        <div id="readonly" class="readonly-banner hidden">Dieser Vorgang ist bestätigt und eingefroren.</div>
+        <div id="notice" class="notice hidden"></div>
+
+        <form id="case-form" class="flow-detail-grid">
+          <section class="flow-panel">
+            <div class="flow-panel-head">
+              <div><strong>Vorgang</strong><span>Stammdaten</span></div>
+            </div>
+
+            <div class="flow-field-list">
+              <label><span>Kunde</span><input name="customer_name"></label>
+              <label><span>E-Mail</span><input name="customer_email" type="email"></label>
+              <label><span>Modell</span><input name="bike_model"></label>
+              <label><span>Farbe</span><input name="bike_color"></label>
+              <label><span>Gegenstand</span>
+                <select name="item_type">
+                  <option value="bike">Fahrrad</option>
+                  <option value="battery">Akku</option>
+                </select>
+              </label>
+            </div>
+
+            <label class="flow-block-field">
+              <span>Garantiefall / Betreff</span>
+              <input name="case_subject">
+            </label>
+          </section>
+
+          <section class="flow-panel">
+            <div class="flow-panel-head">
+              <div><strong>Lieferumfang</strong><span>Für Kundenansicht</span></div>
+            </div>
+
+            <div class="flow-field-list">
+              <label class="flow-field-switch-row">
+              <span>Ladegerät</span>
+              <span class="flow-switch">
+                <input type="checkbox" name="required_charger">
+                <span class="flow-switch__track"><span class="flow-switch__thumb"></span></span>
+              </span>
+            </label>
+              <label class="flow-field-switch-row">
+              <span>Schlüssel</span>
+              <span class="flow-switch">
+                <input type="checkbox" name="required_keys">
+                <span class="flow-switch__track"><span class="flow-switch__thumb"></span></span>
+              </span>
+            </label>
+              <label><span>Anzahl</span><input name="key_count" type="number" min="0"></label>
+            </div>
+          </section>
+
+          <section class="flow-panel span-2">
+            <div class="flow-panel-head">
+              <div><strong>Zusatzauftrag</strong><span>Optional</span></div>
+            </div>
+
+            <div class="flow-create-grid">
+              <label>
+                <span>Zusatzleistung</span>
+                <select name="service_choice">
+                  <option value="">Keine Vorauswahl</option>
+                  <option value="none">Nur Garantiefall</option>
+                  <option value="inspection">Inspektion · 96 €</option>
+                  <option value="inspection_wear">Inspektion + Verschleißteile</option>
+                </select>
+              </label>
+              <label class="span-2">
+                <span>Hinweis an uns</span>
+                <textarea name="customer_note"></textarea>
+              </label>
+              <label class="span-2">
+                <span>Interne Notiz</span>
+                <textarea name="staff_note"></textarea>
+              </label>
+            </div>
+          </section>
+        </form>
+      </main>
+    </div>
+  </div>
+
+  <div class="flow-backdrop" id="flowBackdrop"></div>
+
+  <div class="flow-sticky-actions">
+    <button id="save" class="flow-action primary" type="submit" form="case-form">Speichern</button>
+    <a id="customer-preview" class="flow-action secondary" target="_blank" rel="noopener">Kundenansicht</a>
+    <a id="internal-print" class="flow-action secondary" href="#">PDF exportieren</a>
+    <button id="delete-case" class="flow-action danger" type="button">Löschen</button>
+  </div>
+
+  <dialog class="flow-dialog flow-dialog--compact" id="deleteCaseDialog">
+    <div class="flow-dialog-head">
+      <div>
+        <span>Vorgang löschen</span>
+        <strong>Unwiderrufliche Aktion</strong>
+      </div>
+      <button class="flow-close" id="closeDeleteCaseDialog" type="button">×</button>
+    </div>
+    <div class="flow-delete-copy">
+      <p>Der Servicefall und seine Ereignisse werden dauerhaft gelöscht. Ein Kundenlink zu diesem Fall funktioniert danach nicht mehr.</p>
+      <label>
+        <span>Zur Bestätigung Vorgangs-ID eingeben</span>
+        <input id="delete-confirm-id" autocomplete="off" spellcheck="false">
+      </label>
+    </div>
+    <div class="flow-dialog-actions">
+      <button class="flow-action secondary" id="cancelDeleteCase" type="button">Abbrechen</button>
+      <button class="flow-action danger" id="confirmDeleteCase" type="button" disabled>Endgültig löschen</button>
+    </div>
+  </dialog>
+
+  <script type="module" src="assets/js/case-detail.js?v=7.5"></script>
+  <script type="module" src="assets/js/internal-mobile.js?v=7.0"></script>
+</body>
+</html>

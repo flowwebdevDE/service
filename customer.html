@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light">
+  <title>Garantiefall · MYVELO Service</title>
+  <link rel="stylesheet" href="assets/css/app.css?v=7.5">
+  <link rel="stylesheet" href="assets/css/customer-layout.css?v=7.0">
+</head>
+<body class="customer-bg customer-mobile-first">
+  <header class="customer-topbar customer-topbar--mobile">
+    <div class="customer-topbar__inner">
+      <a class="brand" href="#" aria-label="MYVELO Service">
+        <img class="brand-logo-image" src="assets/brand/myvelo-logo.png?v=7.0" width="132" height="25" alt="MYVELO" onerror="this.style.display='none'">
+        <span class="brand-divider"></span>
+        <span class="brand-section">SERVICE</span>
+      </a>
+
+      <div class="customer-header-status customer-header-status--compact" id="flow-status" aria-live="polite">
+        <span class="customer-header-status__title" id="flow-status-title">Zusatzarbeit auswählen</span>
+        <span class="customer-header-status__state" id="flow-status-state">Auswahl offen</span>
+        <span class="customer-header-status__track" aria-hidden="true">
+          <span id="flow-status-progress"></span>
+        </span>
+
+        <span class="visually-hidden" id="flow-status-kicker">Nächster Schritt</span>
+        <span class="visually-hidden" id="flow-status-detail">Vorgang vorbereitet</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="customer-mobile-shell">
+    <section class="customer-mobile-head">
+      <div class="customer-mobile-kicker">Garantiefall</div>
+      <h1 id="customer-greeting">Hallo</h1>
+      <p>
+        Wir haben deinen Vorgang vorbereitet. Bitte prüfe die Angaben und triff
+        die noch offenen Entscheidungen.
+      </p>
+
+      <div class="customer-case-strip">
+        <div>
+          <span>Auftrag</span>
+          <strong id="shopify-ref">–</strong>
+        </div>
+        <div>
+          <span>Vorgang</span>
+          <strong id="public-id">–</strong>
+        </div>
+      </div>
+    </section>
+
+    <div id="message" class="notice hidden"></div>
+
+    <form id="customer-form" class="customer-mobile-form" novalidate>
+      <section class="customer-flow-section" id="section-case">
+        <div class="customer-flow-section__head">
+          <div>
+            <span class="section-number">1</span>
+            <h2>Dein Vorgang</h2>
+          </div>
+          <span class="section-state section-state--done">Vorbereitet</span>
+        </div>
+
+        <div class="customer-data-list">
+          <div class="customer-data-row customer-data-row--static customer-name-row">
+            <span>Name</span>
+            <strong id="customer-name-display">–</strong>
+            <input type="hidden" name="customer_name">
+          </div>
+
+          <label class="customer-data-row">
+            <span>Modell</span>
+            <input name="bike_model" placeholder="Modell ergänzen">
+          </label>
+
+          <label class="customer-data-row">
+            <span>Farbe</span>
+            <input name="bike_color" placeholder="Farbe ergänzen">
+          </label>
+
+          <div class="customer-data-row customer-data-row--static">
+            <span>Gegenstand</span>
+            <strong id="item-type">–</strong>
+          </div>
+        </div>
+
+        <label class="customer-note-field">
+          <span>Beanstandung</span>
+          <input name="case_subject" placeholder="Beanstandung prüfen oder ergänzen">
+        </label>
+      </section>
+
+      <section class="customer-flow-section" id="section-delivery">
+        <div class="customer-flow-section__head">
+          <div>
+            <span class="section-number">2</span>
+            <h2>Das muss mit</h2>
+          </div>
+          <span class="section-state section-state--done">Festgelegt</span>
+        </div>
+
+        <p class="customer-flow-copy">
+          Bitte vollständig mitsenden oder übergeben.
+        </p>
+
+        <div id="accessory-list" class="delivery-list delivery-list--mobile"></div>
+      </section>
+
+      <section class="customer-flow-section customer-flow-section--action" id="section-service">
+        <div class="customer-flow-section__head">
+          <div>
+            <span class="section-number">3</span>
+            <h2>Zusätzliche Arbeiten</h2>
+          </div>
+          <span class="section-state section-state--required" id="service-state">
+            Auswahl erforderlich
+          </span>
+        </div>
+
+        <p class="customer-flow-copy">
+          Wähle aus, was wir zusätzlich zum Garantiefall ausführen dürfen.
+        </p>
+
+        <div class="service-choice-list" role="radiogroup" aria-label="Zusätzliche Arbeiten">
+          <label class="service-choice-row">
+            <input type="radio" name="service_choice" value="none">
+            <span class="service-choice-radio"></span>
+            <span class="service-choice-main">
+              <strong>Nur Garantiefall</strong>
+              <small>Keine kostenpflichtigen Zusatzarbeiten</small>
+            </span>
+            <span class="service-choice-price">0 €</span>
+          </label>
+
+          <label class="service-choice-row">
+            <input type="radio" name="service_choice" value="inspection">
+            <span class="service-choice-radio"></span>
+            <span class="service-choice-main">
+              <strong>Inspektion</strong>
+              <small>Zusätzlich zum Garantiefall</small>
+            </span>
+            <span class="service-choice-price">96 €</span>
+          </label>
+
+          <label class="service-choice-row service-choice-row--two-line">
+            <input type="radio" name="service_choice" value="inspection_wear">
+            <span class="service-choice-radio"></span>
+            <span class="service-choice-main">
+              <strong>Inspektion + Verschleißteile</strong>
+              <small>
+                Erforderliche Verschleißteile dürfen ohne weitere Rücksprache ersetzt werden.
+                Material wird nach tatsächlichem Aufwand berechnet.
+              </small>
+            </span>
+            <span class="service-choice-price">96 € + Material</span>
+          </label>
+        </div>
+      </section>
+
+      <section class="customer-flow-section" id="section-note">
+        <div class="customer-flow-section__head">
+          <div>
+            <span class="section-number">4</span>
+            <h2>Hinweis an uns</h2>
+          </div>
+          <span class="section-state">Optional</span>
+        </div>
+
+        <textarea
+          class="customer-textarea"
+          name="customer_note"
+          placeholder="Zusätzlicher Hinweis"
+        ></textarea>
+      </section>
+
+      <section class="customer-flow-section customer-flow-section--action" id="section-confirm">
+        <div class="customer-flow-section__head">
+          <div>
+            <span class="section-number">5</span>
+            <h2>Bestätigen</h2>
+          </div>
+          <span class="section-state section-state--required" id="confirm-state">
+            2 Bestätigungen offen
+          </span>
+        </div>
+
+        <p class="customer-personal-confirm" id="customer-personal-confirm">
+          Bitte prüfe abschließend deine Auswahl.
+        </p>
+
+        <div class="customer-final-summary">
+          <div>
+            <span>Auftrag</span>
+            <strong id="summary-ref">–</strong>
+          </div>
+
+          <div>
+            <span>Gegenstand</span>
+            <strong id="summary-item">–</strong>
+          </div>
+
+          <div>
+            <span>Lieferumfang</span>
+            <strong id="summary-accessories">–</strong>
+          </div>
+
+          <div>
+            <span>Zusätzlich</span>
+            <strong id="summary-service">Noch keine Auswahl</strong>
+          </div>
+        </div>
+
+        <div id="confirm-area">
+          <label class="customer-confirm-row">
+            <input type="checkbox" name="confirm_scope">
+            <span class="customer-confirm-box">✓</span>
+            <span>
+              <strong>Auftragsumfang bestätigen</strong>
+              <small>
+                Neben dem Garantiefall dürfen ausschließlich die oben ausgewählten
+                zusätzlichen kostenpflichtigen Arbeiten ausgeführt werden.
+              </small>
+            </span>
+          </label>
+
+          <label class="customer-confirm-row">
+            <input type="checkbox" name="confirm_accessories">
+            <span class="customer-confirm-box">✓</span>
+            <span>
+              <strong>Lieferumfang bestätigen</strong>
+              <small>
+                Die oben aufgeführten Teile werden vollständig mitgesendet bzw. übergeben.
+              </small>
+            </span>
+          </label>
+
+          <details class="customer-legal-details">
+            <summary>Hinweise zur Datenverarbeitung</summary>
+            <p>
+              Die Angaben werden zur Bearbeitung und Dokumentation dieses Garantie-
+              und Servicevorgangs verarbeitet. Weitere Informationen findest du in
+              der Datenschutzerklärung.
+            </p>
+          </details>
+        </div>
+
+        <div id="confirmed-panel" class="customer-confirmed hidden">
+          <strong>Vorgang bestätigt.</strong>
+          <p>Die Angaben sind jetzt eingefroren und nur noch lesbar.</p>
+          <a id="pdf-link" class="button primary" target="_blank">PDF öffnen</a>
+        </div>
+      </section>
+    </form>
+
+    <footer class="customer-footer customer-footer--mobile">
+      <a href="privacy.html">Datenschutz</a>
+      <a href="imprint.html">Impressum</a>
+    </footer>
+  </main>
+
+  <div class="customer-sticky-action" id="sticky-action">
+    <div class="customer-sticky-action__inner">
+      <div class="customer-sticky-action__status">
+        <strong id="sticky-action-title">2 Schritte offen</strong>
+        <span id="sticky-action-subtitle">Zusatzarbeit auswählen und bestätigen</span>
+      </div>
+      <button class="button primary" id="sticky-action-button" type="button">
+        Weiter
+      </button>
+    </div>
+  </div>
+
+  <script type="module" src="assets/js/customer.js?v=7.5"></script>
+</body>
+</html>
