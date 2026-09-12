@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>MYVELO Service · Garantiefälle</title>
-  <link rel="stylesheet" href="assets/css/app.css?v=7.4.2">
+  <link rel="stylesheet" href="assets/css/app.css?v=7.9">
   <script src="assets/js/auth-guard.js?v=7.4.2"></script>
 </head>
 <body class="flow-employee">
@@ -16,10 +16,22 @@
       </div>
 
       <nav class="flow-nav">
-        <button class="flow-nav-item is-active" data-nav="cases" type="button">
-          <span class="flow-nav-dot"></span>
-          <span>Vorgänge</span>
-        </button>
+        <div class="flow-nav-group">
+          <div class="flow-nav-item flow-nav-item--parent">
+            <span class="flow-nav-dot"></span>
+            <span>Vorgänge</span>
+          </div>
+          <div class="flow-nav-sub">
+            <button class="flow-nav-subitem is-active" data-work-view="active" type="button">
+              <span>Aktiv</span>
+              <small id="sidebar-active-count">0</small>
+            </button>
+            <button class="flow-nav-subitem" data-work-view="archive" type="button">
+              <span>Archiv</span>
+              <small id="sidebar-archive-count">0</small>
+            </button>
+          </div>
+        </div>
         <button class="flow-nav-item" id="sidebarNewCase" type="button">
           <span class="flow-nav-plus">＋</span>
           <span>Neu</span>
@@ -52,9 +64,9 @@
       </header>
 
       <main class="flow-workspace">
-        <section class="flow-dashboard" aria-label="Dashboard">
+<section class="flow-dashboard" id="active-dashboard" aria-label="Dashboard">
           <button class="flow-dashboard-card is-active" type="button" data-status-filter="all">
-            <span>Alle</span>
+            <span>Alle aktiven</span>
             <strong id="stat-total">0</strong>
             <small>Vorgänge</small>
           </button>
@@ -68,19 +80,19 @@
           <button class="flow-dashboard-card status-confirmed" type="button" data-status-filter="customer_confirmed">
             <span>Bestätigt</span>
             <strong id="stat-confirmed">0</strong>
-            <small>bereit zur Bearbeitung</small>
+            <small>Status noch nicht gesetzt</small>
+          </button>
+
+          <button class="flow-dashboard-card status-arrived" type="button" data-status-filter="arrived">
+            <span>Angekommen</span>
+            <strong id="stat-arrived">0</strong>
+            <small>zur Bearbeitung bereit</small>
           </button>
 
           <button class="flow-dashboard-card status-progress" type="button" data-status-filter="in_progress">
             <span>In Bearbeitung</span>
             <strong id="stat-progress">0</strong>
             <small>aktuell aktiv</small>
-          </button>
-
-          <button class="flow-dashboard-card status-resolved" type="button" data-status-filter="resolved">
-            <span>Abgeschlossen</span>
-            <strong id="stat-resolved">0</strong>
-            <small>erledigt</small>
           </button>
         </section>
 
@@ -126,17 +138,26 @@
         <div class="flow-create-pair">
           <label>
             <span>Gegenstand</span>
-            <select name="item_type">
+            <select name="item_type" id="create-item-type">
               <option value="bike">Fahrrad</option>
               <option value="battery">Akku</option>
             </select>
           </label>
 
-          <label>
-            <span>Garantiefall / Betreff</span>
-            <input name="case_subject" placeholder="Kurzbeschreibung">
+          <label class="flow-model-quick-field">
+            <span id="create-model-label">Modell</span>
+            <input type="hidden" name="bike_model">
+            <button id="create-model-trigger" class="flow-model-trigger" type="button">
+              <span class="flow-model-trigger__value">Modell auswählen</span>
+              <span class="flow-model-trigger__arrow">›</span>
+            </button>
           </label>
         </div>
+
+        <label class="flow-block-field">
+          <span>Garantiefall / Betreff</span>
+          <input name="case_subject" placeholder="Kurzbeschreibung">
+        </label>
 
         <div class="flow-create-pair flow-create-pair--switches">
           <label class="flow-inline-control flow-inline-control--switch">
@@ -165,14 +186,6 @@
             </span>
           </label>
         </div>
-
-        <label class="flow-key-count-row" id="keyCountField">
-          <span>
-            <strong>Anzahl Schlüssel</strong>
-            <small>nur wenn Schlüssel erforderlich sind</small>
-          </span>
-          <input name="key_count" type="number" min="0" value="0">
-        </label>
       </div>
 
       <details class="flow-details">
@@ -183,10 +196,7 @@
               <span>E-Mail</span>
               <input name="customer_email" type="email">
             </label>
-            <label>
-              <span>Modell</span>
-              <input name="bike_model">
-            </label>
+
             <label>
               <span>Farbe</span>
               <input name="bike_color">
@@ -204,10 +214,7 @@
               <span>Hinweis an uns</span>
               <textarea name="customer_note"></textarea>
             </label>
-            <label class="span-2">
-              <span>Interne Notiz</span>
-              <textarea name="staff_note"></textarea>
-            </label>
+            
           </div>
         </div>
       </details>
@@ -233,6 +240,6 @@
     </div>
   </dialog>
 
-  <script type="module" src="assets/js/admin.js?v=7.4.2"></script>
+  <script type="module" src="assets/js/admin.js?v=7.9"></script>
 </body>
 </html>

@@ -2,11 +2,14 @@ import {
   adminCasePdfUrl,
   deleteAdminCase,
   getAdminCase,
+  getAdminCustomerLink,
   updateAdminCase,
   updateAdminCaseStatus,
   logoutPortalSession,
   requirePortalSession
-} from "./api.js?v=7.5";
+} from "./api.js?v=7.7";
+import { initModelPopup } from "./model-picker.js?v=7.6.1";
+import { setButtonLoading, pulseElement } from "./motion.js?v=7.9";
 
 const portalSession = requirePortalSession();
 if (!portalSession) {
@@ -20,32 +23,82 @@ document.querySelector("#logout-button")?.addEventListener("click", () => {
 
 const id = new URLSearchParams(location.search).get("id");
 const form = document.querySelector("#case-form");
+const modelPopup = await initModelPopup({
+  trigger: document.querySelector("#case-model-trigger"),
+  input: form.elements.bike_model,
+  label: document.querySelector("#case-model-label"),
+  itemType: form.elements.item_type
+});
+
 const notice = document.querySelector("#notice");
 const readonly = document.querySelector("#readonly");
-const serviceStatusSelect = document.querySelector("#service-status-select");
 const serviceStatusLabel = document.querySelector("#service-status-label");
+const serviceStatusDropdown = document.querySelector("#service-status-dropdown");
+const serviceStatusTrigger = document.querySelector("#service-status-trigger");
+const serviceStatusTriggerText = document.querySelector("#service-status-trigger-text");
+const serviceStatusMenu = document.querySelector("#service-status-menu");
 const deleteDialog = document.querySelector("#deleteCaseDialog");
 const deleteConfirmInput = document.querySelector("#delete-confirm-id");
 const confirmDeleteButton = document.querySelector("#confirmDeleteCase");
+const customerLinkDialog = document.querySelector("#customerLinkDialog");
+const customerLinkValue = document.querySelector("#customer-link-value");
+const customerLinkNote = document.querySelector("#customer-link-note");
 let currentItem = null;
 
 
 function statusLabel(value) {
   return {
-    waiting_customer: "Wartet auf Kunde",
-    customer_confirmed: "Vom Kunden bestätigt",
+    waiting_customer: "Wartet auf Kundenbestätigung",
+    customer_confirmed: "Bestätigt · Status noch offen",
+    arrived: "Angekommen",
     in_progress: "In Bearbeitung",
+    completed: "Abgeschlossen",
     resolved: "Abgeschlossen"
-  }[value] || "Wartet auf Kunde";
+  }[value] || "Wartet auf Kundenbestätigung";
 }
 
-function renderServiceStatus(value) {
-  const status = value || "waiting_customer";
-  serviceStatusSelect.value = status;
-  if (serviceStatusLabel) serviceStatusLabel.textContent = statusLabel(status);
+function statusActionLabel(status, confirmed) {
+  if (!confirmed) return "Erst nach Kundenbestätigung";
+
+  return {
+    arrived: "Angekommen",
+    in_progress: "In Bearbeitung",
+    completed: "Abgeschlossen",
+    resolved: "Abgeschlossen"
+  }[status] || "Status setzen";
+}
+
+function closeStatusMenu() {
+  serviceStatusMenu?.classList.add("hidden");
+  serviceStatusTrigger?.setAttribute("aria-expanded", "false");
+}
+
+function renderServiceStatus(item) {
+  const status = item?.service_status || (
+    item?.status === "confirmed"
+      ? "customer_confirmed"
+      : "waiting_customer"
+  );
+
+  const confirmed = item?.status === "confirmed";
+  serviceStatusTrigger.disabled = !confirmed;
+  serviceStatusTriggerText.textContent = statusActionLabel(status, confirmed);
+
+  if (serviceStatusLabel) {
+    serviceStatusLabel.textContent = statusLabel(status);
+  }
+
+  serviceStatusMenu?.querySelectorAll("[data-service-status]").forEach(button => {
+    const normalized = status === "resolved" ? "completed" : status;
+    const selected = button.dataset.serviceStatus === normalized;
+    button.classList.toggle("is-selected", selected);
+    button.setAttribute("aria-selected", selected ? "true" : "false");
+  });
 
   const panel = document.querySelector(".flow-status-panel");
-  panel.dataset.status = status;
+  panel.dataset.status = status === "resolved" ? "completed" : status;
+
+  if (!confirmed) closeStatusMenu();
 }
 
 function collect() {
@@ -58,8 +111,6 @@ function collect() {
     item_type: form.elements.item_type.value,
     required_charger: form.elements.required_charger.checked,
     required_keys: form.elements.required_keys.checked,
-    key_count: Number(form.elements.key_count.value || 0),
-    staff_note: form.elements.staff_note.value.trim(),
     customer_note: form.elements.customer_note.value.trim(),
     service_choice: form.elements.service_choice.value
   };
@@ -69,7 +120,7 @@ function fill(item) {
   document.querySelector("#case-title")?.replaceChildren(document.createTextNode(item.public_id));
   document.querySelector("#sidebarCaseRef")?.replaceChildren(document.createTextNode(item.shopify_ref));
   document.querySelector("#shopify-ref")?.replaceChildren(document.createTextNode(item.shopify_ref));
-  renderServiceStatus(item.service_status);
+  renderServiceStatus(item);
 
   for (const name of [
     "customer_name",
@@ -78,8 +129,6 @@ function fill(item) {
     "bike_color",
     "case_subject",
     "item_type",
-    "key_count",
-    "staff_note",
     "customer_note",
     "service_choice"
   ]) {
@@ -88,6 +137,8 @@ function fill(item) {
 
   form.elements.required_charger.checked = Boolean(item.required_charger);
   form.elements.required_keys.checked = Boolean(item.required_keys);
+  modelPopup?.sync();
+
 
   currentItem = item;
 
@@ -97,12 +148,11 @@ function fill(item) {
     readonly.classList.remove("hidden");
 
     for (const element of form.elements) {
-      element.disabled = element.name !== "staff_note";
+      element.disabled = true;
     }
 
     if (saveButton) {
-      saveButton.classList.remove("hidden");
-      saveButton.textContent = "Interne Notiz speichern";
+      saveButton.classList.add("hidden");
     }
   } else {
     readonly.classList.add("hidden");
@@ -145,6 +195,9 @@ function fill(item) {
 form.addEventListener("submit", async event => {
   event.preventDefault();
 
+  const saveButton = document.querySelector("#save");
+  setButtonLoading(saveButton, true, "Speichere …");
+
   try {
     const updated = await updateAdminCase(id, collect());
     fill(updated);
@@ -155,6 +208,8 @@ form.addEventListener("submit", async event => {
     notice.textContent = error.message;
     notice.className = "notice notice--danger";
     notice.classList.remove("hidden");
+  } finally {
+    setButtonLoading(saveButton, false);
   }
 });
 
@@ -168,28 +223,54 @@ try {
 }
 
 
-serviceStatusSelect?.addEventListener("change", async () => {
-  const next = serviceStatusSelect.value;
-  serviceStatusSelect.disabled = true;
+serviceStatusTrigger?.addEventListener("click", event => {
+  event.stopPropagation();
+  if (serviceStatusTrigger.disabled) return;
 
-  try {
-    const item = await updateAdminCaseStatus(id, next);
-    renderServiceStatus(item.service_status);
+  const isOpen = !serviceStatusMenu.classList.contains("hidden");
+  serviceStatusMenu.classList.toggle("hidden", isOpen);
+  serviceStatusTrigger.setAttribute("aria-expanded", isOpen ? "false" : "true");
+});
 
-    notice.textContent = "Garantiefall-Status aktualisiert.";
-    notice.className = "notice notice--success";
-    notice.classList.remove("hidden");
-  } catch (error) {
-    notice.textContent = error.message;
-    notice.className = "notice notice--danger";
-    notice.classList.remove("hidden");
+serviceStatusMenu?.querySelectorAll("[data-service-status]").forEach(button => {
+  button.addEventListener("click", async () => {
+    const next = button.dataset.serviceStatus;
+    if (!next || currentItem?.status !== "confirmed") return;
+
+    closeStatusMenu();
+    serviceStatusTrigger.disabled = true;
 
     try {
-      const item = await getAdminCase(id);
-      renderServiceStatus(item.service_status);
-    } catch {}
-  } finally {
-    serviceStatusSelect.disabled = false;
+      const item = await updateAdminCaseStatus(id, next);
+      currentItem = item;
+      renderServiceStatus(item);
+      pulseElement(document.querySelector(".flow-status-panel"));
+
+      notice.textContent =
+        next === "completed"
+          ? "Rückversand erfasst. Auftrag abgeschlossen und ins Archiv verschoben."
+          : "Bearbeitungsstatus aktualisiert.";
+      notice.className = "notice notice--success";
+      notice.classList.remove("hidden");
+    } catch (error) {
+      notice.textContent = error.message;
+      notice.className = "notice notice--danger";
+      notice.classList.remove("hidden");
+
+      try {
+        const item = await getAdminCase(id);
+        currentItem = item;
+        renderServiceStatus(item);
+      } catch {}
+    } finally {
+      serviceStatusTrigger.disabled = currentItem?.status !== "confirmed";
+    }
+  });
+});
+
+document.addEventListener("click", event => {
+  if (!serviceStatusDropdown?.contains(event.target)) {
+    closeStatusMenu();
   }
 });
 
@@ -221,7 +302,73 @@ document.querySelector("#internal-print")?.addEventListener("click", async event
 });
 
 
+document.querySelector("#customer-link-button")?.addEventListener("click", async event => {
+  const button = event.currentTarget;
+  setButtonLoading(button, true, "Lade Link …");
+
+  try {
+    const result = await getAdminCustomerLink(id);
+
+    customerLinkValue.value = result.customer_url || "";
+    customerLinkNote.textContent = result.rotated
+      ? "Dieser ältere Vorgang hatte noch keinen wiederherstellbaren Link. Es wurde einmalig ein neuer Kundenlink erzeugt; ein eventuell alter Link ist damit ungültig."
+      : "Das ist derselbe aktive Kundenlink, der für diesen Vorgang erzeugt wurde.";
+
+    if (!customerLinkDialog.open) {
+      customerLinkDialog.showModal();
+    }
+  } catch (error) {
+    notice.textContent = error.message;
+    notice.className = "notice notice--danger";
+    notice.classList.remove("hidden");
+  } finally {
+    setButtonLoading(button, false);
+  }
+});
+
+document.querySelector("#closeCustomerLinkDialog")?.addEventListener("click", () => {
+  if (customerLinkDialog?.open) customerLinkDialog.close();
+});
+
+document.querySelector("#copyCustomerLink")?.addEventListener("click", async () => {
+  if (!customerLinkValue.value) return;
+
+  try {
+    await navigator.clipboard.writeText(customerLinkValue.value);
+  } catch {
+    customerLinkValue.select();
+    document.execCommand("copy");
+  }
+});
+
+document.querySelector("#openCustomerLink")?.addEventListener("click", () => {
+  if (!customerLinkValue.value) return;
+  window.open(customerLinkValue.value, "_blank", "noopener");
+});
+
+const caseMoreTrigger = document.querySelector("#case-more-trigger");
+const caseMoreMenu = document.querySelector("#case-more-menu");
+
+function closeCaseMoreMenu() {
+  caseMoreMenu?.classList.add("hidden");
+  caseMoreTrigger?.setAttribute("aria-expanded", "false");
+}
+
+caseMoreTrigger?.addEventListener("click", event => {
+  event.stopPropagation();
+  const isOpen = !caseMoreMenu.classList.contains("hidden");
+  caseMoreMenu.classList.toggle("hidden", isOpen);
+  caseMoreTrigger.setAttribute("aria-expanded", isOpen ? "false" : "true");
+});
+
+document.addEventListener("click", event => {
+  if (!event.target.closest(".flow-more-menu")) {
+    closeCaseMoreMenu();
+  }
+});
+
 document.querySelector("#delete-case")?.addEventListener("click", () => {
+  closeCaseMoreMenu();
   if (!currentItem) return;
 
   deleteConfirmInput.value = "";
@@ -256,8 +403,7 @@ confirmDeleteButton?.addEventListener("click", async () => {
     return;
   }
 
-  confirmDeleteButton.disabled = true;
-  confirmDeleteButton.textContent = "Wird gelöscht …";
+  setButtonLoading(confirmDeleteButton, true, "Lösche …");
 
   try {
     await deleteAdminCase(currentItem.public_id);
@@ -268,6 +414,6 @@ confirmDeleteButton?.addEventListener("click", async () => {
     notice.classList.remove("hidden");
     closeDeleteDialog();
   } finally {
-    confirmDeleteButton.textContent = "Endgültig löschen";
+    setButtonLoading(confirmDeleteButton, false);
   }
 });

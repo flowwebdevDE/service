@@ -1,7 +1,8 @@
+import { setButtonLoading } from "./motion.js?v=7.9";
 import {
   getPortalSession,
   loginWithCompanyKey
-} from "./api.js?v=7.4.2";
+} from "./api.js?v=7.5.2";
 
 const form = document.querySelector("#login-form");
 const errorBox = document.querySelector("#login-error");
@@ -27,8 +28,7 @@ form.addEventListener("submit", async event => {
   const keyInput = form.elements.company_key;
 
   errorBox.classList.add("hidden");
-  button.disabled = true;
-  button.textContent = "Anmelden …";
+  setButtonLoading(button, true, "Anmelden …");
 
   try {
     await loginWithCompanyKey(keyInput.value);
@@ -39,7 +39,6 @@ form.addEventListener("submit", async event => {
     errorBox.classList.remove("hidden");
     keyInput.select();
   } finally {
-    button.disabled = false;
-    button.textContent = "Anmelden";
+    setButtonLoading(button, false);
   }
 });

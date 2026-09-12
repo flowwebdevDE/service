@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Vorgang · MYVELO Service</title>
-  <link rel="stylesheet" href="assets/css/app.css?v=7.5">
+  <link rel="stylesheet" href="assets/css/app.css?v=7.9">
   <script src="assets/js/auth-guard.js?v=7.4.2"></script>
 </head>
 <body class="flow-employee">
@@ -15,10 +15,20 @@
         <span class="flow-brand-sub">SERVICE</span>
       </div>
       <nav class="flow-nav">
-        <a class="flow-nav-item" href="index.html">
-          <span class="flow-nav-dot"></span>
-          <span>Vorgänge</span>
-        </a>
+        <div class="flow-nav-group">
+          <a class="flow-nav-item flow-nav-item--parent" href="index.html">
+            <span class="flow-nav-dot"></span>
+            <span>Vorgänge</span>
+          </a>
+          <div class="flow-nav-sub">
+            <a class="flow-nav-subitem" href="index.html?view=active">
+              <span>Aktiv</span>
+            </a>
+            <a class="flow-nav-subitem" href="index.html?view=archive">
+              <span>Archiv</span>
+            </a>
+          </div>
+        </div>
         <a class="flow-nav-item is-active" href="#">
           <span class="flow-nav-dot"></span>
           <span id="sidebarCaseRef">Aktuell</span>
@@ -48,16 +58,50 @@
         
         <section class="flow-status-panel">
           <div class="flow-status-panel__copy">
-            <span>Garantiefall-Status</span>
+            <span>Bearbeitungsstatus</span>
             <strong id="service-status-label">Wartet auf Kunde</strong>
           </div>
 
-          <select id="service-status-select" aria-label="Garantiefall-Status">
-            <option value="waiting_customer">Wartet auf Kunde</option>
-            <option value="customer_confirmed">Vom Kunden bestätigt</option>
-            <option value="in_progress">In Bearbeitung</option>
-            <option value="resolved">Abgeschlossen</option>
-          </select>
+          <div class="flow-status-dropdown" id="service-status-dropdown">
+            <button id="service-status-trigger" class="flow-status-trigger" type="button"
+              aria-haspopup="listbox" aria-expanded="false" disabled>
+              <span id="service-status-trigger-text">Erst nach Kundenbestätigung</span>
+              <span class="flow-status-trigger-arrow">⌄</span>
+            </button>
+            <div class="flow-status-menu hidden" id="service-status-menu" role="listbox">
+              <button type="button" role="option" data-service-status="arrived">
+                <span class="flow-status-menu-dot"></span>
+                <span><strong>Angekommen</strong><small>Fahrrad oder Akku ist bei MYVELO eingetroffen</small></span>
+              </button>
+              <button type="button" role="option" data-service-status="in_progress">
+                <span class="flow-status-menu-dot"></span>
+                <span><strong>In Bearbeitung</strong><small>Der Servicefall wird aktuell bearbeitet</small></span>
+              </button>
+              <button type="button" role="option" data-service-status="completed">
+                <span class="flow-status-menu-dot"></span>
+                <span><strong>Abgeschlossen</strong><small>Fahrrad oder Akku wurde an den Kunden zurückgesendet</small></span>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <section class="flow-case-toolbar" aria-label="Vorgangsaktionen">
+          <div class="flow-case-toolbar__primary">
+            <button id="save" class="flow-action primary" type="submit" form="case-form">Speichern</button>
+          </div>
+          <div class="flow-case-toolbar__secondary">
+            <button id="customer-link-button" class="flow-action secondary" type="button">Kundenlink</button>
+            <a id="customer-preview" class="flow-action secondary" target="_blank" rel="noopener">Kundenansicht</a>
+            <a id="internal-print" class="flow-action secondary" href="#">PDF exportieren</a>
+            <div class="flow-more-menu">
+              <button id="case-more-trigger" class="flow-action secondary flow-more-trigger" type="button" aria-expanded="false">
+                Mehr <span>⌄</span>
+              </button>
+              <div id="case-more-menu" class="flow-more-popover hidden">
+                <button id="delete-case" class="flow-more-danger" type="button">Vorgang löschen</button>
+              </div>
+            </div>
+          </div>
         </section>
 
         <div id="readonly" class="readonly-banner hidden">Dieser Vorgang ist bestätigt und eingefroren.</div>
@@ -72,10 +116,17 @@
             <div class="flow-field-list">
               <label><span>Kunde</span><input name="customer_name"></label>
               <label><span>E-Mail</span><input name="customer_email" type="email"></label>
-              <label><span>Modell</span><input name="bike_model"></label>
+              <label class="flow-model-quick-field">
+                <span id="case-model-label">Modell</span>
+                <input type="hidden" name="bike_model">
+                <button id="case-model-trigger" class="flow-model-trigger" type="button">
+                  <span class="flow-model-trigger__value">Modell auswählen</span>
+                  <span class="flow-model-trigger__arrow">›</span>
+                </button>
+              </label>
               <label><span>Farbe</span><input name="bike_color"></label>
               <label><span>Gegenstand</span>
-                <select name="item_type">
+                <select name="item_type" id="case-item-type">
                   <option value="bike">Fahrrad</option>
                   <option value="battery">Akku</option>
                 </select>
@@ -108,7 +159,6 @@
                 <span class="flow-switch__track"><span class="flow-switch__thumb"></span></span>
               </span>
             </label>
-              <label><span>Anzahl</span><input name="key_count" type="number" min="0"></label>
             </div>
           </section>
 
@@ -131,10 +181,7 @@
                 <span>Hinweis an uns</span>
                 <textarea name="customer_note"></textarea>
               </label>
-              <label class="span-2">
-                <span>Interne Notiz</span>
-                <textarea name="staff_note"></textarea>
-              </label>
+              
             </div>
           </section>
         </form>
@@ -144,12 +191,27 @@
 
   <div class="flow-backdrop" id="flowBackdrop"></div>
 
-  <div class="flow-sticky-actions">
-    <button id="save" class="flow-action primary" type="submit" form="case-form">Speichern</button>
-    <a id="customer-preview" class="flow-action secondary" target="_blank" rel="noopener">Kundenansicht</a>
-    <a id="internal-print" class="flow-action secondary" href="#">PDF exportieren</a>
-    <button id="delete-case" class="flow-action danger" type="button">Löschen</button>
-  </div>
+
+  <dialog class="flow-dialog flow-dialog--compact" id="customerLinkDialog">
+    <div class="flow-dialog-head">
+      <div>
+        <span>Kundenlink</span>
+        <strong>Link zum Servicefall</strong>
+      </div>
+      <button class="flow-close" id="closeCustomerLinkDialog" type="button">×</button>
+    </div>
+    <div class="flow-delete-copy">
+      <p id="customer-link-note">Dieser Link kann erneut kopiert oder geöffnet werden.</p>
+      <label>
+        <span>Kundenlink</span>
+        <input id="customer-link-value" readonly>
+      </label>
+    </div>
+    <div class="flow-dialog-actions">
+      <button class="flow-action secondary" id="copyCustomerLink" type="button">Kopieren</button>
+      <button class="flow-action primary" id="openCustomerLink" type="button">Öffnen</button>
+    </div>
+  </dialog>
 
   <dialog class="flow-dialog flow-dialog--compact" id="deleteCaseDialog">
     <div class="flow-dialog-head">
@@ -172,7 +234,7 @@
     </div>
   </dialog>
 
-  <script type="module" src="assets/js/case-detail.js?v=7.5"></script>
+  <script type="module" src="assets/js/case-detail.js?v=7.9"></script>
   <script type="module" src="assets/js/internal-mobile.js?v=7.0"></script>
 </body>
 </html>

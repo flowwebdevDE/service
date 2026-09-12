@@ -3,9 +3,18 @@ import {
   listCases,
   logoutPortalSession,
   requirePortalSession
-} from "./api.js?v=7.4.2";
+} from "./api.js?v=7.7";
+import { initModelPopup } from "./model-picker.js?v=7.6.1";
+import { setButtonLoading, renderCaseSkeleton, pulseElement } from "./motion.js?v=7.9";
 
 const form = document.querySelector("#create-form");
+const createModelPopup = await initModelPopup({
+  trigger: document.querySelector("#create-model-trigger"),
+  input: form.elements.bike_model,
+  label: document.querySelector("#create-model-label"),
+  itemType: form.elements.item_type
+});
+
 const caseList = document.querySelector("#case-rows");
 
 const newCaseDialog = document.querySelector("#newCaseDialog");
@@ -90,8 +99,6 @@ function dataFromForm() {
     item_type: data.get("item_type"),
     required_charger: form.elements.required_charger.checked,
     required_keys: form.elements.required_keys.checked,
-    key_count: Number(data.get("key_count") || 0),
-    staff_note: data.get("staff_note")?.trim(),
     customer_note: data.get("customer_note")?.trim(),
     service_choice: data.get("service_choice")
   };
@@ -110,7 +117,7 @@ form.addEventListener("submit", async event => {
 
 
   const submitButton = form.querySelector('button[type="submit"]');
-  submitButton.disabled = true;
+  setButtonLoading(submitButton, true, "Erstelle Link …");
 
   try {
     const result = await createCase(dataFromForm());
@@ -123,17 +130,21 @@ form.addEventListener("submit", async event => {
     closeDialog(newCaseDialog);
     openDialog(linkDialog);
     form.reset();
+    createModelPopup?.sync();
 
-    await renderCases();
+    await setWorkView(activeWorkView, { updateUrl: false });
+renderCases();
   } catch (error) {
     createdLink.value = "";
     alert(error.message);
   } finally {
-    submitButton.disabled = false;
+    setButtonLoading(submitButton, false);
   }
 });
 
 function serviceStatus(item) {
+  if (item.service_status === "resolved") return "completed";
+
   return item.service_status || (
     item.status === "confirmed"
       ? "customer_confirmed"
@@ -145,34 +156,99 @@ function statusLabel(value) {
   return {
     waiting_customer: "Wartet auf Kunde",
     customer_confirmed: "Bestätigt",
+    arrived: "Angekommen",
     in_progress: "In Bearbeitung",
-    resolved: "Abgeschlossen"
+    completed: "Abgeschlossen"
   }[value] || "Wartet auf Kunde";
 }
 
+function isArchived(item) {
+  return serviceStatus(item) === "completed";
+}
+
 function updateStats(items) {
+  const activeItems = items.filter(item => !isArchived(item));
+  const archiveItems = items.filter(isArchived);
+
   const counts = {
-    all: items.length,
+    all: activeItems.length,
     waiting_customer: 0,
     customer_confirmed: 0,
-    in_progress: 0,
-    resolved: 0
+    arrived: 0,
+    in_progress: 0
   };
 
-  items.forEach(item => {
+  for (const item of activeItems) {
     const value = serviceStatus(item);
     counts[value] = (counts[value] || 0) + 1;
-  });
+  }
 
   setAdminText("stat-total", String(counts.all));
   setAdminText("stat-waiting", String(counts.waiting_customer));
   setAdminText("stat-confirmed", String(counts.customer_confirmed));
+  setAdminText("stat-arrived", String(counts.arrived));
   setAdminText("stat-progress", String(counts.in_progress));
-  setAdminText("stat-resolved", String(counts.resolved));
+  setAdminText("sidebar-active-count", String(activeItems.length));
+  setAdminText("sidebar-archive-count", String(archiveItems.length));
 }
 
+let activeWorkView =
+  new URLSearchParams(location.search).get("view") === "archive"
+    ? "archive"
+    : "active";
 let activeStatusFilter = "all";
 let cachedItems = [];
+
+function updateListSubtitle() {
+  const subtitle = document.querySelector("#case-list-subtitle");
+  if (!subtitle) return;
+
+  if (activeWorkView === "archive") {
+    subtitle.textContent = "Zurückgesendete / abgeschlossene Vorgänge";
+    return;
+  }
+
+  subtitle.textContent =
+    activeStatusFilter === "all"
+      ? "Aktive Garantiefälle"
+      : statusLabel(activeStatusFilter);
+}
+
+function setWorkView(view, { updateUrl = true } = {}) {
+  activeWorkView = view === "archive" ? "archive" : "active";
+
+  document.querySelectorAll("[data-work-view]").forEach(item => {
+    item.classList.toggle(
+      "is-active",
+      item.dataset.workView === activeWorkView
+    );
+  });
+
+  document.querySelector("#active-dashboard")?.classList.toggle(
+    "hidden",
+    activeWorkView === "archive"
+  );
+
+  if (updateUrl) {
+    const url = new URL(location.href);
+    if (activeWorkView === "archive") {
+      url.searchParams.set("view", "archive");
+    } else {
+      url.searchParams.delete("view");
+    }
+    history.replaceState(null, "", url);
+  }
+
+  updateListSubtitle();
+  renderCaseList(cachedItems);
+  setFlowSidebar(false);
+}
+
+document.querySelectorAll("[data-work-view]").forEach(button => {
+  button.addEventListener("click", () => {
+    setWorkView(button.dataset.workView);
+  });
+});
 
 document.querySelectorAll("[data-status-filter]").forEach(button => {
   button.addEventListener("click", () => {
@@ -182,40 +258,36 @@ document.querySelectorAll("[data-status-filter]").forEach(button => {
       item.classList.toggle("is-active", item === button);
     });
 
-    const subtitle = document.querySelector("#case-list-subtitle");
-    if (subtitle) {
-      subtitle.textContent =
-        activeStatusFilter === "all"
-          ? "Alle Garantiefälle"
-          : statusLabel(activeStatusFilter);
-    }
-
+    updateListSubtitle();
     renderCaseList(cachedItems);
   });
 });
 
 function renderCaseList(items) {
-  if (!items.length) {
-    caseList.innerHTML = `
-      <div class="flow-case-row flow-case-row--empty">
-        <div class="flow-case-main">
-          <strong>Noch keine Vorgänge.</strong>
-        </div>
-      </div>
-    `;
-    return;
-  }
+  const scopedItems =
+    activeWorkView === "archive"
+      ? items.filter(isArchived)
+      : items.filter(item => !isArchived(item));
 
-  const visibleItems = activeStatusFilter === "all"
-    ? items
-    : items.filter(item => serviceStatus(item) === activeStatusFilter);
+  const visibleItems =
+    activeWorkView === "archive" || activeStatusFilter === "all"
+      ? scopedItems
+      : scopedItems.filter(item => serviceStatus(item) === activeStatusFilter);
 
   if (!visibleItems.length) {
     caseList.innerHTML = `
       <div class="flow-case-row flow-case-row--empty">
         <div class="flow-case-main">
-          <strong>Keine Vorgänge in diesem Status</strong>
-          <span>Wähle oben einen anderen Bereich.</span>
+          <strong>${
+            activeWorkView === "archive"
+              ? "Noch keine archivierten Vorgänge."
+              : "Keine Vorgänge in diesem Bereich."
+          }</strong>
+          <span>${
+            activeWorkView === "archive"
+              ? "Nach dem Rückversand abgeschlossene Aufträge erscheinen automatisch hier."
+              : "Wähle oben einen anderen Bereich."
+          }</span>
         </div>
       </div>
     `;
@@ -248,19 +320,14 @@ function renderCaseList(items) {
 }
 
 async function renderCases() {
-  caseList.innerHTML = `<div class="flow-case-row"><div class="flow-case-main"><strong>Lade Vorgänge …</strong></div></div>`;
+  renderCaseSkeleton(caseList, 5);
 
   try {
-const { items } = await listCases();
+    const { items } = await listCases();
     cachedItems = items;
     updateStats(items);
-
-    if (!items.length) {
-      caseList.innerHTML = `<div class="flow-case-row"><div class="flow-case-main"><strong>Noch keine Vorgänge.</strong></div></div>`;
-      return;
-    }
-
-    cachedItems = items;
+    document.querySelectorAll(".flow-dashboard-card strong").forEach(pulseElement);
+    updateListSubtitle();
     renderCaseList(items);
   } catch (error) {
     caseList.innerHTML = `<div class="flow-case-row"><div class="flow-case-main"><strong>Fehler</strong><span>${error.message}</span></div></div>`;
@@ -268,6 +335,7 @@ const { items } = await listCases();
 }
 
 renderCases();
+
 
 
 
@@ -286,23 +354,4 @@ function setFlowSidebar(open) {
 mobileMenuButton?.addEventListener("click", () => setFlowSidebar(true));
 flowBackdrop?.addEventListener("click", () => setFlowSidebar(false));
 
-document.querySelector('[data-nav="cases"]')?.addEventListener("click", () => {
-  document.querySelector("#cases")?.scrollIntoView({ behavior: "smooth" });
-  setFlowSidebar(false);
-});
 
-const requiredKeysToggle = form?.elements?.required_keys;
-const keyCountField = document.querySelector("#keyCountField");
-
-function syncKeyCountVisibility() {
-  if (!requiredKeysToggle || !keyCountField) return;
-
-  keyCountField.style.display = requiredKeysToggle.checked ? "" : "none";
-
-  if (!requiredKeysToggle.checked) {
-    form.elements.key_count.value = "0";
-  }
-}
-
-requiredKeysToggle?.addEventListener("change", syncKeyCountVisibility);
-syncKeyCountVisibility();

@@ -1,10 +1,11 @@
+import { setButtonLoading } from "./motion.js?v=7.9";
 import {
   confirmCustomer,
   customerPdfUrl,
   getAdminCustomerPreview,
   getCustomerCase,
   getPortalSession
-} from "./api.js?v=7.5";
+} from "./api.js?v=7.5.2";
 
 const params = new URLSearchParams(location.search);
 const token = params.get("token");
@@ -82,7 +83,7 @@ function accessoryList(item) {
   }
 
   if (item.required_keys) {
-    list.push(`${item.key_count || 1} Schlüssel`);
+    list.push("Schlüssel");
   }
 
   return list;
@@ -200,7 +201,7 @@ function updateFlowState() {
     stickySubtitle.textContent = "Zusätzliche Arbeiten auswählen";
     stickyButton.textContent = "Auswählen";
     stickyButton.dataset.action = "service";
-    stickyButton.disabled = false;
+    setButtonLoading(stickyButton, false);
     return;
   }
 
@@ -422,8 +423,7 @@ form.addEventListener("submit", async event => {
     return;
   }
 
-  stickyButton.disabled = true;
-  stickyButton.textContent = "Wird gesendet …";
+  setButtonLoading(stickyButton, true, "Wird gesendet …");
 
   try {
     const payload = {

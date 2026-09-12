@@ -1,5 +1,5 @@
-import { renderWarrantyFlowPdf } from "./pdf/warranty-flowpdf.js?v=7.5";
-import { CONFIG, hasSupabaseConfig } from "./config.js?v=7.5";
+import { renderWarrantyFlowPdf } from "./pdf/warranty-flowpdf.js?v=7.5.2";
+import { CONFIG, hasSupabaseConfig } from "./config.js?v=7.5.2";
 import {
   confirmDemoCase,
   createDemoCase,
@@ -9,7 +9,7 @@ import {
   updateDemoCaseById,
   updateDemoCaseByToken,
   updateDemoCaseStatus
-} from "./demo-store.js?v=7.5";
+} from "./demo-store.js?v=7.5.2";
 
 let backendAvailable;
 let brandLogoPromise;
@@ -43,10 +43,18 @@ function apiUrl(path = "") {
   return url.toString();
 }
 
+export function buildCustomerUrl(token) {
+  const url = new URL("customer.html", location.href);
+  url.search = "";
+  url.hash = "";
+  url.searchParams.set("token", token);
+  return url.href;
+}
+
 function commonHeaders() {
   return {
     apikey: CONFIG.supabasePublishableKey,
-    "x-portal-client-version": "7.5"
+    "x-portal-client-version": "7.5.2"
   };
 }
 
@@ -216,13 +224,16 @@ export async function createCase(data) {
 
   const result = await readJson(response, "Vorgang konnte nicht erstellt werden.");
 
-  if (!result?.customer_url || !result?.public_id) {
+  if (!result?.customer_token || !result?.public_id) {
     throw new Error(
-      "Backend-Antwort unvollständig. Kundenlink oder Vorgangs-ID fehlt."
+      "Backend-Antwort unvollständig. Kundencode oder Vorgangs-ID fehlt."
     );
   }
 
-  return result;
+  return {
+    ...result,
+    customer_url: buildCustomerUrl(result.customer_token)
+  };
 }
 
 export async function getAdminCase(id) {
@@ -283,6 +294,35 @@ export async function deleteAdminCase(id) {
   });
 
   return readJson(response, "Vorgang konnte nicht gelöscht werden.");
+}
+
+export async function getAdminCustomerLink(id) {
+  if (!(await hasBackend())) {
+    throw new Error("Kundenlink ist im Demo-Modus nicht verfügbar.");
+  }
+
+  const response = await fetch(
+    apiUrl(`admin/cases/${encodeURIComponent(id)}/customer-link`),
+    {
+      method: "POST",
+      headers: await adminHeaders(true),
+      body: "{}"
+    }
+  );
+
+  const result = await readJson(
+    response,
+    "Kundenlink konnte nicht geladen werden."
+  );
+
+  if (!result?.customer_token) {
+    throw new Error("Das Backend hat keinen Kundencode zurückgegeben.");
+  }
+
+  return {
+    ...result,
+    customer_url: buildCustomerUrl(result.customer_token)
+  };
 }
 
 export async function getAdminCustomerPreview(id) {

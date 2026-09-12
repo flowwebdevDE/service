@@ -1,0 +1,862 @@
+{
+  "schemaVersion": 1,
+  "brand": "MYVELO",
+  "updatedAt": "2026-08-27",
+  "source": "https://myvelo.de/",
+  "matching": {
+    "ignoreBrand": true,
+    "normalizeDiacritics": true,
+    "maxEditDistance": 2,
+    "minimumTokenLength": 4
+  },
+  "models": [
+    {
+      "name": "Berlin",
+      "category": "E-Klapprad",
+      "aliases": [
+        "Berlin Elektro Klapprad"
+      ],
+      "checklist": [
+        {
+          "key": "bike_ready",
+          "label": "Faltmechanismus & Verriegelung geprüft"
+        },
+        {
+          "key": "battery_keys",
+          "label": "Akku & Schlüssel vollständig"
+        },
+        {
+          "key": "accessories",
+          "label": "Ladegerät & Zubehör vollständig"
+        },
+        {
+          "key": "documents",
+          "label": "Unterlagen & Übergabe bereit"
+        }
+      ]
+    },
+    {
+      "name": "Zürich",
+      "category": "E-Klapprad",
+      "aliases": [
+        "Zuerich",
+        "Zürich Elektro Klapprad"
+      ],
+      "checklist": [
+        {
+          "key": "bike_ready",
+          "label": "Faltmechanismus & Verriegelung geprüft"
+        },
+        {
+          "key": "battery_keys",
+          "label": "Akku & Schlüssel vollständig"
+        },
+        {
+          "key": "accessories",
+          "label": "Ladegerät & Zubehör vollständig"
+        },
+        {
+          "key": "documents",
+          "label": "Unterlagen & Übergabe bereit"
+        }
+      ]
+    },
+    {
+      "name": "Ipanema",
+      "category": "E-Klapprad",
+      "aliases": [
+        "Ipanema Elektro Klapprad"
+      ],
+      "checklist": [
+        {
+          "key": "bike_ready",
+          "label": "Faltmechanismus & Verriegelung geprüft"
+        },
+        {
+          "key": "battery_keys",
+          "label": "Akku & Schlüssel vollständig"
+        },
+        {
+          "key": "accessories",
+          "label": "Ladegerät & Zubehör vollständig"
+        },
+        {
+          "key": "documents",
+          "label": "Unterlagen & Übergabe bereit"
+        }
+      ]
+    },
+    {
+      "name": "Molinar",
+      "category": "E-Klapprad",
+      "aliases": [
+        "Molinar Elektro Klapprad"
+      ],
+      "checklist": [
+        {
+          "key": "bike_ready",
+          "label": "Faltmechanismus & Verriegelung geprüft"
+        },
+        {
+          "key": "battery_keys",
+          "label": "Akku & Schlüssel vollständig"
+        },
+        {
+          "key": "accessories",
+          "label": "Ladegerät & Zubehör vollständig"
+        },
+        {
+          "key": "documents",
+          "label": "Unterlagen & Übergabe bereit"
+        }
+      ]
+    },
+    {
+      "name": "Palma",
+      "category": "E-Klapprad",
+      "aliases": [
+        "Palma Elektro Klapprad"
+      ],
+      "checklist": [
+        {
+          "key": "bike_ready",
+          "label": "Faltmechanismus & Verriegelung geprüft"
+        },
+        {
+          "key": "battery_keys",
+          "label": "Akku & Schlüssel vollständig"
+        },
+        {
+          "key": "accessories",
+          "label": "Ladegerät & Zubehör vollständig"
+        },
+        {
+          "key": "documents",
+          "label": "Unterlagen & Übergabe bereit"
+        }
+      ]
+    },
+    {
+      "name": "Rio",
+      "category": "E-Klapprad",
+      "aliases": [
+        "Rio Elektro Klapprad"
+      ],
+      "checklist": [
+        {
+          "key": "bike_ready",
+          "label": "Faltmechanismus & Verriegelung geprüft"
+        },
+        {
+          "key": "battery_keys",
+          "label": "Akku & Schlüssel vollständig"
+        },
+        {
+          "key": "accessories",
+          "label": "Ladegerät & Zubehör vollständig"
+        },
+        {
+          "key": "documents",
+          "label": "Unterlagen & Übergabe bereit"
+        }
+      ]
+    },
+    {
+      "name": "Monza",
+      "category": "E-Klapprad",
+      "aliases": [
+        "Monza Carbon",
+        "Monza Carbon Elektro Klapprad"
+      ],
+      "checklist": [
+        {
+          "key": "bike_ready",
+          "label": "Faltmechanismus & Carbonbereich sichtgeprüft"
+        },
+        {
+          "key": "battery_keys",
+          "label": "Akku & Schlüssel vollständig"
+        },
+        {
+          "key": "accessories",
+          "label": "Ladegerät & Zubehör vollständig"
+        },
+        {
+          "key": "documents",
+          "label": "Unterlagen & Übergabe bereit"
+        }
+      ]
+    },
+    {
+      "name": "Everest",
+      "category": "E-SUV",
+      "aliases": [
+        "Everest Equipped",
+        "Everest Equipped E-SUV"
+      ],
+      "checklist": [
+        {
+          "key": "bike_ready",
+          "label": "Fahrrad abholbereit & Ausstattung sichtgeprüft"
+        },
+        {
+          "key": "battery_keys",
+          "label": "Akku & Schlüssel vollständig"
+        },
+        {
+          "key": "accessories",
+          "label": "Display, Ladegerät & SUV-Zubehör vollständig"
+        },
+        {
+          "key": "documents",
+          "label": "Unterlagen & Übergabe bereit"
+        }
+      ]
+    },
+    {
+      "name": "Makalu",
+      "category": "E-SUV",
+      "aliases": [
+        "Makalu Equipped",
+        "Makalu Equipped E-SUV"
+      ],
+      "checklist": [
+        {
+          "key": "bike_ready",
+          "label": "Fahrrad abholbereit & Ausstattung sichtgeprüft"
+        },
+        {
+          "key": "battery_keys",
+          "label": "Akku & Schlüssel vollständig"
+        },
+        {
+          "key": "accessories",
+          "label": "Display, Ladegerät & SUV-Zubehör vollständig"
+        },
+        {
+          "key": "documents",
+          "label": "Unterlagen & Übergabe bereit"
+        }
+      ]
+    },
+    {
+      "name": "Nizza",
+      "category": "E-Trekking",
+      "aliases": [
+        "Nizza Trekking",
+        "Nizza E-Bike"
+      ],
+      "checklist": [
+        {
+          "key": "bike_ready",
+          "label": "Fahrrad abholbereit & Sichtcheck erledigt"
+        },
+        {
+          "key": "battery_keys",
+          "label": "Akku & Schlüssel vollständig"
+        },
+        {
+          "key": "accessories",
+          "label": "Display, Ladegerät & Zubehör vollständig"
+        },
+        {
+          "key": "documents",
+          "label": "Unterlagen & Übergabe bereit"
+        }
+      ]
+    },
+    {
+      "name": "Paris",
+      "category": "E-Trekking",
+      "aliases": [
+        "Paris Trekking",
+        "Paris E-Bike"
+      ],
+      "checklist": [
+        {
+          "key": "bike_ready",
+          "label": "Fahrrad abholbereit & Sichtcheck erledigt"
+        },
+        {
+          "key": "battery_keys",
+          "label": "Akku & Schlüssel vollständig"
+        },
+        {
+          "key": "accessories",
+          "label": "Display, Ladegerät & Zubehör vollständig"
+        },
+        {
+          "key": "documents",
+          "label": "Unterlagen & Übergabe bereit"
+        }
+      ]
+    },
+    {
+      "name": "Himalaya",
+      "category": "E-MTB",
+      "aliases": [
+        "Himalaya E-MTB"
+      ],
+      "checklist": [
+        {
+          "key": "bike_ready",
+          "label": "Fahrrad abholbereit & Sichtcheck erledigt"
+        },
+        {
+          "key": "battery_keys",
+          "label": "Akku & Schlüssel vollständig"
+        },
+        {
+          "key": "accessories",
+          "label": "Display, Ladegerät & Zubehör vollständig"
+        },
+        {
+          "key": "documents",
+          "label": "Unterlagen & Übergabe bereit"
+        }
+      ]
+    },
+    {
+      "name": "Stelvio",
+      "category": "E-MTB",
+      "aliases": [
+        "Stelvio E-MTB",
+        "Stelvio Fully"
+      ],
+      "checklist": [
+        {
+          "key": "bike_ready",
+          "label": "Fahrwerk & Fahrrad abholbereit sichtgeprüft"
+        },
+        {
+          "key": "battery_keys",
+          "label": "Akku & Schlüssel vollständig"
+        },
+        {
+          "key": "accessories",
+          "label": "Display, Ladegerät & Zubehör vollständig"
+        },
+        {
+          "key": "documents",
+          "label": "Unterlagen & Übergabe bereit"
+        }
+      ]
+    },
+    {
+      "name": "Aspen",
+      "category": "E-MTB",
+      "aliases": [
+        "Aspen E-MTB",
+        "Aspen Fully"
+      ],
+      "checklist": [
+        {
+          "key": "bike_ready",
+          "label": "Fahrwerk & Fahrrad abholbereit sichtgeprüft"
+        },
+        {
+          "key": "battery_keys",
+          "label": "Akku & Schlüssel vollständig"
+        },
+        {
+          "key": "accessories",
+          "label": "Display, Ladegerät & Zubehör vollständig"
+        },
+        {
+          "key": "documents",
+          "label": "Unterlagen & Übergabe bereit"
+        }
+      ]
+    },
+    {
+      "name": "Tokio",
+      "category": "E-Singlespeed",
+      "aliases": [
+        "Tokyo",
+        "Tokio Singlespeed"
+      ],
+      "checklist": [
+        {
+          "key": "bike_ready",
+          "label": "Fahrrad abholbereit & Sichtcheck erledigt"
+        },
+        {
+          "key": "battery_keys",
+          "label": "Akku & Schlüssel vollständig"
+        },
+        {
+          "key": "accessories",
+          "label": "Ladegerät & Zubehör vollständig"
+        },
+        {
+          "key": "documents",
+          "label": "Unterlagen & Übergabe bereit"
+        }
+      ]
+    },
+    {
+      "name": "Vancouver",
+      "category": "MTB",
+      "aliases": [
+        "Vancouver Hardtail",
+        "Vancouver Hardtail MTB"
+      ],
+      "checklist": [
+        {
+          "key": "bike_ready",
+          "label": "Fahrrad abholbereit & Sichtcheck erledigt"
+        },
+        {
+          "key": "battery_keys",
+          "label": "Schaltung & Bremsen kurz geprüft"
+        },
+        {
+          "key": "accessories",
+          "label": "Zubehör & mitgelieferte Teile vollständig"
+        },
+        {
+          "key": "documents",
+          "label": "Unterlagen & Übergabe bereit"
+        }
+      ]
+    },
+    {
+      "name": "Toronto",
+      "category": "MTB",
+      "aliases": [
+        "Toronto Fully",
+        "Toronto MTB Fully"
+      ],
+      "checklist": [
+        {
+          "key": "bike_ready",
+          "label": "Fahrwerk & Fahrrad abholbereit sichtgeprüft"
+        },
+        {
+          "key": "battery_keys",
+          "label": "Schaltung & Bremsen kurz geprüft"
+        },
+        {
+          "key": "accessories",
+          "label": "Zubehör & mitgelieferte Teile vollständig"
+        },
+        {
+          "key": "documents",
+          "label": "Unterlagen & Übergabe bereit"
+        }
+      ]
+    },
+    {
+      "name": "Toronto Pro",
+      "category": "MTB",
+      "aliases": [
+        "Toronto Pro Fully",
+        "Toronto Pro MTB Fully"
+      ],
+      "checklist": [
+        {
+          "key": "bike_ready",
+          "label": "Fahrwerk & Fahrrad abholbereit sichtgeprüft"
+        },
+        {
+          "key": "battery_keys",
+          "label": "Schaltung & Bremsen kurz geprüft"
+        },
+        {
+          "key": "accessories",
+          "label": "Zubehör & mitgelieferte Teile vollständig"
+        },
+        {
+          "key": "documents",
+          "label": "Unterlagen & Übergabe bereit"
+        }
+      ]
+    },
+    {
+      "name": "Mortirolo",
+      "category": "Gravel",
+      "aliases": [
+        "Mortirolo Gravel Bike"
+      ],
+      "checklist": [
+        {
+          "key": "bike_ready",
+          "label": "Fahrrad abholbereit & Sichtcheck erledigt"
+        },
+        {
+          "key": "battery_keys",
+          "label": "Schaltung & Bremsen kurz geprüft"
+        },
+        {
+          "key": "accessories",
+          "label": "Zubehör, Pedale & Kleinteile vollständig"
+        },
+        {
+          "key": "documents",
+          "label": "Unterlagen & Übergabe bereit"
+        }
+      ]
+    },
+    {
+      "name": "Mortirolo Race Edition",
+      "category": "Gravel",
+      "aliases": [
+        "Mortirolo Race",
+        "Mortirolo Gravel Race"
+      ],
+      "checklist": [
+        {
+          "key": "bike_ready",
+          "label": "Fahrrad abholbereit & Sichtcheck erledigt"
+        },
+        {
+          "key": "battery_keys",
+          "label": "Schaltung & Bremsen kurz geprüft"
+        },
+        {
+          "key": "accessories",
+          "label": "Zubehör, Pedale & Kleinteile vollständig"
+        },
+        {
+          "key": "documents",
+          "label": "Unterlagen & Übergabe bereit"
+        }
+      ]
+    },
+    {
+      "name": "Mortirolo x GCN",
+      "category": "Gravel",
+      "aliases": [
+        "Mortirolo GCN"
+      ],
+      "checklist": [
+        {
+          "key": "bike_ready",
+          "label": "Fahrrad abholbereit & Sichtcheck erledigt"
+        },
+        {
+          "key": "battery_keys",
+          "label": "Schaltung & Bremsen kurz geprüft"
+        },
+        {
+          "key": "accessories",
+          "label": "Zubehör, Pedale & Kleinteile vollständig"
+        },
+        {
+          "key": "documents",
+          "label": "Unterlagen & Übergabe bereit"
+        }
+      ]
+    },
+    {
+      "name": "Campo Felice",
+      "category": "Gravel",
+      "aliases": [
+        "Campo Felice Gravel Bike"
+      ],
+      "checklist": [
+        {
+          "key": "bike_ready",
+          "label": "Fahrrad abholbereit & Sichtcheck erledigt"
+        },
+        {
+          "key": "battery_keys",
+          "label": "Schaltung & Bremsen kurz geprüft"
+        },
+        {
+          "key": "accessories",
+          "label": "Zubehör, Pedale & Kleinteile vollständig"
+        },
+        {
+          "key": "documents",
+          "label": "Unterlagen & Übergabe bereit"
+        }
+      ]
+    },
+    {
+      "name": "Macau",
+      "category": "Gravel",
+      "aliases": [
+        "Macau Gravel Bike"
+      ],
+      "checklist": [
+        {
+          "key": "bike_ready",
+          "label": "Fahrrad abholbereit & Sichtcheck erledigt"
+        },
+        {
+          "key": "battery_keys",
+          "label": "Schaltung & Bremsen kurz geprüft"
+        },
+        {
+          "key": "accessories",
+          "label": "Zubehör, Pedale & Kleinteile vollständig"
+        },
+        {
+          "key": "documents",
+          "label": "Unterlagen & Übergabe bereit"
+        }
+      ]
+    },
+    {
+      "name": "Gavia",
+      "category": "Gravel",
+      "aliases": [
+        "Gavia Gravel Bike"
+      ],
+      "checklist": [
+        {
+          "key": "bike_ready",
+          "label": "Fahrrad abholbereit & Sichtcheck erledigt"
+        },
+        {
+          "key": "battery_keys",
+          "label": "Schaltung & Bremsen kurz geprüft"
+        },
+        {
+          "key": "accessories",
+          "label": "Zubehör, Pedale & Kleinteile vollständig"
+        },
+        {
+          "key": "documents",
+          "label": "Unterlagen & Übergabe bereit"
+        }
+      ]
+    },
+    {
+      "name": "Verona",
+      "category": "Rennrad",
+      "aliases": [
+        "Verona Rennrad",
+        "Verona x GCN"
+      ],
+      "checklist": [
+        {
+          "key": "bike_ready",
+          "label": "Fahrrad abholbereit & Sichtcheck erledigt"
+        },
+        {
+          "key": "battery_keys",
+          "label": "Schaltung & Bremsen kurz geprüft"
+        },
+        {
+          "key": "accessories",
+          "label": "Zubehör, Pedale & Kleinteile vollständig"
+        },
+        {
+          "key": "documents",
+          "label": "Unterlagen & Übergabe bereit"
+        }
+      ]
+    },
+    {
+      "name": "Verona Ltd. 33",
+      "category": "Rennrad",
+      "aliases": [
+        "Verona Ltd 33",
+        "Verona Special Edition"
+      ],
+      "checklist": [
+        {
+          "key": "bike_ready",
+          "label": "Fahrrad abholbereit & Sichtcheck erledigt"
+        },
+        {
+          "key": "battery_keys",
+          "label": "Schaltung & Bremsen kurz geprüft"
+        },
+        {
+          "key": "accessories",
+          "label": "Zubehör, Pedale & Kleinteile vollständig"
+        },
+        {
+          "key": "documents",
+          "label": "Unterlagen & Übergabe bereit"
+        }
+      ]
+    },
+    {
+      "name": "Oslo",
+      "category": "Rennrad",
+      "aliases": [
+        "Oslo Endurance",
+        "Oslo Endurance Rennrad"
+      ],
+      "checklist": [
+        {
+          "key": "bike_ready",
+          "label": "Fahrrad abholbereit & Sichtcheck erledigt"
+        },
+        {
+          "key": "battery_keys",
+          "label": "Schaltung & Bremsen kurz geprüft"
+        },
+        {
+          "key": "accessories",
+          "label": "Zubehör, Pedale & Kleinteile vollständig"
+        },
+        {
+          "key": "documents",
+          "label": "Unterlagen & Übergabe bereit"
+        }
+      ]
+    },
+    {
+      "name": "Tourmalet",
+      "category": "Rennrad",
+      "aliases": [
+        "Tourmalet Rennrad",
+        "Tourmalet x GCN"
+      ],
+      "checklist": [
+        {
+          "key": "bike_ready",
+          "label": "Fahrrad abholbereit & Sichtcheck erledigt"
+        },
+        {
+          "key": "battery_keys",
+          "label": "Schaltung & Bremsen kurz geprüft"
+        },
+        {
+          "key": "accessories",
+          "label": "Zubehör, Pedale & Kleinteile vollständig"
+        },
+        {
+          "key": "documents",
+          "label": "Unterlagen & Übergabe bereit"
+        }
+      ]
+    },
+    {
+      "name": "Lisboa",
+      "category": "Triathlon",
+      "aliases": [
+        "Lisboa Triathlonrad",
+        "Lisboa Time Trial"
+      ],
+      "checklist": [
+        {
+          "key": "bike_ready",
+          "label": "Fahrrad abholbereit & Sichtcheck erledigt"
+        },
+        {
+          "key": "battery_keys",
+          "label": "Schaltung & Bremsen kurz geprüft"
+        },
+        {
+          "key": "accessories",
+          "label": "Cockpit, Zubehör & Kleinteile vollständig"
+        },
+        {
+          "key": "documents",
+          "label": "Unterlagen & Übergabe bereit"
+        }
+      ]
+    },
+    {
+      "name": "Asha 16",
+      "category": "Kinder-MTB",
+      "aliases": [
+        "Asha 16 Zoll",
+        "Asha 16 Kinder MTB"
+      ],
+      "checklist": [
+        {
+          "key": "bike_ready",
+          "label": "Fahrrad abholbereit & Sichtcheck erledigt"
+        },
+        {
+          "key": "battery_keys",
+          "label": "Bremsen & Schaltung kurz geprüft"
+        },
+        {
+          "key": "accessories",
+          "label": "Zubehör & mitgelieferte Teile vollständig"
+        },
+        {
+          "key": "documents",
+          "label": "Unterlagen & Übergabe bereit"
+        }
+      ]
+    },
+    {
+      "name": "Asha 20",
+      "category": "Kinder-MTB",
+      "aliases": [
+        "Asha 20 Zoll",
+        "Asha 20 Kinder MTB"
+      ],
+      "checklist": [
+        {
+          "key": "bike_ready",
+          "label": "Fahrrad abholbereit & Sichtcheck erledigt"
+        },
+        {
+          "key": "battery_keys",
+          "label": "Bremsen & Schaltung kurz geprüft"
+        },
+        {
+          "key": "accessories",
+          "label": "Zubehör & mitgelieferte Teile vollständig"
+        },
+        {
+          "key": "documents",
+          "label": "Unterlagen & Übergabe bereit"
+        }
+      ]
+    },
+    {
+      "name": "Asha 24",
+      "category": "Kinder-MTB",
+      "aliases": [
+        "Asha 24 Zoll",
+        "Asha 24 Kinder MTB"
+      ],
+      "checklist": [
+        {
+          "key": "bike_ready",
+          "label": "Fahrrad abholbereit & Sichtcheck erledigt"
+        },
+        {
+          "key": "battery_keys",
+          "label": "Bremsen & Schaltung kurz geprüft"
+        },
+        {
+          "key": "accessories",
+          "label": "Zubehör & mitgelieferte Teile vollständig"
+        },
+        {
+          "key": "documents",
+          "label": "Unterlagen & Übergabe bereit"
+        }
+      ]
+    },
+    {
+      "name": "Asha 27,5",
+      "category": "Kinder-MTB",
+      "aliases": [
+        "Asha 27.5",
+        "Asha 27,5 Zoll",
+        "Asha 27.5 Kinder MTB"
+      ],
+      "checklist": [
+        {
+          "key": "bike_ready",
+          "label": "Fahrrad abholbereit & Sichtcheck erledigt"
+        },
+        {
+          "key": "battery_keys",
+          "label": "Bremsen & Schaltung kurz geprüft"
+        },
+        {
+          "key": "accessories",
+          "label": "Zubehör & mitgelieferte Teile vollständig"
+        },
+        {
+          "key": "documents",
+          "label": "Unterlagen & Übergabe bereit"
+        }
+      ]
+    }
+  ]
+}

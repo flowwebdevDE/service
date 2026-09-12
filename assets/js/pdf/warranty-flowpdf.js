@@ -46,10 +46,7 @@ function deliveryItems(snapshot) {
   }
 
   if (snapshot.required_keys) {
-    items.push({
-      text: `${Math.max(1, Number(snapshot.key_count || 1))} Schlüssel`,
-      checked: true
-    });
+    items.push({ text: "Schlüssel", checked: true });
   }
 
   return items;
@@ -145,7 +142,7 @@ export function buildWarrantyFlowSpec(snapshot, options = {}) {
         type: "twoColumn",
         items: [
           { label: "Gegenstand", field: "case.item", size: 8.0 },
-          { label: "Modell", field: "case.model", size: 8.0 }
+          { label: snapshot.item_type === "battery" ? "Akku von Modell" : "Modell", field: "case.model", size: 8.0 }
         ],
         gap: 18,
         labelColor: [18, 18, 18]
