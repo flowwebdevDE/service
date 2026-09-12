@@ -1,16 +1,120 @@
 <!doctype html>
-<html lang="de" class="auth-pending">
+<html lang="de" class="auth-pending ui-loading">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://dsjhaivwhjtcynwkthiu.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'none'; worker-src 'self' blob:; upgrade-insecure-requests">
   <meta name="referrer" content="no-referrer">
 <title>Vorgang · MYVELO Service</title>
-  <link rel="stylesheet" href="assets/css/app.css?v=7.10.7">
+  <link rel="stylesheet" href="assets/css/app.css?v=7.10.8">
   <script src="assets/js/auth-guard.js?v=7.4.2"></script>
   <script src="assets/js/security-bootstrap.js?v=7.10.6"></script>
+
+  <style>
+    html.ui-loading,
+    html.ui-loading body {
+      min-height: 100%;
+      overflow: hidden !important;
+      background: #f4f4f1;
+    }
+
+    html.ui-loading body > :not(.app-boot-loader):not(.flow-banner-stack) {
+      visibility: hidden !important;
+      pointer-events: none !important;
+    }
+
+    .app-boot-loader {
+      position: fixed;
+      inset: 0;
+      z-index: 30000;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: #f4f4f1;
+      color: #111;
+    }
+
+    .app-boot-loader__inner {
+      width: min(100%, 320px);
+      display: grid;
+      justify-items: center;
+      gap: 18px;
+      text-align: center;
+    }
+
+    .app-boot-loader__mark {
+      width: 42px;
+      height: 42px;
+      border: 3px solid #d7d7d2;
+      border-top-color: #111;
+      border-radius: 50%;
+      animation: app-boot-spin .8s linear infinite;
+    }
+
+    .app-boot-loader__copy {
+      display: grid;
+      gap: 5px;
+    }
+
+    .app-boot-loader__copy strong {
+      font: 800 14px/1.2 Inter, Arial, sans-serif;
+      letter-spacing: -.01em;
+    }
+
+    .app-boot-loader__copy span {
+      color: #747470;
+      font: 500 12px/1.45 Inter, Arial, sans-serif;
+    }
+
+    .app-boot-loader.is-error .app-boot-loader__mark {
+      animation: none;
+      border-color: #111;
+      position: relative;
+    }
+
+    .app-boot-loader.is-error .app-boot-loader__mark::before,
+    .app-boot-loader.is-error .app-boot-loader__mark::after {
+      content: "";
+      position: absolute;
+      top: 18px;
+      left: 8px;
+      width: 20px;
+      height: 2px;
+      background: #111;
+    }
+
+    .app-boot-loader.is-error .app-boot-loader__mark::before {
+      transform: rotate(45deg);
+    }
+
+    .app-boot-loader.is-error .app-boot-loader__mark::after {
+      transform: rotate(-45deg);
+    }
+
+    @keyframes app-boot-spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .app-boot-loader__mark {
+        animation-duration: 1.8s;
+      }
+    }
+  </style>
+
 </head>
 <body class="flow-employee">
+
+  <div class="app-boot-loader" id="app-boot-loader" role="status" aria-live="polite">
+    <div class="app-boot-loader__inner">
+      <span class="app-boot-loader__mark" aria-hidden="true"></span>
+      <div class="app-boot-loader__copy">
+        <strong id="app-boot-loader-title">Vorgang wird geladen</strong>
+        <span id="app-boot-loader-text">Einen Moment, die Ansicht wird vorbereitet.</span>
+      </div>
+    </div>
+  </div>
+
   <div class="flow-shell">
     <aside class="flow-sidebar" id="flowSidebar">
       <div class="flow-brand">
@@ -287,7 +391,7 @@
     </div>
   </dialog>
 
-  <script type="module" src="assets/js/case-detail.js?v=7.10.7"></script>
+  <script type="module" src="assets/js/case-detail.js?v=7.10.8"></script>
   <script type="module" src="assets/js/internal-mobile.js?v=7.0"></script>
 </body>
 </html>

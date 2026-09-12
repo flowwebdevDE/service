@@ -13,6 +13,30 @@ import { initModelPopup } from "./model-picker.js?v=7.6.1";
 import { setButtonLoading, pulseElement } from "./motion.js?v=7.9";
 import { showError, showInfo, showSuccess } from "./banner.js?v=7.10.6";
 
+
+const bootLoader = document.querySelector("#app-boot-loader");
+const bootLoaderTitle = document.querySelector("#app-boot-loader-title");
+const bootLoaderText = document.querySelector("#app-boot-loader-text");
+
+function finishBoot() {
+  document.documentElement.classList.remove("ui-loading");
+
+  if (!bootLoader) return;
+
+  bootLoader.classList.add("is-leaving");
+  window.setTimeout(() => bootLoader.remove(), 180);
+}
+
+function failBoot(message) {
+  document.documentElement.classList.add("ui-loading");
+
+  if (!bootLoader) return;
+
+  bootLoader.classList.add("is-error");
+  if (bootLoaderTitle) bootLoaderTitle.textContent = "Vorgang konnte nicht geladen werden";
+  if (bootLoaderText) bootLoaderText.textContent = message || "Bitte Seite neu laden.";
+}
+
 const portalSession = requirePortalSession();
 if (!portalSession) {
   await new Promise(() => {});
@@ -280,8 +304,12 @@ form.addEventListener("submit", async event => {
 try {
   const item = await getAdminCase(id);
   fill(item);
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(finishBoot);
+  });
 } catch (error) {
-  showError(error.message);
+  failBoot(error.message);
 }
 
 

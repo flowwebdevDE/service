@@ -10,6 +10,41 @@ import {
   verifyCustomerAccess
 } from "./api.js?v=7.10.5";
 
+
+const bootLoader = document.querySelector("#app-boot-loader");
+const bootLoaderTitle = document.querySelector("#app-boot-loader-title");
+const bootLoaderText = document.querySelector("#app-boot-loader-text");
+
+function finishBoot() {
+  document.documentElement.classList.remove("ui-loading");
+
+  if (!bootLoader) return;
+
+  bootLoader.classList.add("is-leaving");
+  window.setTimeout(() => bootLoader.remove(), 180);
+}
+
+function failBoot(message) {
+  document.documentElement.classList.add("ui-loading");
+
+  if (!bootLoader) return;
+
+  bootLoader.classList.add("is-error");
+  if (bootLoaderTitle) bootLoaderTitle.textContent = "Vorgang konnte nicht geladen werden";
+  if (bootLoaderText) bootLoaderText.textContent = message || "Bitte Seite neu laden.";
+}
+
+function revealVerification() {
+  setCustomerUnlocked(false);
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      finishBoot();
+      verificationCode?.focus();
+    });
+  });
+}
+
 const params = new URLSearchParams(location.search);
 const token = params.get("token");
 const previewId = params.get("preview");
@@ -68,23 +103,26 @@ function showVerification(messageText = "") {
     });
   }
 
-  requestAnimationFrame(() => verificationCode?.focus());
+  revealVerification();
 }
 
 async function loadVerifiedCustomer() {
-  setCustomerUnlocked(true);
-
   try {
     const item = await getCustomerCase(token);
+    setCustomerUnlocked(true);
     fill(item);
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(finishBoot);
+    });
   } catch (error) {
     if (/Verifizierung erforderlich/i.test(error.message)) {
       showVerification("Bitte gib den Code aus deiner E-Mail ein.");
       return;
     }
 
-    showError(error.message, { title: "Vorgang konnte nicht geladen werden" });
     showStickyAction(false);
+    failBoot(error.message);
   }
 }
 
@@ -594,17 +632,21 @@ async function load() {
     try {
       const item = await getAdminCustomerPreview(previewId);
       fill(item);
+
+      requestAnimationFrame(() => {
+        requestAnimationFrame(finishBoot);
+      });
     } catch (error) {
-      showError(error.message, { title: "Vorschau konnte nicht geladen werden" });
       showStickyAction(false);
+      failBoot(error.message);
     }
 
     return;
   }
 
   if (!token) {
-    showError("Kundenlink unvollständig.", { title: "Link ungültig", duration: 0 });
     showStickyAction(false);
+    failBoot("Der Kundenlink ist unvollständig.");
     return;
   }
 

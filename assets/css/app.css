@@ -7656,3 +7656,49 @@ body.customer-locked > :not(#customer-verification):not(.flow-banner-stack) {
     width: 100%;
   }
 }
+
+
+/* V7.10.8 · atomic UI reveal */
+.app-boot-loader {
+  transition: opacity .18s ease;
+}
+
+.app-boot-loader.is-leaving {
+  opacity: 0;
+  pointer-events: none;
+}
+
+html.ui-loading .flow-shell,
+html.ui-loading .customer-topbar,
+html.ui-loading .customer-mobile-shell,
+html.ui-loading .customer-sticky-action,
+html.ui-loading .customer-verification {
+  visibility: hidden !important;
+}
+
+html:not(.ui-loading) .flow-shell,
+html:not(.ui-loading) .customer-mobile-shell,
+html:not(.ui-loading) .customer-verification {
+  animation: flow-ui-reveal .2s ease both;
+}
+
+@keyframes flow-ui-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-boot-loader,
+  html:not(.ui-loading) .flow-shell,
+  html:not(.ui-loading) .customer-mobile-shell,
+  html:not(.ui-loading) .customer-verification {
+    animation: none !important;
+    transition: none !important;
+  }
+}
