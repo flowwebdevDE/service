@@ -7702,3 +7702,23 @@ html:not(.ui-loading) .customer-verification {
     transition: none !important;
   }
 }
+
+
+/* V7.10.9 · strict frozen customer isolation */
+body.customer-frozen-mode {
+  background: #f4f4f1;
+}
+
+body.customer-frozen-mode #customer-live-content,
+body.customer-frozen-mode .customer-sticky-action,
+body.customer-frozen-mode .customer-footer {
+  display: none !important;
+}
+
+body.customer-frozen-mode #customer-frozen-view {
+  display: block !important;
+}
+
+body.customer-frozen-mode .customer-mobile-shell {
+  padding-bottom: 0;
+}

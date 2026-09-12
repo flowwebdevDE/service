@@ -55,6 +55,7 @@ const verificationForm = document.querySelector("#verification-form");
 const verificationCode = document.querySelector("#verification-code");
 const verificationSubmit = document.querySelector("#verification-submit");
 const customerFrozenView = document.querySelector("#customer-frozen-view");
+const customerLiveContent = document.querySelector("#customer-live-content");
 const customerRegularHead = document.querySelector(".customer-mobile-head");
 
 const stickyAction = document.querySelector("#sticky-action");
@@ -401,10 +402,18 @@ function renderCustomerFrozen(item) {
   const snapshot = frozenSnapshot(item);
   const [service, serviceNote] = frozenServiceDisplay(snapshot.service_choice);
 
-  customerRegularHead?.classList.add("hidden");
-  form.classList.add("hidden");
+  document.body.classList.add("customer-frozen-mode");
+
+  customerLiveContent?.classList.add("hidden");
+  customerLiveContent?.setAttribute("inert", "");
+  customerLiveContent?.setAttribute("aria-hidden", "true");
+
   customerFrozenView?.classList.remove("hidden");
+  customerFrozenView?.removeAttribute("inert");
+  customerFrozenView?.removeAttribute("aria-hidden");
+
   showStickyAction(false);
+  window.scrollTo({ top: 0, left: 0, behavior: "auto" });
 
   setText("frozen-customer-order", snapshot.shopify_ref || "–");
   setText("frozen-customer-case", snapshot.public_id || item.public_id || "–");
@@ -460,9 +469,15 @@ function renderCustomerFrozen(item) {
 }
 
 function renderCustomerEditable() {
-  customerRegularHead?.classList.remove("hidden");
-  form.classList.remove("hidden");
+  document.body.classList.remove("customer-frozen-mode");
+
   customerFrozenView?.classList.add("hidden");
+  customerFrozenView?.setAttribute("inert", "");
+  customerFrozenView?.setAttribute("aria-hidden", "true");
+
+  customerLiveContent?.classList.remove("hidden");
+  customerLiveContent?.removeAttribute("inert");
+  customerLiveContent?.removeAttribute("aria-hidden");
 }
 
 function fill(item) {

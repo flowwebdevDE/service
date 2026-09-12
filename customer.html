@@ -7,7 +7,7 @@
   <meta name="referrer" content="no-referrer">
 <meta name="color-scheme" content="light">
   <title>Garantiefall · MYVELO Service</title>
-  <link rel="stylesheet" href="assets/css/app.css?v=7.10.8">
+  <link rel="stylesheet" href="assets/css/app.css?v=7.10.9">
   <link rel="stylesheet" href="assets/css/customer-layout.css?v=7.0">
   <script src="assets/js/security-bootstrap.js?v=7.10.6"></script>
 
@@ -157,7 +157,7 @@
   </header>
 
   <main class="customer-mobile-shell">
-    <section id="customer-frozen-view" class="customer-frozen-view hidden" aria-labelledby="customer-frozen-title">
+    <section id="customer-frozen-view" class="customer-frozen-view hidden" aria-labelledby="customer-frozen-title" inert aria-hidden="true">
       <div class="customer-frozen-hero">
         <img class="customer-frozen-logo" src="assets/brand/myvelo-logo.png?v=7.0" alt="MYVELO" data-hide-on-error>
         <span class="customer-frozen-kicker">SERVICE · BESTÄTIGT</span>
@@ -224,6 +224,8 @@
         </section>
       </div>
     </section>
+    <div id="customer-live-content">
+
 
     <section class="customer-mobile-head">
       <div class="customer-mobile-kicker">Garantiefall</div>
@@ -451,7 +453,9 @@
       <a href="privacy.html">Datenschutz</a>
       <a href="imprint.html">Impressum</a>
     </footer>
-  </main>
+  
+    </div>
+</main>
 
   <div class="customer-sticky-action" id="sticky-action">
     <div class="customer-sticky-action__inner">
@@ -465,6 +469,6 @@
     </div>
   </div>
 
-  <script type="module" src="assets/js/customer.js?v=7.10.8"></script>
+  <script type="module" src="assets/js/customer.js?v=7.10.9"></script>
 </body>
 </html>
