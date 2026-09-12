@@ -7,7 +7,7 @@ import {
   updateAdminCaseStatus,
   logoutPortalSession,
   requirePortalSession
-} from "./api.js?v=7.9.2";
+} from "./api.js?v=7.9.3";
 import { initModelPopup } from "./model-picker.js?v=7.6.1";
 import { setButtonLoading, pulseElement } from "./motion.js?v=7.9";
 

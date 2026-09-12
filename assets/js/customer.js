@@ -5,7 +5,7 @@ import {
   getAdminCustomerPreview,
   getCustomerCase,
   getPortalSession
-} from "./api.js?v=7.9.2";
+} from "./api.js?v=7.9.3";
 
 const params = new URLSearchParams(location.search);
 const token = params.get("token");

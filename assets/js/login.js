@@ -2,7 +2,7 @@ import { setButtonLoading } from "./motion.js?v=7.9";
 import {
   getPortalSession,
   loginWithCompanyKey
-} from "./api.js?v=7.9.2";
+} from "./api.js?v=7.9.3";
 
 const form = document.querySelector("#login-form");
 const errorBox = document.querySelector("#login-error");
