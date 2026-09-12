@@ -4,7 +4,7 @@ import {
   listCases,
   logoutPortalSession,
   requirePortalSession
-} from "./api.js?v=7.10";
+} from "./api.js?v=7.10.5";
 import { initModelPopup } from "./model-picker.js?v=7.6.1";
 import { setButtonLoading, renderCaseSkeleton, pulseElement } from "./motion.js?v=7.9";
 
@@ -120,21 +120,13 @@ form.addEventListener("submit", async event => {
   event.preventDefault();
 
   const customerName = form.elements.customer_name.value.trim();
-  const customerEmail = form.elements.customer_email.value.trim();
 
   if (!customerName) {
     form.elements.customer_name.focus();
     form.elements.customer_name.reportValidity();
     return;
   }
-
-  if (!customerEmail) {
-    form.elements.customer_email.focus();
-    form.elements.customer_email.reportValidity();
-    return;
-  }
-
-  const submitButton = form.querySelector('button[type="submit"]');
+const submitButton = form.querySelector('button[type="submit"]');
   setButtonLoading(submitButton, true, "Erstelle Link …");
 
   try {
@@ -156,7 +148,7 @@ form.addEventListener("submit", async event => {
       const access = await getAdminCustomerAccess(result.public_id);
       createdVerificationCode.textContent = access.verification_code || "••••••";
       createdLinkDeliveryStatus.textContent =
-        `Bereit für ${access.email || customerEmail}. Link + 6-stelligen Code manuell per Mail senden.`;
+        `Link + 6-stelligen Code manuell an den Kunden senden.`;
       createdLinkDeliveryStatus.className = "flow-delivery-status is-success";
     } catch (accessError) {
       createdVerificationCode.textContent = "••••••";

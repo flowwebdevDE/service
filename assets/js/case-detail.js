@@ -8,7 +8,7 @@ import {
   updateAdminCaseStatus,
   logoutPortalSession,
   requirePortalSession
-} from "./api.js?v=7.10";
+} from "./api.js?v=7.10.5";
 import { initModelPopup } from "./model-picker.js?v=7.6.1";
 import { setButtonLoading, pulseElement } from "./motion.js?v=7.9";
 
@@ -318,7 +318,7 @@ document.querySelector("#customer-link-button")?.addEventListener("click", async
       const access = await getAdminCustomerAccess(id);
       customerVerificationCode.textContent = access.verification_code || "••••••";
       customerLinkMailStatus.textContent =
-        `Bereit für ${access.email || "die Kunden-E-Mail"}. Link + Code manuell senden.`;
+        `Link + Code manuell an den Kunden senden.`;
       customerLinkMailStatus.className = "flow-delivery-status is-success";
     } catch (accessError) {
       customerVerificationCode.textContent = "••••••";

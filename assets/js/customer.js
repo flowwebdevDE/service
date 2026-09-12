@@ -7,7 +7,7 @@ import {
   getCustomerSession,
   getPortalSession,
   verifyCustomerAccess
-} from "./api.js?v=7.10";
+} from "./api.js?v=7.10.5";
 
 const params = new URLSearchParams(location.search);
 const token = params.get("token");

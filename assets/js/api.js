@@ -57,7 +57,7 @@ export function buildCustomerUrl(token) {
 function commonHeaders() {
   return {
     apikey: CONFIG.supabasePublishableKey,
-    "x-portal-client-version": "7.10.0"
+    "x-portal-client-version": "7.10.5"
   };
 }
 
@@ -415,7 +415,6 @@ export async function getAdminCustomerAccess(id) {
   if (!(await hasBackend())) {
     return {
       ok: true,
-      email: "kunde@example.com",
       verification_code: "123456",
       demo: true
     };
