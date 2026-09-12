@@ -4,8 +4,10 @@ import {
   customerPdfUrl,
   getAdminCustomerPreview,
   getCustomerCase,
-  getPortalSession
-} from "./api.js?v=7.9.3";
+  getCustomerSession,
+  getPortalSession,
+  verifyCustomerAccess
+} from "./api.js?v=7.10";
 
 const params = new URLSearchParams(location.search);
 const token = params.get("token");
@@ -13,6 +15,11 @@ const previewId = params.get("preview");
 const previewMode = Boolean(previewId);
 const form = document.querySelector("#customer-form");
 const message = document.querySelector("#message");
+const verificationPanel = document.querySelector("#customer-verification");
+const verificationForm = document.querySelector("#verification-form");
+const verificationCode = document.querySelector("#verification-code");
+const verificationMessage = document.querySelector("#verification-message");
+const verificationSubmit = document.querySelector("#verification-submit");
 
 const stickyAction = document.querySelector("#sticky-action");
 const stickyTitle = document.querySelector("#sticky-action-title");
@@ -30,6 +37,68 @@ const flowStatusState = document.querySelector("#flow-status-state");
 const flowStatusProgress = document.querySelector("#flow-status-progress");
 
 let current;
+
+
+function setCustomerUnlocked(unlocked) {
+  document.body.classList.toggle("customer-locked", !unlocked);
+  verificationPanel?.classList.toggle("hidden", unlocked);
+}
+
+function showVerification(messageText = "") {
+  setCustomerUnlocked(false);
+
+  if (verificationMessage) {
+    verificationMessage.textContent = messageText;
+    verificationMessage.classList.toggle("hidden", !messageText);
+  }
+
+  requestAnimationFrame(() => verificationCode?.focus());
+}
+
+async function loadVerifiedCustomer() {
+  setCustomerUnlocked(true);
+
+  try {
+    const item = await getCustomerCase(token);
+    fill(item);
+  } catch (error) {
+    if (/Verifizierung erforderlich/i.test(error.message)) {
+      showVerification("Bitte gib den Code aus deiner E-Mail ein.");
+      return;
+    }
+
+    message.textContent = error.message;
+    message.className = "notice notice--danger";
+    message.classList.remove("hidden");
+    showStickyAction(false);
+  }
+}
+
+verificationCode?.addEventListener("input", () => {
+  verificationCode.value = verificationCode.value.replace(/\D/g, "").slice(0, 6);
+});
+
+verificationForm?.addEventListener("submit", async event => {
+  event.preventDefault();
+
+  const code = verificationCode?.value.trim() || "";
+  if (!/^\d{6}$/.test(code)) {
+    showVerification("Bitte den sechsstelligen Code vollständig eingeben.");
+    return;
+  }
+
+  setButtonLoading(verificationSubmit, true, "Prüfe …");
+
+  try {
+    await verifyCustomerAccess(token, code);
+    if (verificationMessage) verificationMessage.classList.add("hidden");
+    await loadVerifiedCustomer();
+  } catch (error) {
+    showVerification(error.message);
+  } finally {
+    setButtonLoading(verificationSubmit, false);
+  }
+});
 
 function enableEmployeePreview() {
   document.body.classList.add("customer-preview-mode");
@@ -456,6 +525,7 @@ async function load() {
       return;
     }
 
+    setCustomerUnlocked(true);
     enableEmployeePreview();
 
     try {
@@ -479,15 +549,12 @@ async function load() {
     return;
   }
 
-  try {
-    const item = await getCustomerCase(token);
-    fill(item);
-  } catch (error) {
-    message.textContent = error.message;
-    message.className = "notice notice--danger";
-    message.classList.remove("hidden");
-    showStickyAction(false);
+  if (!getCustomerSession(token)) {
+    showVerification();
+    return;
   }
+
+  await loadVerifiedCustomer();
 }
 
 load();

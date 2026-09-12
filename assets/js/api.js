@@ -57,7 +57,7 @@ export function buildCustomerUrl(token) {
 function commonHeaders() {
   return {
     apikey: CONFIG.supabasePublishableKey,
-    "x-portal-client-version": "7.5.2"
+    "x-portal-client-version": "7.10.0"
   };
 }
 
@@ -157,11 +157,93 @@ async function adminHeaders(json = false) {
   };
 }
 
-function customerHeaders(json = false) {
+function customerSessionStorageKey(token) {
+  const normalized = String(token || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+  return `garantieportal_customer_session:${normalized}`;
+}
+
+function readCustomerSession(token) {
+  return sessionStorage.getItem(customerSessionStorageKey(token)) || "";
+}
+
+function writeCustomerSession(token, sessionToken) {
+  const key = customerSessionStorageKey(token);
+
+  if (sessionToken) {
+    sessionStorage.setItem(key, sessionToken);
+  } else {
+    sessionStorage.removeItem(key);
+  }
+}
+
+export function getCustomerSession(token) {
+  const sessionToken = readCustomerSession(token);
+  const payload = decodeSessionPayload(sessionToken);
+
+  if (
+    !sessionToken ||
+    payload?.typ !== "customer-session" ||
+    !payload?.exp ||
+    payload.exp * 1000 <= Date.now()
+  ) {
+    writeCustomerSession(token, "");
+    return null;
+  }
+
+  return { token: sessionToken, payload };
+}
+
+function customerHeaders(token, json = false) {
+  const session = getCustomerSession(token);
+
   return {
     ...commonHeaders(),
-    ...(json ? { "content-type": "application/json" } : {})
+    ...(json ? { "content-type": "application/json" } : {}),
+    ...(session?.token ? { authorization: `Bearer ${session.token}` } : {})
   };
+}
+
+export async function verifyCustomerAccess(token, code) {
+  if (!(await hasBackend())) {
+    if (String(code || "") !== "123456") {
+      throw new Error("Demo-Code: 123456");
+    }
+
+    const expires = Math.floor(Date.now() / 1000) + 8 * 60 * 60;
+    const payload = btoa(JSON.stringify({
+      v: 1,
+      typ: "customer-session",
+      exp: expires
+    })).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+    const fake = `${payload}.demo`;
+    writeCustomerSession(token, fake);
+    return { ok: true, session_token: fake };
+  }
+
+  const response = await fetch(
+    apiUrl(`customer/${encodeURIComponent(token)}/verify`),
+    {
+      method: "POST",
+      headers: {
+        ...commonHeaders(),
+        "content-type": "application/json"
+      },
+      body: JSON.stringify({ code: String(code || "") })
+    }
+  );
+
+  const result = await readJson(response, "Verifizierung fehlgeschlagen.");
+
+  if (!result?.session_token) {
+    throw new Error("Backend hat keine Kundensitzung zurückgegeben.");
+  }
+
+  writeCustomerSession(token, result.session_token);
+  return result;
+}
+
+export function clearCustomerSession(token) {
+  writeCustomerSession(token, "");
 }
 
 async function readJson(response, fallbackMessage) {
@@ -328,6 +410,28 @@ export async function getAdminCustomerLink(id) {
   };
 }
 
+
+export async function getAdminCustomerAccess(id) {
+  if (!(await hasBackend())) {
+    return {
+      ok: true,
+      email: "kunde@example.com",
+      verification_code: "123456",
+      demo: true
+    };
+  }
+
+  const response = await fetch(
+    apiUrl(`admin/cases/${encodeURIComponent(id)}/customer-access`),
+    {
+      method: "GET",
+      headers: await adminHeaders()
+    }
+  );
+
+  return readJson(response, "Kundenzugang konnte nicht geladen werden.");
+}
+
 export async function getAdminCustomerPreview(id) {
   if (!(await hasBackend())) {
     const item = getDemoCaseById(id);
@@ -352,7 +456,7 @@ export async function getCustomerCase(token) {
 
   const response = await fetch(
     apiUrl(`customer/${encodeURIComponent(token)}`),
-    { headers: customerHeaders() }
+    { headers: customerHeaders(token) }
   );
 
   return readJson(response, "Kundenlink ungültig.");
@@ -367,7 +471,7 @@ export async function saveCustomerDraft(token, data) {
     apiUrl(`customer/${encodeURIComponent(token)}`),
     {
       method: "PUT",
-      headers: customerHeaders(true),
+      headers: customerHeaders(token, true),
       body: JSON.stringify(data)
     }
   );
@@ -391,7 +495,7 @@ export async function confirmCustomer(token, data) {
     apiUrl(`customer/${encodeURIComponent(token)}/confirm`),
     {
       method: "POST",
-      headers: customerHeaders(true),
+      headers: customerHeaders(token, true),
       body: JSON.stringify(data)
     }
   );

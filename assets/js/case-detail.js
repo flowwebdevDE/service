@@ -3,11 +3,12 @@ import {
   deleteAdminCase,
   getAdminCase,
   getAdminCustomerLink,
+  getAdminCustomerAccess,
   updateAdminCase,
   updateAdminCaseStatus,
   logoutPortalSession,
   requirePortalSession
-} from "./api.js?v=7.9.3";
+} from "./api.js?v=7.10";
 import { initModelPopup } from "./model-picker.js?v=7.6.1";
 import { setButtonLoading, pulseElement } from "./motion.js?v=7.9";
 
@@ -42,6 +43,8 @@ const deleteConfirmInput = document.querySelector("#delete-confirm-id");
 const confirmDeleteButton = document.querySelector("#confirmDeleteCase");
 const customerLinkDialog = document.querySelector("#customerLinkDialog");
 const customerLinkValue = document.querySelector("#customer-link-value");
+const customerLinkMailStatus = document.querySelector("#customer-link-mail-status");
+const customerVerificationCode = document.querySelector("#customer-verification-code");
 const customerLinkNote = document.querySelector("#customer-link-note");
 let currentItem = null;
 
@@ -310,6 +313,19 @@ document.querySelector("#customer-link-button")?.addEventListener("click", async
     const result = await getAdminCustomerLink(id);
 
     customerLinkValue.value = result.customer_url || "";
+
+    try {
+      const access = await getAdminCustomerAccess(id);
+      customerVerificationCode.textContent = access.verification_code || "••••••";
+      customerLinkMailStatus.textContent =
+        `Bereit für ${access.email || "die Kunden-E-Mail"}. Link + Code manuell senden.`;
+      customerLinkMailStatus.className = "flow-delivery-status is-success";
+    } catch (accessError) {
+      customerVerificationCode.textContent = "••••••";
+      customerLinkMailStatus.textContent = accessError.message;
+      customerLinkMailStatus.className = "flow-delivery-status is-error";
+    }
+
     customerLinkNote.textContent = result.rotated
       ? "Dieser ältere Vorgang hatte noch keinen wiederherstellbaren Link. Es wurde einmalig ein neuer Kundenlink erzeugt; ein eventuell alter Link ist damit ungültig."
       : "Das ist derselbe aktive Kundenlink, der für diesen Vorgang erzeugt wurde.";
@@ -339,6 +355,15 @@ document.querySelector("#copyCustomerLink")?.addEventListener("click", async () 
     customerLinkValue.select();
     document.execCommand("copy");
   }
+});
+
+
+document.querySelector("#copyCustomerCode")?.addEventListener("click", async () => {
+  const code = customerVerificationCode?.textContent?.trim();
+  if (!code || code.includes("•")) return;
+  await navigator.clipboard.writeText(code);
+  customerLinkMailStatus.textContent = "Verifizierungscode kopiert.";
+  customerLinkMailStatus.className = "flow-delivery-status is-success";
 });
 
 document.querySelector("#openCustomerLink")?.addEventListener("click", () => {

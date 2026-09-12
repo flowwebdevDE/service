@@ -7,11 +7,32 @@
   <meta name="referrer" content="no-referrer">
 <meta name="color-scheme" content="light">
   <title>Garantiefall · MYVELO Service</title>
-  <link rel="stylesheet" href="assets/css/app.css?v=7.9.3">
+  <link rel="stylesheet" href="assets/css/app.css?v=7.10">
   <link rel="stylesheet" href="assets/css/customer-layout.css?v=7.0">
-  <script src="assets/js/security-bootstrap.js?v=7.9.3"></script>
+  <script src="assets/js/security-bootstrap.js?v=7.10"></script>
 </head>
-<body class="customer-bg customer-mobile-first">
+<body class="customer-bg customer-mobile-first customer-locked">
+
+  <section class="customer-verification" id="customer-verification" aria-labelledby="verification-title">
+    <div class="customer-verification__card">
+      <img class="customer-verification__logo" src="assets/brand/myvelo-logo.png?v=7.0" alt="MYVELO">
+      <span class="customer-verification__kicker">SERVICE · VERIFIZIERUNG</span>
+      <h1 id="verification-title">Code aus deiner E-Mail</h1>
+      <p>Wir haben dir zusammen mit diesem Link einen sechsstelligen Code geschickt.</p>
+
+      <form id="verification-form" novalidate>
+        <label>
+          <span>6-stelliger Code</span>
+          <input id="verification-code" name="verification_code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" placeholder="000000" required>
+        </label>
+        <button class="button primary" id="verification-submit" type="submit">Vorgang öffnen</button>
+      </form>
+
+      <p class="customer-verification__message hidden" id="verification-message" role="alert"></p>
+      <small>Der Link allein reicht nicht aus. Der Code bestätigt den Zugriff über die hinterlegte E-Mail-Adresse.</small>
+    </div>
+  </section>
+
   <header class="customer-topbar customer-topbar--mobile">
     <div class="customer-topbar__inner">
       <a class="brand" href="#" aria-label="MYVELO Service">
@@ -276,6 +297,6 @@
     </div>
   </div>
 
-  <script type="module" src="assets/js/customer.js?v=7.9.3"></script>
+  <script type="module" src="assets/js/customer.js?v=7.10"></script>
 </body>
 </html>

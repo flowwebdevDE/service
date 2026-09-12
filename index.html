@@ -6,9 +6,9 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://dsjhaivwhjtcynwkthiu.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'none'; worker-src 'self' blob:; upgrade-insecure-requests">
   <meta name="referrer" content="no-referrer">
 <title>MYVELO Service · Garantiefälle</title>
-  <link rel="stylesheet" href="assets/css/app.css?v=7.9.3">
+  <link rel="stylesheet" href="assets/css/app.css?v=7.10">
   <script src="assets/js/auth-guard.js?v=7.4.2"></script>
-  <script src="assets/js/security-bootstrap.js?v=7.9.3"></script>
+  <script src="assets/js/security-bootstrap.js?v=7.10"></script>
 </head>
 <body class="flow-employee">
   <div class="flow-shell">
@@ -138,6 +138,12 @@
           </label>
         </div>
 
+        <label class="flow-block-field">
+          <span>Kunden-E-Mail *</span>
+          <input name="customer_email" type="email" required autocomplete="email" placeholder="kunde@beispiel.de">
+          <small>Link und sechsstelliger Verifizierungscode werden automatisch an diese Adresse gesendet.</small>
+        </label>
+
         <div class="flow-create-pair">
           <label>
             <span>Gegenstand</span>
@@ -195,12 +201,7 @@
         <summary>Weitere Angaben <span>optional</span></summary>
         <div class="flow-details-body">
           <div class="flow-create-grid">
-            <label>
-              <span>E-Mail</span>
-              <input name="customer_email" type="email">
-            </label>
-
-            <label>
+<label>
               <span>Farbe</span>
               <input name="bike_color">
             </label>
@@ -236,13 +237,19 @@
         <strong>Kundenlink erstellt</strong>
       </div>
     </div>
+    <p class="flow-delivery-status" id="createdLinkDeliveryStatus">Link und Code wurden erzeugt. Bitte beides manuell an den Kunden senden.</p>
     <input class="flow-copy-input" id="createdLink" readonly>
+    <div class="flow-access-code-row">
+      <span>Verifizierungscode</span>
+      <strong id="createdVerificationCode">••••••</strong>
+    </div>
     <div class="flow-dialog-actions">
       <button class="flow-action secondary" id="openCreatedLink" type="button">Öffnen</button>
+      <button class="flow-action secondary" id="copyCreatedCode" type="button">Code kopieren</button>
       <button class="flow-action primary" id="copyCreatedLink" type="button">Kopieren</button>
     </div>
   </dialog>
 
-  <script type="module" src="assets/js/admin.js?v=7.9.3"></script>
+  <script type="module" src="assets/js/admin.js?v=7.10"></script>
 </body>
 </html>

@@ -1,9 +1,10 @@
 import {
   createCase,
+  getAdminCustomerAccess,
   listCases,
   logoutPortalSession,
   requirePortalSession
-} from "./api.js?v=7.9.3";
+} from "./api.js?v=7.10";
 import { initModelPopup } from "./model-picker.js?v=7.6.1";
 import { setButtonLoading, renderCaseSkeleton, pulseElement } from "./motion.js?v=7.9";
 
@@ -21,6 +22,9 @@ const newCaseDialog = document.querySelector("#newCaseDialog");
 const linkDialog = document.querySelector("#linkDialog");
 
 const createdLink = document.querySelector("#createdLink");
+const createdLinkDeliveryStatus = document.querySelector("#createdLinkDeliveryStatus");
+const createdVerificationCode = document.querySelector("#createdVerificationCode");
+let lastCreatedPublicId = "";
 
 const portalSession = requirePortalSession();
 if (!portalSession) {
@@ -75,6 +79,14 @@ document.querySelector("#openCreatedLink")?.addEventListener("click", () => {
   }
 });
 
+document.querySelector("#copyCreatedCode")?.addEventListener("click", async () => {
+  const code = createdVerificationCode?.textContent?.trim();
+  if (!code || code.includes("•")) return;
+  await navigator.clipboard.writeText(code);
+  createdLinkDeliveryStatus.textContent = "Verifizierungscode kopiert.";
+  createdLinkDeliveryStatus.className = "flow-delivery-status is-success";
+});
+
 document.querySelector("#copyCreatedLink")?.addEventListener("click", async () => {
   if (!createdLink.value) return;
 
@@ -108,6 +120,7 @@ form.addEventListener("submit", async event => {
   event.preventDefault();
 
   const customerName = form.elements.customer_name.value.trim();
+  const customerEmail = form.elements.customer_email.value.trim();
 
   if (!customerName) {
     form.elements.customer_name.focus();
@@ -115,6 +128,11 @@ form.addEventListener("submit", async event => {
     return;
   }
 
+  if (!customerEmail) {
+    form.elements.customer_email.focus();
+    form.elements.customer_email.reportValidity();
+    return;
+  }
 
   const submitButton = form.querySelector('button[type="submit"]');
   setButtonLoading(submitButton, true, "Erstelle Link …");
@@ -127,13 +145,31 @@ form.addEventListener("submit", async event => {
     }
 
     createdLink.value = result.customer_url;
+    lastCreatedPublicId = result.public_id;
+    createdLinkDeliveryStatus.textContent =
+      "Link und Code wurden erzeugt. Bitte beides manuell an den Kunden senden.";
+    createdLinkDeliveryStatus.className = "flow-delivery-status";
     closeDialog(newCaseDialog);
     openDialog(linkDialog);
+
+    try {
+      const access = await getAdminCustomerAccess(result.public_id);
+      createdVerificationCode.textContent = access.verification_code || "••••••";
+      createdLinkDeliveryStatus.textContent =
+        `Bereit für ${access.email || customerEmail}. Link + 6-stelligen Code manuell per Mail senden.`;
+      createdLinkDeliveryStatus.className = "flow-delivery-status is-success";
+    } catch (accessError) {
+      createdVerificationCode.textContent = "••••••";
+      createdLinkDeliveryStatus.textContent =
+        `Vorgang wurde erstellt, aber der Code konnte nicht geladen werden: ${accessError.message}`;
+      createdLinkDeliveryStatus.className = "flow-delivery-status is-error";
+    }
+
     form.reset();
     createModelPopup?.sync();
 
     await setWorkView(activeWorkView, { updateUrl: false });
-renderCases();
+    renderCases();
   } catch (error) {
     createdLink.value = "";
     alert(error.message);

@@ -6,9 +6,9 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://dsjhaivwhjtcynwkthiu.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'none'; worker-src 'self' blob:; upgrade-insecure-requests">
   <meta name="referrer" content="no-referrer">
 <title>Vorgang · MYVELO Service</title>
-  <link rel="stylesheet" href="assets/css/app.css?v=7.9.3">
+  <link rel="stylesheet" href="assets/css/app.css?v=7.10">
   <script src="assets/js/auth-guard.js?v=7.4.2"></script>
-  <script src="assets/js/security-bootstrap.js?v=7.9.3"></script>
+  <script src="assets/js/security-bootstrap.js?v=7.10"></script>
 </head>
 <body class="flow-employee">
   <div class="flow-shell">
@@ -205,6 +205,7 @@
     </div>
     <div class="flow-delete-copy">
       <p id="customer-link-note">Dieser Link kann erneut kopiert oder geöffnet werden.</p>
+      <p id="customer-link-mail-status" class="flow-delivery-status">Der Kunde benötigt Link + sechsstelligen Code. Versand erfolgt manuell durch den Mitarbeiter.</p>
       <label>
         <span>Kundenlink</span>
         <input id="customer-link-value" readonly>
@@ -212,6 +213,7 @@
     </div>
     <div class="flow-dialog-actions">
       <button class="flow-action secondary" id="copyCustomerLink" type="button">Kopieren</button>
+      <button class="flow-action secondary" id="copyCustomerCode" type="button">Code kopieren</button>
       <button class="flow-action primary" id="openCustomerLink" type="button">Öffnen</button>
     </div>
   </dialog>
@@ -237,7 +239,7 @@
     </div>
   </dialog>
 
-  <script type="module" src="assets/js/case-detail.js?v=7.9.3"></script>
+  <script type="module" src="assets/js/case-detail.js?v=7.10"></script>
   <script type="module" src="assets/js/internal-mobile.js?v=7.0"></script>
 </body>
 </html>
