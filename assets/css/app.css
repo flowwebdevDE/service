@@ -7140,3 +7140,183 @@ html.auth-ready body.flow-employee {
 .flow-access-code-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:10px 0 0;padding:11px 12px;border:1px solid var(--line,#ddddda);border-radius:10px;background:var(--surface,#f7f7f4)}
 .flow-access-code-row span{color:var(--secondary,#6c6c68);font-size:11px;font-weight:700}
 .flow-access-code-row strong{color:#111;font-size:20px;letter-spacing:.18em}
+
+
+/* V7.10.6 · Flow banner system */
+.flow-banner-stack {
+  position: fixed;
+  z-index: 20000;
+  top: max(14px, env(safe-area-inset-top));
+  left: 50%;
+  width: min(560px, calc(100vw - 28px));
+  display: grid;
+  gap: 8px;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.flow-banner {
+  position: relative;
+  display: grid;
+  grid-template-columns: 4px minmax(0, 1fr) 30px;
+  gap: 12px;
+  align-items: center;
+  min-height: 58px;
+  padding: 10px 10px 10px 0;
+  overflow: hidden;
+  border: 1px solid #d9d9d5;
+  border-radius: 15px;
+  background: rgba(255, 255, 255, .97);
+  box-shadow: 0 12px 36px rgba(17, 17, 17, .13);
+  color: #111;
+  opacity: 0;
+  transform: translateY(-12px) scale(.985);
+  transition:
+    opacity .2s ease,
+    transform .24s cubic-bezier(.2,.8,.2,1);
+  pointer-events: auto;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.flow-banner.is-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.flow-banner.is-leaving {
+  opacity: 0;
+  transform: translateY(-8px) scale(.99);
+}
+
+.flow-banner__marker {
+  align-self: stretch;
+  width: 4px;
+  background: #111;
+}
+
+.flow-banner--info .flow-banner__marker {
+  opacity: .45;
+}
+
+.flow-banner--success .flow-banner__marker {
+  opacity: 1;
+}
+
+.flow-banner--error .flow-banner__marker {
+  background:
+    repeating-linear-gradient(
+      135deg,
+      #111 0 3px,
+      transparent 3px 6px
+    );
+}
+
+.flow-banner__content {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.flow-banner__title {
+  color: #111;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .01em;
+}
+
+.flow-banner__message {
+  color: #5f5f5b;
+  font-size: 12px;
+  line-height: 1.42;
+  overflow-wrap: anywhere;
+}
+
+.flow-banner__close {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: #6c6c68;
+  font: inherit;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.flow-banner__close:hover {
+  background: #f0f0ed;
+  color: #111;
+}
+
+@media (max-width: 620px) {
+  .flow-banner-stack {
+    top: max(10px, env(safe-area-inset-top));
+    width: calc(100vw - 20px);
+  }
+
+  .flow-banner {
+    min-height: 56px;
+    border-radius: 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flow-banner {
+    transition: opacity .01ms linear;
+    transform: none !important;
+  }
+}
+
+/* PIN gate is a real full-screen lock, not a layer over scrollable case content. */
+html.customer-pin-locked,
+html.customer-pin-locked body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden !important;
+  overscroll-behavior: none;
+}
+
+body.customer-locked {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100dvh;
+  overflow: hidden !important;
+  overscroll-behavior: none;
+}
+
+body.customer-locked > :not(#customer-verification):not(.flow-banner-stack) {
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+.customer-verification {
+  position: fixed !important;
+  inset: 0;
+  z-index: 15000;
+  width: 100%;
+  height: 100dvh;
+  min-height: 100dvh !important;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  background: #f4f4f1;
+}
+
+.customer-verification__card {
+  margin: auto;
+}
+
+@media (max-height: 620px) {
+  .customer-verification {
+    place-items: start center !important;
+  }
+
+  .customer-verification__card {
+    margin: 18px auto;
+  }
+}

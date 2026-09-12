@@ -1,4 +1,5 @@
 import { setButtonLoading } from "./motion.js?v=7.9";
+import { showError, showInfo, showSuccess } from "./banner.js?v=7.10.6";
 import {
   confirmCustomer,
   customerPdfUrl,
@@ -14,11 +15,9 @@ const token = params.get("token");
 const previewId = params.get("preview");
 const previewMode = Boolean(previewId);
 const form = document.querySelector("#customer-form");
-const message = document.querySelector("#message");
 const verificationPanel = document.querySelector("#customer-verification");
 const verificationForm = document.querySelector("#verification-form");
 const verificationCode = document.querySelector("#verification-code");
-const verificationMessage = document.querySelector("#verification-message");
 const verificationSubmit = document.querySelector("#verification-submit");
 
 const stickyAction = document.querySelector("#sticky-action");
@@ -40,16 +39,31 @@ let current;
 
 
 function setCustomerUnlocked(unlocked) {
+  document.documentElement.classList.toggle("customer-pin-locked", !unlocked);
   document.body.classList.toggle("customer-locked", !unlocked);
   verificationPanel?.classList.toggle("hidden", unlocked);
+
+  for (const element of document.querySelectorAll(
+    "body > :not(#customer-verification):not(.flow-banner-stack)"
+  )) {
+    if (unlocked) {
+      element.removeAttribute("inert");
+      element.removeAttribute("aria-hidden");
+    } else {
+      element.setAttribute("inert", "");
+      element.setAttribute("aria-hidden", "true");
+    }
+  }
 }
 
 function showVerification(messageText = "") {
   setCustomerUnlocked(false);
 
-  if (verificationMessage) {
-    verificationMessage.textContent = messageText;
-    verificationMessage.classList.toggle("hidden", !messageText);
+  if (messageText) {
+    showError(messageText, {
+      title: "Code prüfen",
+      id: "customer-verification-error"
+    });
   }
 
   requestAnimationFrame(() => verificationCode?.focus());
@@ -67,9 +81,7 @@ async function loadVerifiedCustomer() {
       return;
     }
 
-    message.textContent = error.message;
-    message.className = "notice notice--danger";
-    message.classList.remove("hidden");
+    showError(error.message, { title: "Vorgang konnte nicht geladen werden" });
     showStickyAction(false);
   }
 }
@@ -91,7 +103,6 @@ verificationForm?.addEventListener("submit", async event => {
 
   try {
     await verifyCustomerAccess(token, code);
-    if (verificationMessage) verificationMessage.classList.add("hidden");
     await loadVerifiedCustomer();
   } catch (error) {
     showVerification(error.message);
@@ -486,9 +497,9 @@ form.addEventListener("submit", async event => {
   }
 
   if (previewMode) {
-    message.textContent = "Vorschau: Es wurden keine Änderungen gespeichert.";
-    message.className = "notice notice--success";
-    message.classList.remove("hidden");
+    showInfo("Vorschau: Es wurden keine Änderungen gespeichert.", {
+      title: "Mitarbeiter-Vorschau"
+    });
     return;
   }
 
@@ -504,13 +515,11 @@ form.addEventListener("submit", async event => {
     const result = await confirmCustomer(token, payload);
     fill(result.case);
 
-    message.textContent = "Vorgang verbindlich bestätigt.";
-    message.className = "notice notice--success";
-    message.classList.remove("hidden");
+    showSuccess("Vorgang verbindlich bestätigt.", {
+      title: "Bestätigung gespeichert"
+    });
   } catch (error) {
-    message.textContent = error.message;
-    message.className = "notice notice--danger";
-    message.classList.remove("hidden");
+    showError(error.message, { title: "Bestätigung nicht möglich" });
 
     stickyButton.disabled = false;
     updateFlowState();
@@ -518,6 +527,9 @@ form.addEventListener("submit", async event => {
 });
 
 async function load() {
+  if (!previewMode) {
+    setCustomerUnlocked(false);
+  }
   if (previewMode) {
     if (!getPortalSession()) {
       const next = encodeURIComponent(`customer.html?preview=${previewId}`);
@@ -532,9 +544,7 @@ async function load() {
       const item = await getAdminCustomerPreview(previewId);
       fill(item);
     } catch (error) {
-      message.textContent = error.message;
-      message.className = "notice notice--danger";
-      message.classList.remove("hidden");
+      showError(error.message, { title: "Vorschau konnte nicht geladen werden" });
       showStickyAction(false);
     }
 
@@ -542,9 +552,7 @@ async function load() {
   }
 
   if (!token) {
-    message.textContent = "Kundenlink unvollständig.";
-    message.className = "notice notice--danger";
-    message.classList.remove("hidden");
+    showError("Kundenlink unvollständig.", { title: "Link ungültig", duration: 0 });
     showStickyAction(false);
     return;
   }

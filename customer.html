@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="de">
+<html lang="de" class="customer-pin-locked">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -7,9 +7,9 @@
   <meta name="referrer" content="no-referrer">
 <meta name="color-scheme" content="light">
   <title>Garantiefall · MYVELO Service</title>
-  <link rel="stylesheet" href="assets/css/app.css?v=7.10.5">
+  <link rel="stylesheet" href="assets/css/app.css?v=7.10.6">
   <link rel="stylesheet" href="assets/css/customer-layout.css?v=7.0">
-  <script src="assets/js/security-bootstrap.js?v=7.10.3"></script>
+  <script src="assets/js/security-bootstrap.js?v=7.10.6"></script>
 </head>
 <body class="customer-bg customer-mobile-first customer-locked">
 
@@ -27,9 +27,7 @@
         </label>
         <button class="button primary" id="verification-submit" type="submit">Vorgang öffnen</button>
       </form>
-
-      <p class="customer-verification__message hidden" id="verification-message" role="alert"></p>
-      <small>Der Link allein reicht nicht aus. Der Code bestätigt den Zugriff über die hinterlegte E-Mail-Adresse.</small>
+      <small>Der Link allein reicht nicht aus. Zusätzlich wird der sechsstellige Code benötigt.</small>
     </div>
   </section>
 
@@ -74,8 +72,6 @@
         </div>
       </div>
     </section>
-
-    <div id="message" class="notice hidden"></div>
 
     <form id="customer-form" class="customer-mobile-form" novalidate>
       <section class="customer-flow-section" id="section-case">
@@ -297,6 +293,6 @@
     </div>
   </div>
 
-  <script type="module" src="assets/js/customer.js?v=7.10.5"></script>
+  <script type="module" src="assets/js/customer.js?v=7.10.6.6"></script>
 </body>
 </html>

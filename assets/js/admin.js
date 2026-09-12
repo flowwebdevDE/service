@@ -7,6 +7,7 @@ import {
 } from "./api.js?v=7.10.5";
 import { initModelPopup } from "./model-picker.js?v=7.6.1";
 import { setButtonLoading, renderCaseSkeleton, pulseElement } from "./motion.js?v=7.9";
+import { showError, showInfo, showSuccess } from "./banner.js?v=7.10.6";
 
 const form = document.querySelector("#create-form");
 const createModelPopup = await initModelPopup({
@@ -22,7 +23,6 @@ const newCaseDialog = document.querySelector("#newCaseDialog");
 const linkDialog = document.querySelector("#linkDialog");
 
 const createdLink = document.querySelector("#createdLink");
-const createdLinkDeliveryStatus = document.querySelector("#createdLinkDeliveryStatus");
 const createdVerificationCode = document.querySelector("#createdVerificationCode");
 let lastCreatedPublicId = "";
 
@@ -83,8 +83,7 @@ document.querySelector("#copyCreatedCode")?.addEventListener("click", async () =
   const code = createdVerificationCode?.textContent?.trim();
   if (!code || code.includes("•")) return;
   await navigator.clipboard.writeText(code);
-  createdLinkDeliveryStatus.textContent = "Verifizierungscode kopiert.";
-  createdLinkDeliveryStatus.className = "flow-delivery-status is-success";
+  showSuccess("Verifizierungscode kopiert.", { title: "Kopiert" });
 });
 
 document.querySelector("#copyCreatedLink")?.addEventListener("click", async () => {
@@ -92,9 +91,11 @@ document.querySelector("#copyCreatedLink")?.addEventListener("click", async () =
 
   try {
     await navigator.clipboard.writeText(createdLink.value);
+    showSuccess("Kundenlink kopiert.", { title: "Kopiert" });
   } catch {
     createdLink.select();
     document.execCommand("copy");
+    showSuccess("Kundenlink kopiert.", { title: "Kopiert" });
   }
 });
 
@@ -138,23 +139,24 @@ const submitButton = form.querySelector('button[type="submit"]');
 
     createdLink.value = result.customer_url;
     lastCreatedPublicId = result.public_id;
-    createdLinkDeliveryStatus.textContent =
-      "Link und Code wurden erzeugt. Bitte beides manuell an den Kunden senden.";
-    createdLinkDeliveryStatus.className = "flow-delivery-status";
+    showInfo("Link und Code wurden erzeugt.", {
+      title: "Kundenzugang bereit"
+    });
     closeDialog(newCaseDialog);
     openDialog(linkDialog);
 
     try {
       const access = await getAdminCustomerAccess(result.public_id);
       createdVerificationCode.textContent = access.verification_code || "••••••";
-      createdLinkDeliveryStatus.textContent =
-        `Link + 6-stelligen Code manuell an den Kunden senden.`;
-      createdLinkDeliveryStatus.className = "flow-delivery-status is-success";
+      showSuccess("Link und 6-stelliger Code sind bereit zum Kopieren.", {
+        title: "Kundenzugang bereit"
+      });
     } catch (accessError) {
       createdVerificationCode.textContent = "••••••";
-      createdLinkDeliveryStatus.textContent =
-        `Vorgang wurde erstellt, aber der Code konnte nicht geladen werden: ${accessError.message}`;
-      createdLinkDeliveryStatus.className = "flow-delivery-status is-error";
+      showError(
+        `Vorgang wurde erstellt, aber der Code konnte nicht geladen werden: ${accessError.message}`,
+        { title: "Code nicht verfügbar", duration: 0 }
+      );
     }
 
     form.reset();
@@ -164,7 +166,7 @@ const submitButton = form.querySelector('button[type="submit"]');
     renderCases();
   } catch (error) {
     createdLink.value = "";
-    alert(error.message);
+    showError(error.message, { title: "Vorgang konnte nicht erstellt werden" });
   } finally {
     setButtonLoading(submitButton, false);
   }

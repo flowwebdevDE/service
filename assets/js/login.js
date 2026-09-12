@@ -1,11 +1,11 @@
 import { setButtonLoading } from "./motion.js?v=7.9";
+import { showError } from "./banner.js?v=7.10.6";
 import {
   getPortalSession,
   loginWithCompanyKey
 } from "./api.js?v=7.9.3";
 
 const form = document.querySelector("#login-form");
-const errorBox = document.querySelector("#login-error");
 
 function targetAfterLogin() {
   const next = new URLSearchParams(location.search).get("next");
@@ -27,7 +27,6 @@ form.addEventListener("submit", async event => {
   const button = form.querySelector('button[type="submit"]');
   const keyInput = form.elements.company_key;
 
-  errorBox.classList.add("hidden");
   setButtonLoading(button, true, "Anmelden …");
 
   try {
@@ -35,8 +34,7 @@ form.addEventListener("submit", async event => {
     keyInput.value = "";
     location.replace(targetAfterLogin());
   } catch (error) {
-    errorBox.textContent = error.message;
-    errorBox.classList.remove("hidden");
+    showError(error.message, { title: "Anmeldung nicht möglich" });
     keyInput.select();
   } finally {
     setButtonLoading(button, false);
