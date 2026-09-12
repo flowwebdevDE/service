@@ -40,6 +40,9 @@ function apiUrl(path = "") {
     url.searchParams.set("route", String(path).replace(/^\/+/, ""));
   }
 
+  // Keep portal API processing in the same German region as the project database.
+  url.searchParams.set("forceFunctionRegion", "eu-central-1");
+
   return url.toString();
 }
 

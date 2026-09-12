@@ -3,8 +3,15 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Datenschutz · MYVELO Service</title>
-  <link rel="stylesheet" href="assets/css/app.css?v=7.9">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://dsjhaivwhjtcynwkthiu.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'none'; worker-src 'self' blob:; upgrade-insecure-requests">
+  <meta name="referrer" content="no-referrer">
+<title>Datenschutz · MYVELO Service</title>
+  <link rel="stylesheet" href="assets/css/app.css?v=7.9.2">
+  <script>
+    if (window.top !== window.self) {
+      document.documentElement.style.display = "none";
+    }
+  </script>
 </head>
 <body>
   <header class="topbar">
@@ -23,8 +30,80 @@
           <h2>Datenschutz</h2>
         </div>
       </div>
-      <div class="detail-body">
-        <p>Platzhalter für die finale Datenschutzerklärung. Vor Produktivbetrieb müssen die rechtlich erforderlichen Angaben eingesetzt und geprüft werden.</p>
+      <div class="detail-body privacy-copy">
+        <p class="privacy-intro">
+          Dieses Serviceportal verarbeitet personenbezogene Daten ausschließlich,
+          soweit sie für die Bearbeitung und Dokumentation des jeweiligen Service-
+          oder Garantievorgangs erforderlich sind.
+        </p>
+
+        <section class="privacy-section">
+          <h3>Verarbeitung im Serviceportal</h3>
+          <p>
+            Verarbeitet werden insbesondere die im Vorgang hinterlegten Kontakt-
+            und Auftragsdaten, Angaben zum Fahrrad oder Akku, Informationen zum
+            Servicefall sowie die vom Kunden bestätigten Angaben.
+          </p>
+          <p>
+            Die Verarbeitung erfolgt zur Durchführung und Dokumentation des
+            Servicevorgangs. Verantwortlicher ist das im
+            <a href="imprint.html">Impressum</a> genannte Unternehmen.
+          </p>
+        </section>
+
+        <section class="privacy-section privacy-location">
+          <span class="privacy-location__badge">Datenstandort Deutschland</span>
+          <h3>Serverstandort Frankfurt am Main</h3>
+          <p>
+            Die für dieses Portal verwendete Supabase-Projektregion befindet sich
+            in Frankfurt am Main, Deutschland (<code>eu-central-1</code>). Die
+            primären Projektdaten des Serviceportals werden damit in dieser Region
+            gespeichert.
+          </p>
+          <p>
+            Auch die Backend-Funktionen des Portals werden für die Verarbeitung
+            der Servicevorgänge gezielt in der Region Frankfurt ausgeführt.
+          </p>
+        </section>
+
+        <section class="privacy-section">
+          <h3>Technischer Dienstleister</h3>
+          <p>
+            Für Datenbank und Backend wird Supabase eingesetzt. Supabase stellt
+            für Kunden unter anderem europäische bzw. deutsche Projektregionen
+            sowie einen Vertrag zur Auftragsverarbeitung (Data Processing
+            Addendum) zur Verfügung.
+          </p>
+          <p>
+            Die Auswahl eines deutschen Datenstandorts ersetzt nicht die
+            datenschutzrechtliche Prüfung des gesamten Systems. Insbesondere
+            können technische Metadaten oder Leistungen von Unterauftragnehmern
+            gesonderten Regelungen unterliegen.
+          </p>
+        </section>
+
+        <section class="privacy-section">
+          <h3>Speicherdauer und Rechte</h3>
+          <p>
+            Personenbezogene Daten werden nur so lange gespeichert, wie dies für
+            die Bearbeitung des Vorgangs und aufgrund gesetzlicher
+            Aufbewahrungspflichten erforderlich ist. Betroffene Personen haben
+            im Rahmen der gesetzlichen Voraussetzungen insbesondere Rechte auf
+            Auskunft, Berichtigung, Löschung, Einschränkung der Verarbeitung und
+            Widerspruch.
+          </p>
+        </section>
+
+        <aside class="privacy-review-note">
+          <strong>Hinweis für den Produktivbetrieb</strong>
+          <p>
+            Diese Seite beschreibt die technische Ausgestaltung des Portals.
+            Aufbewahrungsfristen, Rechtsgrundlagen, Kontaktdaten des
+            Verantwortlichen und gegebenenfalls weitere Empfänger müssen vor dem
+            Produktivbetrieb anhand der tatsächlichen Prozesse von MYVELO
+            rechtlich geprüft und vervollständigt werden.
+          </p>
+        </aside>
       </div>
     </section>
   </main>

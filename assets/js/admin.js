@@ -3,7 +3,7 @@ import {
   listCases,
   logoutPortalSession,
   requirePortalSession
-} from "./api.js?v=7.7";
+} from "./api.js?v=7.9.2";
 import { initModelPopup } from "./model-picker.js?v=7.6.1";
 import { setButtonLoading, renderCaseSkeleton, pulseElement } from "./motion.js?v=7.9";
 

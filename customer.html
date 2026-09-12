@@ -3,10 +3,17 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="color-scheme" content="light">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://dsjhaivwhjtcynwkthiu.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'none'; worker-src 'self' blob:; upgrade-insecure-requests">
+  <meta name="referrer" content="no-referrer">
+<meta name="color-scheme" content="light">
   <title>Garantiefall · MYVELO Service</title>
-  <link rel="stylesheet" href="assets/css/app.css?v=7.9">
+  <link rel="stylesheet" href="assets/css/app.css?v=7.9.2">
   <link rel="stylesheet" href="assets/css/customer-layout.css?v=7.0">
+  <script>
+    if (window.top !== window.self) {
+      document.documentElement.style.display = "none";
+    }
+  </script>
 </head>
 <body class="customer-bg customer-mobile-first">
   <header class="customer-topbar customer-topbar--mobile">
@@ -240,8 +247,9 @@
             <summary>Hinweise zur Datenverarbeitung</summary>
             <p>
               Die Angaben werden zur Bearbeitung und Dokumentation dieses Garantie-
-              und Servicevorgangs verarbeitet. Weitere Informationen findest du in
-              der Datenschutzerklärung.
+              und Servicevorgangs verarbeitet. Die Projektdaten des Portals werden
+              in der Region Frankfurt am Main, Deutschland, gespeichert. Weitere
+              Informationen findest du in der Datenschutzerklärung.
             </p>
           </details>
         </div>
