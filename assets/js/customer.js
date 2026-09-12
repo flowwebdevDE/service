@@ -19,6 +19,8 @@ const verificationPanel = document.querySelector("#customer-verification");
 const verificationForm = document.querySelector("#verification-form");
 const verificationCode = document.querySelector("#verification-code");
 const verificationSubmit = document.querySelector("#verification-submit");
+const customerFrozenView = document.querySelector("#customer-frozen-view");
+const customerRegularHead = document.querySelector(".customer-mobile-head");
 
 const stickyAction = document.querySelector("#sticky-action");
 const stickyTitle = document.querySelector("#sticky-action-title");
@@ -330,8 +332,110 @@ function scrollToSection(id) {
   });
 }
 
+
+function frozenServiceDisplay(value) {
+  return {
+    none: ["Nur Garantiefall", "Keine zusätzliche kostenpflichtige Arbeit"],
+    inspection: ["Inspektion · 96 €", "Zusätzlich von dir beauftragt"],
+    inspection_wear: [
+      "Inspektion + Verschleißteile",
+      "96 € + tatsächlich benötigtes Material"
+    ]
+  }[value] || ["Keine zusätzliche Arbeit", "–"];
+}
+
+function frozenDeliveryDisplay(item) {
+  const parts = [];
+
+  if (item.required_charger) parts.push("Ladegerät");
+  if (item.required_keys) parts.push("Schlüssel");
+
+  return parts.length ? parts.join(" · ") : "Keine zusätzlichen Teile";
+}
+
+function frozenSnapshot(item) {
+  return item.pdf_snapshot && typeof item.pdf_snapshot === "object"
+    ? { ...item, ...item.pdf_snapshot }
+    : item;
+}
+
+function renderCustomerFrozen(item) {
+  const snapshot = frozenSnapshot(item);
+  const [service, serviceNote] = frozenServiceDisplay(snapshot.service_choice);
+
+  customerRegularHead?.classList.add("hidden");
+  form.classList.add("hidden");
+  customerFrozenView?.classList.remove("hidden");
+  showStickyAction(false);
+
+  setText("frozen-customer-order", snapshot.shopify_ref || "–");
+  setText("frozen-customer-case", snapshot.public_id || item.public_id || "–");
+  setText("frozen-customer-subject", snapshot.case_subject || "Garantiefall");
+
+  const bike = [
+    snapshot.item_type === "battery" ? "Akku" : "Komplettes Fahrrad",
+    snapshot.bike_model,
+    snapshot.bike_color
+  ].filter(Boolean).join(" · ");
+
+  setText("frozen-customer-bike", bike || "–");
+  setText("frozen-customer-delivery", frozenDeliveryDisplay(snapshot));
+  setText("frozen-customer-service", service);
+  setText("frozen-customer-service-note", serviceNote);
+  setText("frozen-customer-note", snapshot.customer_note || "Kein Hinweis hinterlegt.");
+
+  const confirmedAt = snapshot.confirmed_at || item.confirmed_at;
+  setText(
+    "frozen-customer-confirmed-at",
+    confirmedAt
+      ? `Bestätigt am ${new Intl.DateTimeFormat("de-DE", {
+          dateStyle: "medium",
+          timeStyle: "short"
+        }).format(new Date(confirmedAt))}`
+      : "Bestätigt"
+  );
+
+  setDynamicStatus({
+    kicker: "Abgeschlossen",
+    title: "Vorgang bestätigt",
+    detail: "Der bestätigte Stand ist gespeichert.",
+    progress: 100,
+    state: "Bestätigt",
+    complete: true
+  });
+
+  const pdf = document.querySelector("#frozen-customer-pdf");
+
+  if (previewMode) {
+    pdf?.classList.add("hidden");
+  } else if (pdf) {
+    customerPdfUrl(token)
+      .then(url => {
+        pdf.href = url;
+        pdf.classList.remove("hidden");
+      })
+      .catch(error => {
+        pdf.classList.add("hidden");
+        showError(error.message, { title: "PDF nicht verfügbar" });
+      });
+  }
+}
+
+function renderCustomerEditable() {
+  customerRegularHead?.classList.remove("hidden");
+  form.classList.remove("hidden");
+  customerFrozenView?.classList.add("hidden");
+}
+
 function fill(item) {
   current = item;
+
+  if (item.read_only || item.status === "confirmed") {
+    renderCustomerFrozen(item);
+    return;
+  }
+
+  renderCustomerEditable();
 
   setText("public-id", item.public_id);
   setText("shopify-ref", item.shopify_ref);
@@ -388,61 +492,8 @@ function fill(item) {
 
   renderSummary();
 
-  if (item.read_only || item.status === "confirmed") {
-    setReadOnly(item);
-  } else {
-    showStickyAction(true);
-    updateFlowState();
-  }
-}
-
-function setReadOnly(item) {
-  for (const element of form.elements) {
-    element.disabled = true;
-  }
-
-  // Keep the frozen form state internally consistent as well. This prevents
-  // any later UI refresh from interpreting a confirmed case as "0 of 2".
-  if (form.elements.confirm_scope) {
-    form.elements.confirm_scope.checked = true;
-  }
-
-  if (form.elements.confirm_accessories) {
-    form.elements.confirm_accessories.checked = true;
-  }
-
-  document.querySelector("#confirm-area")?.classList.add("hidden");
-  document.querySelector("#confirmed-panel")?.classList.remove("hidden");
-
-  showStickyAction(false);
-
-  if (serviceState) {
-    serviceState.textContent = "Ausgewählt";
-    serviceState.classList.add("is-done");
-  }
-
-  if (confirmState) {
-    confirmState.textContent = "Bestätigt";
-    confirmState.classList.add("is-done");
-  }
-
-  setDynamicStatus({
-    kicker: "Abgeschlossen",
-    title: "Vorgang bestätigt",
-    detail: "Die Bestätigung ist gespeichert und die PDF ist verfügbar.",
-    progress: 100,
-    state: "Bestätigt",
-    complete: true
-  });
-
-  if (!previewMode) {
-    customerPdfUrl(token).then(url => {
-      const link = document.querySelector("#pdf-link");
-      if (link) link.href = url;
-    });
-  } else {
-    document.querySelector("#pdf-link")?.classList.add("hidden");
-  }
+  showStickyAction(true);
+  updateFlowState();
 }
 
 form.addEventListener("input", () => {

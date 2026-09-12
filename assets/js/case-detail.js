@@ -32,7 +32,7 @@ const modelPopup = await initModelPopup({
   itemType: form.elements.item_type
 });
 
-const readonly = document.querySelector("#readonly");
+const frozenView = document.querySelector("#employee-frozen-view");
 const serviceStatusLabel = document.querySelector("#service-status-label");
 const serviceStatusDropdown = document.querySelector("#service-status-dropdown");
 const serviceStatusTrigger = document.querySelector("#service-status-trigger");
@@ -118,6 +118,73 @@ function collect() {
   };
 }
 
+
+function serviceDisplay(value) {
+  return {
+    none: ["Nur Garantiefall", "Keine zusätzliche kostenpflichtige Arbeit"],
+    inspection: ["Inspektion · 96 €", "Vom Kunden zusätzlich beauftragt"],
+    inspection_wear: [
+      "Inspektion + Verschleißteile",
+      "96 € + tatsächlich benötigtes Material"
+    ]
+  }[value] || ["Keine Auswahl", "–"];
+}
+
+function deliveryDisplay(item) {
+  const parts = [];
+
+  if (item.required_charger) parts.push("Ladegerät");
+  if (item.required_keys) parts.push("Schlüssel");
+
+  return parts.length ? parts.join(" · ") : "Keine zusätzlichen Teile";
+}
+
+function confirmedSnapshot(item) {
+  return item.pdf_snapshot && typeof item.pdf_snapshot === "object"
+    ? { ...item, ...item.pdf_snapshot }
+    : item;
+}
+
+function renderEmployeeFrozen(item) {
+  const snapshot = confirmedSnapshot(item);
+  const [service, serviceNote] = serviceDisplay(snapshot.service_choice);
+
+  document.querySelector("#frozen-employee-customer").textContent =
+    snapshot.customer_name || "–";
+
+  const modelParts = [
+    snapshot.bike_model,
+    snapshot.bike_color
+  ].filter(Boolean);
+
+  document.querySelector("#frozen-employee-model").textContent =
+    modelParts.length ? modelParts.join(" · ") : "Kein Modell ergänzt";
+
+  document.querySelector("#frozen-employee-subject").textContent =
+    snapshot.case_subject || "Kein Betreff hinterlegt";
+
+  document.querySelector("#frozen-employee-item").textContent =
+    snapshot.item_type === "battery" ? "Akku" : "Komplettes Fahrrad";
+
+  document.querySelector("#frozen-employee-delivery").textContent =
+    deliveryDisplay(snapshot);
+
+  document.querySelector("#frozen-employee-service").textContent = service;
+  document.querySelector("#frozen-employee-service-note").textContent = serviceNote;
+
+  document.querySelector("#frozen-employee-note").textContent =
+    snapshot.customer_note || "Kein Hinweis hinterlegt.";
+
+  const confirmedAt = snapshot.confirmed_at || item.confirmed_at;
+  document.querySelector("#frozen-employee-confirmed-at").textContent =
+    confirmedAt
+      ? new Intl.DateTimeFormat("de-DE", {
+          dateStyle: "medium",
+          timeStyle: "short"
+        }).format(new Date(confirmedAt))
+      : "Bestätigt";
+}
+
 function fill(item) {
   document.querySelector("#case-title")?.replaceChildren(document.createTextNode(item.public_id));
   document.querySelector("#sidebarCaseRef")?.replaceChildren(document.createTextNode(item.shopify_ref));
@@ -147,17 +214,16 @@ function fill(item) {
   const saveButton = document.querySelector("#save");
 
   if (item.status === "confirmed") {
-    readonly.classList.remove("hidden");
-
-    for (const element of form.elements) {
-      element.disabled = true;
-    }
+    form.classList.add("hidden");
+    frozenView?.classList.remove("hidden");
+    renderEmployeeFrozen(item);
 
     if (saveButton) {
       saveButton.classList.add("hidden");
     }
   } else {
-    readonly.classList.add("hidden");
+    form.classList.remove("hidden");
+    frozenView?.classList.add("hidden");
 
     for (const element of form.elements) {
       element.disabled = false;

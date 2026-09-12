@@ -6,7 +6,7 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://dsjhaivwhjtcynwkthiu.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'none'; worker-src 'self' blob:; upgrade-insecure-requests">
   <meta name="referrer" content="no-referrer">
 <title>Vorgang · MYVELO Service</title>
-  <link rel="stylesheet" href="assets/css/app.css?v=7.10.6">
+  <link rel="stylesheet" href="assets/css/app.css?v=7.10.7">
   <script src="assets/js/auth-guard.js?v=7.4.2"></script>
   <script src="assets/js/security-bootstrap.js?v=7.10.6"></script>
 </head>
@@ -107,7 +107,57 @@
           </div>
         </section>
 
-        <div id="readonly" class="readonly-banner hidden">Dieser Vorgang ist bestätigt und eingefroren.</div>
+        <section id="employee-frozen-view" class="flow-frozen-view hidden" aria-labelledby="employee-frozen-title">
+          <div class="flow-frozen-hero">
+            <div>
+              <span class="flow-frozen-kicker">BESTÄTIGT · EINGEFROREN</span>
+              <h2 id="employee-frozen-title">Bestätigter Vorgang</h2>
+              <p>Das ist der verbindlich bestätigte Stand. Die Inhalte können nicht mehr verändert werden.</p>
+            </div>
+            <div class="flow-frozen-seal" aria-hidden="true">
+              <span>✓</span>
+            </div>
+          </div>
+
+          <div class="flow-frozen-grid">
+            <article class="flow-frozen-card">
+              <span class="flow-frozen-label">Kunde</span>
+              <strong id="frozen-employee-customer">–</strong>
+              <small id="frozen-employee-model">–</small>
+            </article>
+
+            <article class="flow-frozen-card">
+              <span class="flow-frozen-label">Garantiefall</span>
+              <strong id="frozen-employee-subject">–</strong>
+              <small id="frozen-employee-item">–</small>
+            </article>
+
+            <article class="flow-frozen-card">
+              <span class="flow-frozen-label">Mitgeben</span>
+              <strong id="frozen-employee-delivery">–</strong>
+              <small>Bestätigter Lieferumfang</small>
+            </article>
+
+            <article class="flow-frozen-card">
+              <span class="flow-frozen-label">Zusatzauftrag</span>
+              <strong id="frozen-employee-service">–</strong>
+              <small id="frozen-employee-service-note">–</small>
+            </article>
+
+            <article class="flow-frozen-card flow-frozen-card--wide">
+              <span class="flow-frozen-label">Hinweis des Kunden</span>
+              <p id="frozen-employee-note">Kein Hinweis hinterlegt.</p>
+            </article>
+
+            <article class="flow-frozen-card flow-frozen-card--wide flow-frozen-confirmation">
+              <div>
+                <span class="flow-frozen-label">Bestätigung</span>
+                <strong id="frozen-employee-confirmed-at">–</strong>
+              </div>
+              <span class="flow-frozen-lock">Inhalt gesperrt</span>
+            </article>
+          </div>
+        </section>
 
         <form id="case-form" class="flow-detail-grid">
           <section class="flow-panel">
@@ -237,7 +287,7 @@
     </div>
   </dialog>
 
-  <script type="module" src="assets/js/case-detail.js?v=7.10.6"></script>
+  <script type="module" src="assets/js/case-detail.js?v=7.10.7"></script>
   <script type="module" src="assets/js/internal-mobile.js?v=7.0"></script>
 </body>
 </html>

@@ -7,7 +7,7 @@
   <meta name="referrer" content="no-referrer">
 <meta name="color-scheme" content="light">
   <title>Garantiefall · MYVELO Service</title>
-  <link rel="stylesheet" href="assets/css/app.css?v=7.10.6">
+  <link rel="stylesheet" href="assets/css/app.css?v=7.10.7">
   <link rel="stylesheet" href="assets/css/customer-layout.css?v=7.0">
   <script src="assets/js/security-bootstrap.js?v=7.10.6"></script>
 </head>
@@ -53,6 +53,74 @@
   </header>
 
   <main class="customer-mobile-shell">
+    <section id="customer-frozen-view" class="customer-frozen-view hidden" aria-labelledby="customer-frozen-title">
+      <div class="customer-frozen-hero">
+        <img class="customer-frozen-logo" src="assets/brand/myvelo-logo.png?v=7.0" alt="MYVELO" data-hide-on-error>
+        <span class="customer-frozen-kicker">SERVICE · BESTÄTIGT</span>
+        <h1 id="customer-frozen-title">Dein Vorgang ist bestätigt.</h1>
+        <p>Hier siehst du genau den Stand, den du bestätigt hast. Die Angaben können nicht mehr verändert werden.</p>
+
+        <div class="customer-frozen-reference">
+          <div>
+            <span>Auftrag</span>
+            <strong id="frozen-customer-order">–</strong>
+          </div>
+          <div>
+            <span>Vorgang</span>
+            <strong id="frozen-customer-case">–</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="customer-frozen-stack">
+        <section class="customer-frozen-card">
+          <span class="customer-frozen-number">01</span>
+          <div>
+            <small>Dein Vorgang</small>
+            <h2 id="frozen-customer-subject">–</h2>
+            <p id="frozen-customer-bike">–</p>
+          </div>
+        </section>
+
+        <section class="customer-frozen-card">
+          <span class="customer-frozen-number">02</span>
+          <div>
+            <small>Das wurde vereinbart mitzugeben</small>
+            <h2 id="frozen-customer-delivery">–</h2>
+            <p>Dieser Lieferumfang wurde von dir bestätigt.</p>
+          </div>
+        </section>
+
+        <section class="customer-frozen-card">
+          <span class="customer-frozen-number">03</span>
+          <div>
+            <small>Zusätzliche Arbeiten</small>
+            <h2 id="frozen-customer-service">–</h2>
+            <p id="frozen-customer-service-note">–</p>
+          </div>
+        </section>
+
+        <section class="customer-frozen-card customer-frozen-card--note">
+          <span class="customer-frozen-number">04</span>
+          <div>
+            <small>Dein Hinweis</small>
+            <p id="frozen-customer-note">Kein Hinweis hinterlegt.</p>
+          </div>
+        </section>
+
+        <section class="customer-frozen-confirmation">
+          <div>
+            <span class="customer-frozen-check">✓</span>
+            <div>
+              <strong>Bestätigung gespeichert</strong>
+              <small id="frozen-customer-confirmed-at">–</small>
+            </div>
+          </div>
+          <a id="frozen-customer-pdf" class="button primary" target="_blank" rel="noopener">Bestätigung als PDF</a>
+        </section>
+      </div>
+    </section>
+
     <section class="customer-mobile-head">
       <div class="customer-mobile-kicker">Garantiefall</div>
       <h1 id="customer-greeting">Hallo</h1>
@@ -293,6 +361,6 @@
     </div>
   </div>
 
-  <script type="module" src="assets/js/customer.js?v=7.10.6.6"></script>
+  <script type="module" src="assets/js/customer.js?v=7.10.7"></script>
 </body>
 </html>
