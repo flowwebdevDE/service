@@ -394,9 +394,16 @@ document.querySelector("#customer-link-button")?.addEventListener("click", async
   try {
     const result = await getAdminCustomerLink(id);
 
+    if (!customerLinkValue) {
+      throw new Error("Kundenlink-Dialog ist nicht vollständig geladen.");
+    }
+
     customerLinkValue.value = result.customer_url || "";
-    customerVerificationCode.textContent =
-      result.verification_code || "••••••";
+
+    if (customerVerificationCode) {
+      customerVerificationCode.textContent =
+        result.verification_code || "••••••";
+    }
 
     showInfo(
       result.rotated
@@ -439,7 +446,14 @@ document.querySelector("#copyCustomerLink")?.addEventListener("click", async () 
 
 document.querySelector("#copyCustomerCode")?.addEventListener("click", async () => {
   const code = customerVerificationCode?.textContent?.trim();
-  if (!code || code.includes("•")) return;
+
+  if (!code || code.includes("•")) {
+    showError("Der Verifizierungscode ist noch nicht verfügbar.", {
+      title: "Code nicht verfügbar"
+    });
+    return;
+  }
+
   await navigator.clipboard.writeText(code);
   showSuccess("Verifizierungscode kopiert.", { title: "Kopiert" });
 });
