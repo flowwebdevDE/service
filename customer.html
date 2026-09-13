@@ -7,7 +7,7 @@
   <meta name="referrer" content="no-referrer">
 <meta name="color-scheme" content="light">
   <title>Garantiefall · MYVELO Service</title>
-  <link rel="stylesheet" href="assets/css/app.css?v=7.10.9">
+  <link rel="stylesheet" href="assets/css/app.css?v=7.11.1">
   <link rel="stylesheet" href="assets/css/customer-layout.css?v=7.0">
   <script src="assets/js/security-bootstrap.js?v=7.10.6"></script>
 
@@ -124,12 +124,39 @@
       <h1 id="verification-title">Code aus deiner E-Mail</h1>
       <p>Wir haben dir zusammen mit diesem Link einen sechsstelligen Code geschickt.</p>
 
-      <form id="verification-form" novalidate>
-        <label>
-          <span>6-stelliger Code</span>
-          <input id="verification-code" name="verification_code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" placeholder="000000" required>
+      <form id="verification-form" class="customer-otp-form" novalidate>
+        <label class="customer-otp-field" id="customer-otp-field">
+          <span class="customer-otp-label">6-stelliger Code</span>
+
+          <span class="customer-otp-shell" id="customer-otp-shell">
+            <input
+              id="verification-code"
+              class="customer-otp-input"
+              name="verification_code"
+              type="text"
+              inputmode="numeric"
+              autocomplete="one-time-code"
+              enterkeyhint="done"
+              pattern="[0-9]{6}"
+              maxlength="6"
+              aria-label="6-stelliger Verifizierungscode"
+              required
+            >
+
+            <span class="customer-otp-slots" id="customer-otp-slots" aria-hidden="true">
+              <span class="customer-otp-slot" data-otp-index="0"><span class="customer-otp-digit"></span><span class="customer-otp-caret"></span></span>
+              <span class="customer-otp-slot" data-otp-index="1"><span class="customer-otp-digit"></span><span class="customer-otp-caret"></span></span>
+              <span class="customer-otp-slot" data-otp-index="2"><span class="customer-otp-digit"></span><span class="customer-otp-caret"></span></span>
+              <span class="customer-otp-slot" data-otp-index="3"><span class="customer-otp-digit"></span><span class="customer-otp-caret"></span></span>
+              <span class="customer-otp-slot" data-otp-index="4"><span class="customer-otp-digit"></span><span class="customer-otp-caret"></span></span>
+              <span class="customer-otp-slot" data-otp-index="5"><span class="customer-otp-digit"></span><span class="customer-otp-caret"></span></span>
+            </span>
+          </span>
         </label>
-        <button class="button primary" id="verification-submit" type="submit">Vorgang öffnen</button>
+
+        <button class="button primary customer-otp-submit" id="verification-submit" type="submit">
+          Vorgang öffnen
+        </button>
       </form>
       <small>Der Link allein reicht nicht aus. Zusätzlich wird der sechsstellige Code benötigt.</small>
     </div>
@@ -469,6 +496,6 @@
     </div>
   </div>
 
-  <script type="module" src="assets/js/customer.js?v=7.10.9"></script>
+  <script type="module" src="assets/js/customer.js?v=7.11.1"></script>
 </body>
 </html>

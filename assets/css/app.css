@@ -7722,3 +7722,276 @@ body.customer-frozen-mode #customer-frozen-view {
 body.customer-frozen-mode .customer-mobile-shell {
   padding-bottom: 0;
 }
+
+
+/* V7.11.1 · Vanilla OTP input */
+.customer-otp-form {
+  gap: 14px !important;
+}
+
+.customer-otp-field {
+  position: relative;
+  display: grid;
+  gap: 9px !important;
+}
+
+.customer-otp-label {
+  color: #6c6c68;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.customer-otp-shell {
+  position: relative;
+  display: block;
+  width: 100%;
+  border-radius: 16px;
+  isolation: isolate;
+}
+
+.customer-otp-input {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 3;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 16px !important;
+  opacity: .01;
+  color: transparent !important;
+  background: transparent !important;
+  caret-color: transparent;
+  letter-spacing: 0 !important;
+  box-shadow: none !important;
+  cursor: text;
+}
+
+.customer-otp-input:focus {
+  border: 0 !important;
+  box-shadow: none !important;
+  outline: 0 !important;
+}
+
+.customer-otp-slots {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+  width: 100%;
+}
+
+.customer-otp-slot {
+  position: relative;
+  aspect-ratio: 1 / 1.08;
+  min-width: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid #d7d7d3;
+  border-radius: 13px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.98), rgba(249,249,247,.98));
+  box-shadow:
+    0 1px 1px rgba(17,17,17,.015),
+    inset 0 1px 0 rgba(255,255,255,.8);
+  transform: translateZ(0);
+  transition:
+    border-color .2s cubic-bezier(.22,.8,.24,1),
+    background .2s ease,
+    box-shadow .2s ease,
+    transform .2s cubic-bezier(.22,.8,.24,1);
+}
+
+.customer-otp-slot.is-filled {
+  border-color: #c7c7c2;
+  background: #fff;
+}
+
+.customer-otp-slot.is-active {
+  z-index: 2;
+  border-color: #111;
+  box-shadow:
+    0 0 0 3px rgba(17,17,17,.055),
+    0 5px 16px rgba(17,17,17,.055);
+  transform: translateY(-1px);
+}
+
+.customer-otp-digit {
+  position: relative;
+  z-index: 2;
+  display: block;
+  color: #111;
+  font-size: clamp(24px, 7vw, 30px);
+  font-weight: 760;
+  line-height: 1;
+  letter-spacing: -.025em;
+  transform-origin: 50% 65%;
+}
+
+.customer-otp-digit.is-entering {
+  animation: customer-otp-digit-in .28s cubic-bezier(.16,1,.3,1);
+}
+
+@keyframes customer-otp-digit-in {
+  0% {
+    opacity: 0;
+    filter: blur(5px);
+    transform: translateY(11px) scale(.88);
+  }
+  58% {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(-1px) scale(1.035);
+  }
+  100% {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0) scale(1);
+  }
+}
+
+.customer-otp-caret {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  left: 50%;
+  width: 1.5px;
+  height: 25px;
+  border-radius: 999px;
+  background: #111;
+  opacity: 0;
+  transform: translate(-50%, -50%) scaleY(.82);
+  pointer-events: none;
+}
+
+.customer-otp-slot.is-active.is-empty .customer-otp-caret {
+  opacity: 1;
+  animation: customer-otp-caret-blink 1.05s steps(1, end) infinite;
+}
+
+@keyframes customer-otp-caret-blink {
+  0%, 47% { opacity: 1; }
+  48%, 100% { opacity: .12; }
+}
+
+.customer-otp-shell.is-complete .customer-otp-slot {
+  border-color: #bdbdb8;
+}
+
+.customer-otp-shell.is-checking .customer-otp-slot {
+  animation: customer-otp-checking 1s ease-in-out infinite;
+}
+
+.customer-otp-shell.is-checking .customer-otp-slot:nth-child(2) { animation-delay: 70ms; }
+.customer-otp-shell.is-checking .customer-otp-slot:nth-child(3) { animation-delay: 140ms; }
+.customer-otp-shell.is-checking .customer-otp-slot:nth-child(4) { animation-delay: 210ms; }
+.customer-otp-shell.is-checking .customer-otp-slot:nth-child(5) { animation-delay: 280ms; }
+.customer-otp-shell.is-checking .customer-otp-slot:nth-child(6) { animation-delay: 350ms; }
+
+@keyframes customer-otp-checking {
+  0%, 100% {
+    transform: translateY(0);
+    border-color: #d0d0cb;
+  }
+  50% {
+    transform: translateY(-3px);
+    border-color: #777773;
+  }
+}
+
+.customer-otp-shell.is-error {
+  animation: customer-otp-error .4s cubic-bezier(.36,.07,.19,.97);
+}
+
+.customer-otp-shell.is-error .customer-otp-slot {
+  border-color: #555550;
+  background:
+    repeating-linear-gradient(
+      135deg,
+      #fff 0 7px,
+      #f3f3f0 7px 14px
+    );
+}
+
+@keyframes customer-otp-error {
+  0%, 100% { transform: translateX(0); }
+  18% { transform: translateX(-7px); }
+  36% { transform: translateX(6px); }
+  54% { transform: translateX(-4px); }
+  72% { transform: translateX(3px); }
+}
+
+.customer-otp-slot.is-success {
+  border-color: #111 !important;
+  background: #111 !important;
+  box-shadow: 0 5px 16px rgba(17,17,17,.12);
+  transform: translateY(-2px) scale(1.015);
+}
+
+.customer-otp-slot.is-success .customer-otp-digit {
+  color: #fff;
+  animation: customer-otp-success-digit .26s cubic-bezier(.16,1,.3,1);
+}
+
+.customer-otp-slot.is-success .customer-otp-caret {
+  opacity: 0 !important;
+}
+
+@keyframes customer-otp-success-digit {
+  0% { opacity: .25; transform: scale(.78); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+.customer-otp-submit {
+  transition:
+    transform .18s cubic-bezier(.22,.8,.24,1),
+    box-shadow .18s ease,
+    background .18s ease;
+}
+
+.customer-otp-submit.is-ready:not(:disabled) {
+  box-shadow: 0 7px 18px rgba(17,17,17,.14);
+}
+
+.customer-otp-submit.is-ready:not(:disabled):active {
+  transform: scale(.985);
+}
+
+@media (max-width: 520px) {
+  .customer-otp-slots {
+    gap: 6px;
+  }
+
+  .customer-otp-slot {
+    border-radius: 11px;
+  }
+
+  .customer-otp-digit {
+    font-size: clamp(22px, 7.7vw, 29px);
+  }
+}
+
+@media (max-width: 370px) {
+  .customer-otp-slots {
+    gap: 4px;
+  }
+
+  .customer-otp-slot {
+    border-radius: 10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .customer-otp-slot,
+  .customer-otp-digit,
+  .customer-otp-caret,
+  .customer-otp-shell,
+  .customer-otp-submit {
+    animation: none !important;
+    transition-duration: .01ms !important;
+  }
+}

@@ -40,7 +40,7 @@ function revealVerification() {
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
       finishBoot();
-      verificationCode?.focus();
+      focusOtpAt();
     });
   });
 }
@@ -54,6 +54,9 @@ const verificationPanel = document.querySelector("#customer-verification");
 const verificationForm = document.querySelector("#verification-form");
 const verificationCode = document.querySelector("#verification-code");
 const verificationSubmit = document.querySelector("#verification-submit");
+const otpField = document.querySelector("#customer-otp-field");
+const otpShell = document.querySelector("#customer-otp-shell");
+const otpSlots = Array.from(document.querySelectorAll("[data-otp-index]"));
 const customerFrozenView = document.querySelector("#customer-frozen-view");
 const customerLiveContent = document.querySelector("#customer-live-content");
 const customerRegularHead = document.querySelector(".customer-mobile-head");
@@ -94,6 +97,245 @@ function setCustomerUnlocked(unlocked) {
   }
 }
 
+
+let otpSubmitting = false;
+let otpAutoSubmitTimer = 0;
+let lastOtpValue = "";
+
+function normalizedOtpValue() {
+  return String(verificationCode?.value || "")
+    .replace(/\D/g, "")
+    .slice(0, 6);
+}
+
+function otpCaretIndex() {
+  if (!verificationCode) return 0;
+
+  const value = normalizedOtpValue();
+  const start = Number.isInteger(verificationCode.selectionStart)
+    ? verificationCode.selectionStart
+    : value.length;
+
+  return Math.max(0, Math.min(5, start === 6 ? 5 : start));
+}
+
+function renderOtp({ animateNew = true } = {}) {
+  if (!verificationCode || !otpSlots.length) return;
+
+  const value = normalizedOtpValue();
+
+  if (verificationCode.value !== value) {
+    verificationCode.value = value;
+  }
+
+  const focused = document.activeElement === verificationCode;
+  const caretIndex = otpCaretIndex();
+
+  otpSlots.forEach((slot, index) => {
+    const digit = slot.querySelector(".customer-otp-digit");
+    const nextValue = value[index] || "";
+    const previousValue = digit?.textContent || "";
+    const filled = Boolean(nextValue);
+    const active = focused && (
+      value.length < 6
+        ? index === Math.min(value.length, 5)
+        : index === caretIndex
+    );
+
+    slot.classList.toggle("is-filled", filled);
+    slot.classList.toggle("is-active", active);
+    slot.classList.toggle("is-empty", !filled);
+
+    if (digit && previousValue !== nextValue) {
+      digit.textContent = nextValue;
+
+      if (animateNew && nextValue) {
+        digit.classList.remove("is-entering");
+        void digit.offsetWidth;
+        digit.classList.add("is-entering");
+      }
+    }
+  });
+
+  otpShell?.classList.toggle("is-complete", value.length === 6);
+  verificationSubmit?.classList.toggle("is-ready", value.length === 6);
+  lastOtpValue = value;
+}
+
+function focusOtpAt(index = null) {
+  if (!verificationCode) return;
+
+  verificationCode.focus({ preventScroll: true });
+
+  const value = normalizedOtpValue();
+  const position = index === null
+    ? value.length
+    : Math.max(0, Math.min(value.length, index));
+
+  try {
+    verificationCode.setSelectionRange(position, position);
+  } catch {}
+
+  renderOtp({ animateNew: false });
+}
+
+function resetOtpVisualState() {
+  otpShell?.classList.remove(
+    "is-error",
+    "is-success",
+    "is-checking"
+  );
+
+  otpSlots.forEach(slot => {
+    slot.classList.remove("is-success");
+  });
+}
+
+function animateOtpError({ clear = false } = {}) {
+  if (!otpShell) return;
+
+  otpShell.classList.remove("is-error", "is-checking", "is-success");
+  void otpShell.offsetWidth;
+  otpShell.classList.add("is-error");
+
+  window.setTimeout(() => {
+    otpShell.classList.remove("is-error");
+
+    if (clear && verificationCode) {
+      verificationCode.value = "";
+      renderOtp({ animateNew: false });
+    }
+
+    focusOtpAt();
+  }, 430);
+}
+
+async function animateOtpSuccess() {
+  if (!otpShell) return;
+
+  otpShell.classList.remove("is-error", "is-checking");
+  otpShell.classList.add("is-success");
+
+  otpSlots.forEach((slot, index) => {
+    window.setTimeout(() => {
+      slot.classList.add("is-success");
+    }, index * 48);
+  });
+
+  await new Promise(resolve => {
+    window.setTimeout(resolve, 380);
+  });
+}
+
+function setOtpChecking(checking) {
+  otpShell?.classList.toggle("is-checking", checking);
+  verificationCode?.toggleAttribute("readonly", checking);
+  otpSubmitting = checking;
+}
+
+async function submitOtp() {
+  if (otpSubmitting) return;
+
+  const code = normalizedOtpValue();
+
+  if (!/^\d{6}$/.test(code)) {
+    animateOtpError();
+    showError("Bitte den sechsstelligen Code vollständig eingeben.", {
+      title: "Code prüfen",
+      id: "customer-verification-error"
+    });
+    return;
+  }
+
+  window.clearTimeout(otpAutoSubmitTimer);
+  resetOtpVisualState();
+  setOtpChecking(true);
+  setButtonLoading(verificationSubmit, true, "Prüfe …");
+
+  try {
+    await verifyCustomerAccess(token, code);
+    await animateOtpSuccess();
+    await loadVerifiedCustomer();
+  } catch (error) {
+    setOtpChecking(false);
+    setButtonLoading(verificationSubmit, false);
+    animateOtpError({ clear: true });
+    showError(error.message, {
+      title: "Code prüfen",
+      id: "customer-verification-error"
+    });
+  }
+}
+
+function scheduleOtpAutoSubmit() {
+  window.clearTimeout(otpAutoSubmitTimer);
+
+  if (normalizedOtpValue().length !== 6 || otpSubmitting) {
+    return;
+  }
+
+  otpAutoSubmitTimer = window.setTimeout(() => {
+    submitOtp();
+  }, 260);
+}
+
+verificationCode?.addEventListener("input", event => {
+  const inputType = event.inputType || "";
+  const valueBefore = lastOtpValue;
+
+  verificationCode.value = normalizedOtpValue();
+  renderOtp({
+    animateNew:
+      inputType !== "deleteContentBackward" &&
+      inputType !== "deleteContentForward" &&
+      verificationCode.value !== valueBefore
+  });
+
+  scheduleOtpAutoSubmit();
+});
+
+verificationCode?.addEventListener("focus", () => {
+  resetOtpVisualState();
+  renderOtp({ animateNew: false });
+});
+
+verificationCode?.addEventListener("blur", () => {
+  renderOtp({ animateNew: false });
+});
+
+verificationCode?.addEventListener("click", () => {
+  renderOtp({ animateNew: false });
+});
+
+verificationCode?.addEventListener("keyup", event => {
+  if (
+    event.key === "ArrowLeft" ||
+    event.key === "ArrowRight" ||
+    event.key === "Home" ||
+    event.key === "End"
+  ) {
+    renderOtp({ animateNew: false });
+  }
+});
+
+verificationCode?.addEventListener("paste", () => {
+  // Let the browser perform the paste first. One input means full-code paste
+  // and iOS/Android one-time-code autofill remain reliable.
+  requestAnimationFrame(() => {
+    verificationCode.value = normalizedOtpValue();
+    renderOtp();
+    scheduleOtpAutoSubmit();
+  });
+});
+
+otpSlots.forEach(slot => {
+  slot.addEventListener("pointerdown", event => {
+    event.preventDefault();
+    const index = Number(slot.dataset.otpIndex);
+    focusOtpAt(Number.isFinite(index) ? index : null);
+  });
+});
+
 function showVerification(messageText = "") {
   setCustomerUnlocked(false);
 
@@ -112,6 +354,8 @@ async function loadVerifiedCustomer() {
     const item = await getCustomerCase(token);
     setCustomerUnlocked(true);
     fill(item);
+    setOtpChecking(false);
+    setButtonLoading(verificationSubmit, false);
 
     requestAnimationFrame(() => {
       requestAnimationFrame(finishBoot);
@@ -127,29 +371,9 @@ async function loadVerifiedCustomer() {
   }
 }
 
-verificationCode?.addEventListener("input", () => {
-  verificationCode.value = verificationCode.value.replace(/\D/g, "").slice(0, 6);
-});
-
-verificationForm?.addEventListener("submit", async event => {
+verificationForm?.addEventListener("submit", event => {
   event.preventDefault();
-
-  const code = verificationCode?.value.trim() || "";
-  if (!/^\d{6}$/.test(code)) {
-    showVerification("Bitte den sechsstelligen Code vollständig eingeben.");
-    return;
-  }
-
-  setButtonLoading(verificationSubmit, true, "Prüfe …");
-
-  try {
-    await verifyCustomerAccess(token, code);
-    await loadVerifiedCustomer();
-  } catch (error) {
-    showVerification(error.message);
-  } finally {
-    setButtonLoading(verificationSubmit, false);
-  }
+  submitOtp();
 });
 
 function enableEmployeePreview() {
