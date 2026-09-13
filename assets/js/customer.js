@@ -56,6 +56,7 @@ const verificationCode = document.querySelector("#verification-code");
 const verificationSubmit = document.querySelector("#verification-submit");
 const otpField = document.querySelector("#customer-otp-field");
 const otpShell = document.querySelector("#customer-otp-shell");
+const otpPasteButton = document.querySelector("#customer-otp-paste");
 const otpSlots = Array.from(document.querySelectorAll("[data-otp-index]"));
 const customerFrozenView = document.querySelector("#customer-frozen-view");
 const customerLiveContent = document.querySelector("#customer-live-content");
@@ -328,12 +329,46 @@ verificationCode?.addEventListener("paste", () => {
   });
 });
 
-otpSlots.forEach(slot => {
-  slot.addEventListener("pointerdown", event => {
-    event.preventDefault();
-    const index = Number(slot.dataset.otpIndex);
-    focusOtpAt(Number.isFinite(index) ? index : null);
-  });
+verificationCode?.addEventListener("click", event => {
+  if (!otpShell) return;
+
+  const rect = otpShell.getBoundingClientRect();
+  const x = Math.max(0, Math.min(rect.width, event.clientX - rect.left));
+  const index = Math.max(0, Math.min(5, Math.floor((x / rect.width) * 6)));
+  focusOtpAt(index);
+});
+
+otpPasteButton?.addEventListener("click", async () => {
+  resetOtpVisualState();
+
+  try {
+    if (!navigator.clipboard?.readText) {
+      throw new Error("clipboard-api-unavailable");
+    }
+
+    const clipboardText = await navigator.clipboard.readText();
+    const code = String(clipboardText || "").replace(/\D/g, "").slice(0, 6);
+
+    if (!code) {
+      showError("In der Zwischenablage wurde kein Zahlencode gefunden.", {
+        title: "Nichts zum Einfügen"
+      });
+      focusOtpAt();
+      return;
+    }
+
+    verificationCode.value = code;
+    renderOtp();
+    focusOtpAt(code.length);
+    scheduleOtpAutoSubmit();
+  } catch {
+    // Fall back to the native mobile paste menu. The real input is deliberately
+    // kept fully present over the six visual slots so iOS/Android can long-press it.
+    focusOtpAt();
+    showInfo("Halte die Code-Felder kurz gedrückt und wähle „Einfügen“.", {
+      title: "Code einfügen"
+    });
+  }
 });
 
 function showVerification(messageText = "") {

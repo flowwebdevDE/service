@@ -7760,10 +7760,12 @@ body.customer-frozen-mode .customer-mobile-shell {
   padding: 0 !important;
   border: 0 !important;
   border-radius: 16px !important;
-  opacity: .01;
+  opacity: 1;
   color: transparent !important;
+  -webkit-text-fill-color: transparent;
   background: transparent !important;
   caret-color: transparent;
+  text-shadow: none;
   letter-spacing: 0 !important;
   box-shadow: none !important;
   cursor: text;
@@ -7993,5 +7995,47 @@ body.customer-frozen-mode .customer-mobile-shell {
   .customer-otp-submit {
     animation: none !important;
     transition-duration: .01ms !important;
+  }
+}
+
+
+/* V7.11.1.1 · mobile OTP paste */
+.customer-otp-paste {
+  justify-self: center;
+  margin: 2px 0 0;
+  padding: 4px 8px;
+  border: 0;
+  border-radius: 8px;
+  color: #666662;
+  background: transparent;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.customer-otp-paste:hover,
+.customer-otp-paste:focus-visible {
+  color: #111;
+  background: #f0f0ed;
+  outline: none;
+}
+
+/*
+  Keep the real one-time-code input as a genuine interactive element over the
+  slots. This is intentional: mobile Safari/Chrome must be able to open their
+  native long-press paste menu and OTP autofill UI.
+*/
+.customer-otp-input {
+  -webkit-user-select: text !important;
+  user-select: text !important;
+  touch-action: manipulation;
+}
+
+@media (max-width: 520px) {
+  .customer-otp-paste {
+    min-height: 34px;
+    padding: 7px 10px;
   }
 }
