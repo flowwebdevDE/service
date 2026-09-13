@@ -8039,3 +8039,10 @@ body.customer-frozen-mode .customer-mobile-shell {
     padding: 7px 10px;
   }
 }
+
+
+/* V7.11.1.2 · customer header status removed */
+.customer-header-status,
+.customer-header-status--compact {
+  display: none !important;
+}

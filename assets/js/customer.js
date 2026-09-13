@@ -70,12 +70,6 @@ const stickyButton = document.querySelector("#sticky-action-button");
 const serviceState = document.querySelector("#service-state");
 const confirmState = document.querySelector("#confirm-state");
 
-const flowStatus = document.querySelector("#flow-status");
-const flowStatusKicker = document.querySelector("#flow-status-kicker");
-const flowStatusTitle = document.querySelector("#flow-status-title");
-const flowStatusDetail = document.querySelector("#flow-status-detail");
-const flowStatusState = document.querySelector("#flow-status-state");
-const flowStatusProgress = document.querySelector("#flow-status-progress");
 
 let current;
 
@@ -516,28 +510,8 @@ function showStickyAction(show) {
   stickyAction.classList.toggle("hidden", !show);
 }
 
-function setDynamicStatus({
-  kicker,
-  title,
-  detail,
-  progress,
-  state,
-  complete = false
-}) {
-  const normalized = Math.max(0, Math.min(100, Number(progress) || 0));
-
-  if (flowStatusKicker) flowStatusKicker.textContent = kicker;
-  if (flowStatusTitle) flowStatusTitle.textContent = title;
-  if (flowStatusDetail) flowStatusDetail.textContent = detail;
-  if (flowStatusState) flowStatusState.textContent = state;
-
-  if (flowStatusProgress) {
-    flowStatusProgress.style.width = `${normalized}%`;
-  }
-
-  if (flowStatus) {
-    flowStatus.classList.toggle("is-complete", complete);
-  }
+function setDynamicStatus() {
+  // Customer header status indicator was intentionally removed in V7.11.1.2.
 }
 
 function updateFlowState() {
