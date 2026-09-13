@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="de" class="auth-pending">
+<html lang="de" class="auth-pending employee-booting">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -7,10 +7,20 @@
   <meta name="referrer" content="no-referrer">
 <title>MYVELO Service · Garantiefälle</title>
   <link rel="stylesheet" href="assets/css/app.css?v=7.10.6">
+  <link rel="stylesheet" href="assets/css/employee-apple.css?v=7.11.0">
   <script src="assets/js/auth-guard.js?v=7.4.2"></script>
   <script src="assets/js/security-bootstrap.js?v=7.10.6"></script>
 </head>
 <body class="flow-employee">
+
+  <div class="employee-dashboard-loader" id="employee-dashboard-loader" role="status" aria-live="polite">
+    <div class="employee-dashboard-loader__inner">
+      <span class="employee-dashboard-loader__mark" aria-hidden="true"></span>
+      <strong>Service wird vorbereitet</strong>
+      <span>Vorgänge werden synchronisiert.</span>
+    </div>
+  </div>
+
   <div class="flow-shell">
     <aside class="flow-sidebar" id="flowSidebar">
       <div class="flow-brand">
@@ -67,6 +77,15 @@
       </header>
 
       <main class="flow-workspace">
+
+        <section class="flow-page-intro" aria-labelledby="employee-overview-title">
+          <div class="flow-page-intro__copy">
+            <span class="flow-page-intro__eyebrow">MYVELO Service</span>
+            <h1 id="employee-overview-title">Alles im Blick.</h1>
+            <p>Aktive Garantiefälle, Kundenbestätigungen und Bearbeitungsstände in einer ruhigen, fokussierten Ansicht.</p>
+          </div>
+        </section>
+
 <section class="flow-dashboard" id="active-dashboard" aria-label="Dashboard">
           <button class="flow-dashboard-card is-active" type="button" data-status-filter="all">
             <span>Alle aktiven</span>
@@ -242,6 +261,6 @@
     </div>
   </dialog>
 
-  <script type="module" src="assets/js/admin.js?v=7.10.10"></script>
+  <script type="module" src="assets/js/admin.js?v=7.11.0"></script>
 </body>
 </html>

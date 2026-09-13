@@ -5,7 +5,7 @@ import {
   requirePortalSession
 } from "./api.js?v=7.10.5";
 import { initModelPopup } from "./model-picker.js?v=7.6.1";
-import { setButtonLoading, renderCaseSkeleton, pulseElement } from "./motion.js?v=7.9";
+import { setButtonLoading, renderCaseSkeleton, pulseElement, beginGlobalBusy, endGlobalBusy, transitionSurface } from "./motion.js?v=7.11.0";
 import { showError, showInfo, showSuccess } from "./banner.js?v=7.10.6";
 
 const form = document.querySelector("#create-form");
@@ -24,6 +24,16 @@ const linkDialog = document.querySelector("#linkDialog");
 const createdLink = document.querySelector("#createdLink");
 const createdVerificationCode = document.querySelector("#createdVerificationCode");
 let lastCreatedPublicId = "";
+const dashboardLoader = document.querySelector("#employee-dashboard-loader");
+let initialDashboardLoad = true;
+
+function finishDashboardBoot() {
+  document.documentElement.classList.remove("employee-booting");
+  if (!dashboardLoader) return;
+  dashboardLoader.classList.add("is-leaving");
+  window.setTimeout(() => dashboardLoader.remove(), 210);
+}
+
 
 const portalSession = requirePortalSession();
 if (!portalSession) {
@@ -70,7 +80,15 @@ document.querySelector("#cancelDialogButton")?.addEventListener("click", () => {
   closeDialog(newCaseDialog);
 });
 
-document.querySelector("#reload")?.addEventListener("click", renderCases);
+document.querySelector("#reload")?.addEventListener("click", async event => {
+  const button = event.currentTarget;
+  setButtonLoading(button, true, "Aktualisiere …");
+  try {
+    await renderCases();
+  } finally {
+    setButtonLoading(button, false);
+  }
+});
 
 document.querySelector("#openCreatedLink")?.addEventListener("click", () => {
   if (createdLink.value) {
@@ -78,11 +96,17 @@ document.querySelector("#openCreatedLink")?.addEventListener("click", () => {
   }
 });
 
-document.querySelector("#copyCreatedCode")?.addEventListener("click", async () => {
+document.querySelector("#copyCreatedCode")?.addEventListener("click", async event => {
   const code = createdVerificationCode?.textContent?.trim();
   if (!code || code.includes("•")) return;
-  await navigator.clipboard.writeText(code);
-  showSuccess("Verifizierungscode kopiert.", { title: "Kopiert" });
+  const button = event.currentTarget;
+  setButtonLoading(button, true, "Kopiere …");
+  try {
+    await navigator.clipboard.writeText(code);
+    showSuccess("Verifizierungscode kopiert.", { title: "Kopiert" });
+  } finally {
+    setButtonLoading(button, false);
+  }
 });
 
 document.querySelector("#copyCreatedLink")?.addEventListener("click", async () => {
@@ -104,7 +128,6 @@ function dataFromForm() {
   return {
     shopify_ref: data.get("shopify_ref")?.trim(),
     customer_name: data.get("customer_name")?.trim(),
-    customer_email: data.get("customer_email")?.trim(),
     bike_model: data.get("bike_model")?.trim(),
     bike_color: data.get("bike_color")?.trim(),
     case_subject: data.get("case_subject")?.trim(),
@@ -128,6 +151,7 @@ form.addEventListener("submit", async event => {
   }
 const submitButton = form.querySelector('button[type="submit"]');
   setButtonLoading(submitButton, true, "Erstelle Link …");
+  beginGlobalBusy();
 
   try {
     const result = await createCase(dataFromForm());
@@ -161,6 +185,7 @@ const submitButton = form.querySelector('button[type="submit"]');
     showError(error.message, { title: "Vorgang konnte nicht erstellt werden" });
   } finally {
     setButtonLoading(submitButton, false);
+    endGlobalBusy();
   }
 });
 
@@ -263,6 +288,7 @@ function setWorkView(view, { updateUrl = true } = {}) {
 
   updateListSubtitle();
   renderCaseList(cachedItems);
+  transitionSurface(document.querySelector(".flow-panel"));
   setFlowSidebar(false);
 }
 
@@ -282,6 +308,7 @@ document.querySelectorAll("[data-status-filter]").forEach(button => {
 
     updateListSubtitle();
     renderCaseList(cachedItems);
+    transitionSurface(document.querySelector(".flow-panel"));
   });
 });
 
@@ -339,10 +366,12 @@ function renderCaseList(items) {
       </a>
     `;
   }).join("");
+  transitionSurface(caseList);
 }
 
 async function renderCases() {
   renderCaseSkeleton(caseList, 5);
+  beginGlobalBusy();
 
   try {
     const { items } = await listCases();
@@ -352,7 +381,14 @@ async function renderCases() {
     updateListSubtitle();
     renderCaseList(items);
   } catch (error) {
-    caseList.innerHTML = `<div class="flow-case-row"><div class="flow-case-main"><strong>Fehler</strong><span>${error.message}</span></div></div>`;
+    caseList.innerHTML = `<div class="flow-case-row"><div class="flow-case-main"><strong>Vorgänge konnten nicht geladen werden</strong><span>${error.message}</span></div></div>`;
+  } finally {
+    endGlobalBusy();
+
+    if (initialDashboardLoad) {
+      initialDashboardLoad = false;
+      requestAnimationFrame(() => requestAnimationFrame(finishDashboardBoot));
+    }
   }
 }
 

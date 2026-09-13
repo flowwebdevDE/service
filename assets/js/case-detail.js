@@ -9,7 +9,7 @@ import {
   requirePortalSession
 } from "./api.js?v=7.10.5";
 import { initModelPopup } from "./model-picker.js?v=7.6.1";
-import { setButtonLoading, pulseElement } from "./motion.js?v=7.9";
+import { setButtonLoading, pulseElement, beginGlobalBusy, endGlobalBusy, transitionSurface } from "./motion.js?v=7.11.0";
 import { showError, showInfo, showSuccess } from "./banner.js?v=7.10.6";
 
 
@@ -129,7 +129,6 @@ function renderServiceStatus(item) {
 function collect() {
   return {
     customer_name: form.elements.customer_name.value.trim(),
-    customer_email: form.elements.customer_email.value.trim(),
     bike_model: form.elements.bike_model.value.trim(),
     bike_color: form.elements.bike_color.value.trim(),
     case_subject: form.elements.case_subject.value.trim(),
@@ -216,7 +215,6 @@ function fill(item) {
 
   for (const name of [
     "customer_name",
-    "customer_email",
     "bike_model",
     "bike_color",
     "case_subject",
@@ -274,6 +272,8 @@ function fill(item) {
         : "Vorgangs-PDF";
   }
 
+  transitionSurface(item.status === "confirmed" ? frozenView : form);
+
   if (deleteConfirmInput) {
     deleteConfirmInput.value = "";
     deleteConfirmInput.placeholder = item.public_id;
@@ -288,6 +288,7 @@ form.addEventListener("submit", async event => {
 
   const saveButton = document.querySelector("#save");
   setButtonLoading(saveButton, true, "Speichere …");
+  beginGlobalBusy();
 
   try {
     const updated = await updateAdminCase(id, collect());
@@ -297,6 +298,7 @@ form.addEventListener("submit", async event => {
     showError(error.message);
   } finally {
     setButtonLoading(saveButton, false);
+    endGlobalBusy();
   }
 });
 
@@ -328,6 +330,8 @@ serviceStatusMenu?.querySelectorAll("[data-service-status]").forEach(button => {
 
     closeStatusMenu();
     serviceStatusTrigger.disabled = true;
+    setButtonLoading(serviceStatusTrigger, true, "Aktualisiere …");
+    beginGlobalBusy();
 
     try {
       const item = await updateAdminCaseStatus(id, next);
@@ -350,7 +354,9 @@ serviceStatusMenu?.querySelectorAll("[data-service-status]").forEach(button => {
         renderServiceStatus(item);
       } catch {}
     } finally {
+      setButtonLoading(serviceStatusTrigger, false);
       serviceStatusTrigger.disabled = currentItem?.status !== "confirmed";
+      endGlobalBusy();
     }
   });
 });
@@ -366,6 +372,8 @@ document.querySelector("#internal-print")?.addEventListener("click", async event
   event.preventDefault();
 
   const button = event.currentTarget;
+  setButtonLoading(button, true, "Erstelle PDF …");
+  beginGlobalBusy();
 
   const popup = window.open("", "_blank");
 
@@ -381,8 +389,10 @@ document.querySelector("#internal-print")?.addEventListener("click", async event
     window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
   } catch (error) {
     popup?.close();
-
     showError(error.message);
+  } finally {
+    setButtonLoading(button, false);
+    endGlobalBusy();
   }
 });
 
@@ -390,6 +400,7 @@ document.querySelector("#internal-print")?.addEventListener("click", async event
 document.querySelector("#customer-link-button")?.addEventListener("click", async event => {
   const button = event.currentTarget;
   setButtonLoading(button, true, "Lade Link …");
+  beginGlobalBusy();
 
   try {
     const result = await getAdminCustomerLink(id);
@@ -423,6 +434,7 @@ document.querySelector("#customer-link-button")?.addEventListener("click", async
     showError(error.message);
   } finally {
     setButtonLoading(button, false);
+    endGlobalBusy();
   }
 });
 
@@ -430,8 +442,10 @@ document.querySelector("#closeCustomerLinkDialog")?.addEventListener("click", ()
   if (customerLinkDialog?.open) customerLinkDialog.close();
 });
 
-document.querySelector("#copyCustomerLink")?.addEventListener("click", async () => {
+document.querySelector("#copyCustomerLink")?.addEventListener("click", async event => {
   if (!customerLinkValue.value) return;
+  const button = event.currentTarget;
+  setButtonLoading(button, true, "Kopiere …");
 
   try {
     await navigator.clipboard.writeText(customerLinkValue.value);
@@ -440,11 +454,13 @@ document.querySelector("#copyCustomerLink")?.addEventListener("click", async () 
     customerLinkValue.select();
     document.execCommand("copy");
     showSuccess("Kundenlink kopiert.", { title: "Kopiert" });
+  } finally {
+    setButtonLoading(button, false);
   }
 });
 
 
-document.querySelector("#copyCustomerCode")?.addEventListener("click", async () => {
+document.querySelector("#copyCustomerCode")?.addEventListener("click", async event => {
   const code = customerVerificationCode?.textContent?.trim();
 
   if (!code || code.includes("•")) {
@@ -454,8 +470,14 @@ document.querySelector("#copyCustomerCode")?.addEventListener("click", async () 
     return;
   }
 
-  await navigator.clipboard.writeText(code);
-  showSuccess("Verifizierungscode kopiert.", { title: "Kopiert" });
+  const button = event.currentTarget;
+  setButtonLoading(button, true, "Kopiere …");
+  try {
+    await navigator.clipboard.writeText(code);
+    showSuccess("Verifizierungscode kopiert.", { title: "Kopiert" });
+  } finally {
+    setButtonLoading(button, false);
+  }
 });
 
 document.querySelector("#openCustomerLink")?.addEventListener("click", () => {
@@ -521,6 +543,7 @@ confirmDeleteButton?.addEventListener("click", async () => {
   }
 
   setButtonLoading(confirmDeleteButton, true, "Lösche …");
+  beginGlobalBusy();
 
   try {
     await deleteAdminCase(currentItem.public_id);
@@ -530,5 +553,6 @@ confirmDeleteButton?.addEventListener("click", async () => {
     closeDeleteDialog();
   } finally {
     setButtonLoading(confirmDeleteButton, false);
+    endGlobalBusy();
   }
 });

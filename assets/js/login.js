@@ -1,4 +1,4 @@
-import { setButtonLoading } from "./motion.js?v=7.9";
+import { setButtonLoading, beginGlobalBusy, endGlobalBusy } from "./motion.js?v=7.11.0";
 import { showError } from "./banner.js?v=7.10.6";
 import {
   getPortalSession,
@@ -28,6 +28,7 @@ form.addEventListener("submit", async event => {
   const keyInput = form.elements.company_key;
 
   setButtonLoading(button, true, "Anmelden …");
+  beginGlobalBusy();
 
   try {
     await loginWithCompanyKey(keyInput.value);
@@ -38,5 +39,6 @@ form.addEventListener("submit", async event => {
     keyInput.select();
   } finally {
     setButtonLoading(button, false);
+    endGlobalBusy();
   }
 });

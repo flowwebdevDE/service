@@ -45,3 +45,38 @@ export function renderCaseSkeleton(container, count = 5) {
     </div>
   `).join("");
 }
+
+
+let globalBusyDepth = 0;
+let globalProgressElement = null;
+
+function ensureGlobalProgress() {
+  if (globalProgressElement?.isConnected) return globalProgressElement;
+
+  globalProgressElement = document.createElement("div");
+  globalProgressElement.className = "flow-global-progress";
+  globalProgressElement.setAttribute("aria-hidden", "true");
+  document.body.appendChild(globalProgressElement);
+  return globalProgressElement;
+}
+
+export function beginGlobalBusy() {
+  globalBusyDepth += 1;
+  document.documentElement.setAttribute("aria-busy", "true");
+  ensureGlobalProgress().classList.add("is-active");
+}
+
+export function endGlobalBusy() {
+  globalBusyDepth = Math.max(0, globalBusyDepth - 1);
+  if (globalBusyDepth > 0) return;
+
+  document.documentElement.removeAttribute("aria-busy");
+  globalProgressElement?.classList.remove("is-active");
+}
+
+export function transitionSurface(element) {
+  if (!element) return;
+  element.classList.remove("flow-surface-transition");
+  void element.offsetWidth;
+  element.classList.add("flow-surface-transition");
+}
