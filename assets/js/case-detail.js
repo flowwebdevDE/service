@@ -3,7 +3,6 @@ import {
   deleteAdminCase,
   getAdminCase,
   getAdminCustomerLink,
-  getAdminCustomerAccess,
   updateAdminCase,
   updateAdminCaseStatus,
   logoutPortalSession,
@@ -396,21 +395,19 @@ document.querySelector("#customer-link-button")?.addEventListener("click", async
     const result = await getAdminCustomerLink(id);
 
     customerLinkValue.value = result.customer_url || "";
+    customerVerificationCode.textContent =
+      result.verification_code || "••••••";
 
-    try {
-      const access = await getAdminCustomerAccess(id);
-      customerVerificationCode.textContent = access.verification_code || "••••••";
-      showInfo("Link und Code sind bereit zum Kopieren.", {
-        title: "Kundenzugang"
-      });
-    } catch (accessError) {
-      customerVerificationCode.textContent = "••••••";
-      showError(accessError.message, { title: "Code nicht verfügbar" });
-    }
+    showInfo(
+      result.rotated
+        ? "Link wurde sicher neu erzeugt. Der bisherige Link ist damit ungültig."
+        : "Link und Code wurden wieder geladen.",
+      { title: "Kundenzugang" }
+    );
 
     customerLinkNote.textContent = result.rotated
-      ? "Dieser ältere Vorgang hatte noch keinen wiederherstellbaren Link. Es wurde einmalig ein neuer Kundenlink erzeugt; ein eventuell alter Link ist damit ungültig."
-      : "Das ist derselbe aktive Kundenlink, der für diesen Vorgang erzeugt wurde.";
+      ? "Der gespeicherte Kundenlink konnte nicht sicher wiederhergestellt werden. Deshalb wurde automatisch ein neuer Link erzeugt. Bitte nur noch diesen Link verwenden."
+      : "Das ist derselbe aktive Kundenlink, der bereits für diesen Vorgang erzeugt wurde.";
 
     if (!customerLinkDialog.open) {
       customerLinkDialog.showModal();

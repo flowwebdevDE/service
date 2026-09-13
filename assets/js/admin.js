@@ -1,6 +1,5 @@
 import {
   createCase,
-  getAdminCustomerAccess,
   listCases,
   logoutPortalSession,
   requirePortalSession
@@ -145,19 +144,12 @@ const submitButton = form.querySelector('button[type="submit"]');
     closeDialog(newCaseDialog);
     openDialog(linkDialog);
 
-    try {
-      const access = await getAdminCustomerAccess(result.public_id);
-      createdVerificationCode.textContent = access.verification_code || "••••••";
-      showSuccess("Link und 6-stelliger Code sind bereit zum Kopieren.", {
-        title: "Kundenzugang bereit"
-      });
-    } catch (accessError) {
-      createdVerificationCode.textContent = "••••••";
-      showError(
-        `Vorgang wurde erstellt, aber der Code konnte nicht geladen werden: ${accessError.message}`,
-        { title: "Code nicht verfügbar", duration: 0 }
-      );
-    }
+    createdVerificationCode.textContent =
+      result.verification_code || "••••••";
+
+    showSuccess("Link und 6-stelliger Code sind bereit zum Kopieren.", {
+      title: "Kundenzugang bereit"
+    });
 
     form.reset();
     createModelPopup?.sync();
