@@ -6,6 +6,15 @@ import {
 } from "./api.js?v=7.9.3";
 
 const form = document.querySelector("#login-form");
+const reason = new URLSearchParams(location.search).get("reason");
+
+if (reason === "expired") {
+  showError("Deine Sitzung ist abgelaufen. Bitte kurz erneut anmelden.", {
+    title: "Sitzung beendet",
+    duration: 3600,
+    id: "employee-session-expired"
+  });
+}
 
 function targetAfterLogin() {
   const next = new URLSearchParams(location.search).get("next");
