@@ -1337,3 +1337,41 @@
     animation-iteration-count: 1 !important;
   }
 }
+
+
+/* V7.11.0.1 · robust new-case plus icon */
+.flow-employee .flow-nav-plus {
+  position: relative;
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
+  display: block;
+  overflow: hidden;
+  border-radius: 7px;
+  background: #111;
+  color: transparent !important;
+  font-size: 0 !important;
+  line-height: 0;
+}
+
+.flow-employee .flow-nav-plus::before,
+.flow-employee .flow-nav-plus::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  border-radius: 999px;
+  background: #fff;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.flow-employee .flow-nav-plus::before {
+  width: 10px;
+  height: 1.5px;
+}
+
+.flow-employee .flow-nav-plus::after {
+  width: 1.5px;
+  height: 10px;
+}
