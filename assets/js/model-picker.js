@@ -16,8 +16,9 @@ async function loadCatalog() {
     catalogPromise = fetch(url, { cache: "no-store" }).then(async response => {
       if (!response.ok) throw new Error("Modellkatalog konnte nicht geladen werden.");
       const payload = await response.json();
-      return Array.isArray(payload?.models) ? payload.models : [];
-    });
+      if (!Array.isArray(payload?.models) || !payload.models.length) throw new Error("Modellkatalog enthält keine Modelle.");
+      return payload.models;
+    }).catch(error => { catalogPromise=null; throw error; });
   }
   return catalogPromise;
 }
@@ -139,10 +140,11 @@ function renderPopup(instance, selectedCategory = "Alle", query = "") {
     button.type = "button";
     button.className = "model-popup__model";
     button.classList.toggle("is-selected", normalize(instance.input.value) === normalize(model.name));
-    button.innerHTML = `
-      <span>${model.category}</span>
-      <strong>${model.name}</strong>
-    `;
+    const categoryText=document.createElement('span');
+    categoryText.textContent=model.category||'Weitere';
+    const nameText=document.createElement('strong');
+    nameText.textContent=model.name;
+    button.append(categoryText,nameText);
     button.addEventListener("click", () => {
       instance.input.value = model.name;
       setTriggerText(instance, model.name);
@@ -194,10 +196,13 @@ export async function initModelPopup({
   });
 
   const dialog = createPopup();
-  dialog.querySelector(".model-popup__search").addEventListener("input", event => {
-    if (!activeInstance) return;
-    renderPopup(activeInstance, activeInstance.category, event.target.value);
-  });
+  if (!dialog.dataset.searchBound) {
+    dialog.dataset.searchBound = "true";
+    dialog.querySelector(".model-popup__search").addEventListener("input", event => {
+      if (!activeInstance) return;
+      renderPopup(activeInstance, activeInstance.category, event.target.value);
+    });
+  }
 
   if (!dialog.dataset.manualBound) {
     dialog.dataset.manualBound = "true";

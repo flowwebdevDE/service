@@ -61,8 +61,9 @@ async function specPdf(snapshot,{internal=false,events=[]}={}) {
 export async function customerServicePdf(item) {
   if(item.status!=='confirmed'||!item.pdf_snapshot) throw new Error('Kunden-PDF erst nach Bestätigung verfügbar.');
   const snapshot=item.pdf_snapshot;
-  return snapshot.case_type==='repair'||snapshot.case_type==='return'
-    ? specPdf(snapshot) : renderWarrantyFlowPdf(snapshot);
+  const type=snapshot.case_type||item.case_type||'warranty';
+  return type==='repair'||type==='return'
+    ? specPdf({...snapshot,case_type:type}) : renderWarrantyFlowPdf(snapshot);
 }
 export async function internalServicePdf(item,events=[]) {
   return specPdf(item,{internal:true,events});

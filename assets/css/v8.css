@@ -6,3 +6,21 @@
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 
 .mobile-scope{display:none;gap:9px;margin:0 0 12px}.mobile-scope .button{flex:1;min-height:39px}@media(max-width:680px){.mobile-scope{display:flex}}
+
+/* V8.0.1: Keep the employee split view inside the viewport.
+   Without min-height:0 on the grid/flex parents, their automatic minimum
+   grows to the height of the case content. The outer app clips that height,
+   leaving neither inner pane with any scrollable overflow. */
+.app{grid-template-rows:minmax(0,1fr)}
+.workspace{height:100%;min-height:0;overflow:hidden}
+.toolbar{flex-shrink:0}
+.workspace-body{flex:1 1 0%;min-height:0;overflow:hidden}
+.list-pane{min-height:0;overflow:hidden}
+.case-list{min-height:0;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.detail-pane{min-height:0;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.modal-form,.modal.small form{max-height:92dvh;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+@media(max-width:680px){
+  .app{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr)}
+  .workspace-body{flex:1 1 0%;height:auto;min-height:0}
+  .list-pane,.detail-pane{height:100%;min-height:0}
+}

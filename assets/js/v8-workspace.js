@@ -1,6 +1,7 @@
 import { staff } from './v8-api.js';
 import { getPortalSession, logoutPortalSession } from './api.js';
 import { internalServicePdf, customerServicePdf, pdfBlobUrl } from './pdf/service-flowpdf.js';
+import { initModelPopup } from './model-picker.js?v=8.0.3';
 
 const $=selector=>document.querySelector(selector);
 const el=(tag,cls='',content='')=>{const n=document.createElement(tag);if(cls)n.className=cls;if(content!==null)n.textContent=content;return n;};
@@ -109,6 +110,27 @@ function combo(form,name,title,values,current,options={}){
   for(const [v,t] of values){const op=make('option','',s,t);op.value=v;}
   s.value=current??values[0]?.[0];s.addEventListener('change',setDirty);return s;
 }
+function modelField(parent, initial='', itemType=null, onChange=()=>{}) {
+  const wrapper=make('div','model-selection',parent);
+  const title=make('span','model-selection-label',wrapper,'Fahrradmodell');
+  const input=make('input','model-selection-input',wrapper);
+  input.type='hidden'; input.name='bike_model'; input.value=initial||'';
+  input.addEventListener('input',onChange);
+  const trigger=make('button','flow-model-trigger',wrapper);
+  trigger.type='button';
+  make('span','flow-model-trigger__value',trigger,'Modell auswählen');
+  make('span','flow-model-trigger__arrow',trigger,'›');
+  // The original JSON model picker is reused; do not silently fall back to a free-text field.
+  initModelPopup({trigger,input,label:title,itemType}).then(instance=>{
+    input.addEventListener('input',()=>instance.sync());
+    instance.sync();
+  }).catch(error=>{
+    trigger.disabled=true;
+    trigger.querySelector('.flow-model-trigger__value').textContent='Modellkatalog nicht verfügbar';
+    make('small','model-selection-error',wrapper,error.message||'Modellkatalog konnte nicht geladen werden.');
+  });
+  return input;
+}
 function boolean(form,name,title,checked){const l=make('label','',form,title);const i=make('input','',l);i.name=name;i.type='checkbox';i.checked=Boolean(checked);i.addEventListener('change',setDirty);return i;}
 function money(form,name,title,value){return textField(form,name,title,value??'',{type:'number'});}
 function originalInfo(root){const p=panel(root,'Kundenbestätigung · unveränderlicher Stand');const s=active.pdf_snapshot||{};
@@ -123,10 +145,10 @@ function renderCase(root){
   const editable=active.status!=='confirmed';
   if(editable){
     textField(form,'customer_name','Kundenname',active.customer_name);
-    textField(form,'bike_model','Fahrradmodell',active.bike_model);
+    const itemType=combo(form,'item_type','Gegenstand',[['bike','Fahrrad'],['battery','Akku']],active.item_type);
+    modelField(form,active.bike_model,itemType,setDirty);
     textField(form,'case_subject','Anliegen',active.case_subject,{full:true,textarea:true});
     textField(form,'bike_color','Farbe',active.bike_color);
-    combo(form,'item_type','Gegenstand',[['bike','Fahrrad'],['battery','Akku']],active.item_type);
     boolean(form,'required_charger','Ladegerät erforderlich',active.required_charger);
     boolean(form,'required_keys','Schlüssel erforderlich',active.required_keys);
     if(active.case_type==='warranty'){textField(form,'customer_note','Kundenhinweis',active.customer_note,{full:true,textarea:true});combo(form,'service_choice','Zusatzarbeiten',[['none','Keine'],['inspection','Inspektion · 96 €'],['inspection_wear','Inspektion 96 € + Material']],active.service_choice);}
@@ -184,7 +206,7 @@ function renderCase(root){
     accessButton(p,'Serverentwurf wiederherstellen',async()=>{applyValues(current,res.draft.content);setDirty();toast('Serverentwurf wiederhergestellt. Bitte Änderungen speichern.');});
   }).catch(()=>{});}
 }
-function applyValues(form,values){for(const input of form.elements){if(!input.name||!(input.name in values))continue;if(input.type==='checkbox')input.checked=Boolean(values[input.name]);else input.value=values[input.name]??'';}form.querySelector('[name=repair_price_mode]')?.dispatchEvent(new Event('change'));}
+function applyValues(form,values){for(const input of form.elements){if(!input.name||!(input.name in values))continue;if(input.type==='checkbox')input.checked=Boolean(values[input.name]);else input.value=values[input.name]??'';if(input.name==='bike_model')input.dispatchEvent(new Event('input',{bubbles:true}));}form.querySelector('[name=repair_price_mode]')?.dispatchEvent(new Event('change'));}
 function collectEditable(form){const raw=draftValues(form);for(const name of ['repair_price_value','repair_estimate_value','repair_maximum_value'])if(name in raw)raw[name]=raw[name]===''?null:Number(raw[name]);return raw;}
 async function renderApprovals(root){
   const p=panel(root,'Freigaben');if(active.case_type==='warranty'){make('p','',p,'Garantie: Auswahl kostenpflichtiger Zusatzarbeiten gemäß unveränderlicher Kundenbestätigung.');dataLine(p,'Auswahl',active.pdf_snapshot?.service_choice||'Noch nicht bestätigt');return;}
@@ -201,10 +223,21 @@ async function renderHistory(root){const p=panel(root,'Wesentliche Ereignisse');
 async function renderDocuments(root){const p=panel(root,'Dokumente');make('p','',p,'Die Kundenbestätigung wird ausschließlich aus dem gespeicherten Snapshot erstellt. Das interne Serviceblatt zeigt zusätzlich den aktuellen Bearbeitungsstand.');
   const actions=make('div','action-row',p);if(active.status==='confirmed')accessButton(actions,'Kundenbestätigung (PDF)',async()=>{const bytes=await customerServicePdf(active);window.open(await pdfBlobUrl(bytes),'_blank','noopener');});
   accessButton(actions,'Internes Serviceblatt (PDF)',async()=>{const events=(await staff.events(active.public_id)).items;const bytes=await internalServicePdf(active,events);window.open(await pdfBlobUrl(bytes),'_blank','noopener');},'dark');}
-async function openCreate(){createKey=crypto.randomUUID();const dlg=$('#create-dialog');$('#create-form').reset();$('#create-message').textContent='';$('#create-type').dispatchEvent(new Event('change'));dlg.showModal();}
+async function openCreate(){createKey=crypto.randomUUID();const dlg=$('#create-dialog');$('#create-form').reset();createModelPicker?.sync();$('#create-message').textContent='';$('#create-type').dispatchEvent(new Event('change'));dlg.showModal();}
 function setCreatePriceVisibility(){const repair=$('#create-type').value==='repair';$('#create-repair-fields').hidden=!repair;const mode=$('#create-price-mode').value;for(const e of document.querySelectorAll('#create-repair-fields [data-price]'))e.hidden=!e.dataset.price.split(' ').includes(mode);}
+let createModelPicker=null;
+initModelPopup({
+  trigger:$('#create-model-trigger'),
+  input:$('#create-form').elements.bike_model,
+  label:$('#create-model-label'),
+  itemType:$('#create-form').elements.item_type
+}).then(instance=>{createModelPicker=instance;}).catch(error=>{
+  $('#create-model-trigger').disabled=true;
+  $('#create-model-trigger').querySelector('.flow-model-trigger__value').textContent='Modellkatalog nicht verfügbar';
+  $('#create-message').textContent=error.message||'Modellkatalog konnte nicht geladen werden.';
+});
 $('#create-type').addEventListener('change',setCreatePriceVisibility);$('#create-price-mode').addEventListener('change',setCreatePriceVisibility);$('#new').addEventListener('click',openCreate);$('#create-cancel').addEventListener('click',()=>$('#create-dialog').close());
-$('#create-form').addEventListener('submit',async e=>{e.preventDefault();const button=e.currentTarget.querySelector('[type=submit]');loading(button,true);$('#create-message').textContent='';try{
+$('#create-form').addEventListener('submit',async e=>{e.preventDefault();if(!e.currentTarget.elements.bike_model.value.trim()){$('#create-message').textContent='Bitte ein Modell aus dem Katalog auswählen oder über „Modell frei eingeben“ übernehmen.';return;}const button=e.currentTarget.querySelector('[type=submit]');loading(button,true);$('#create-message').textContent='';try{
   const body=draftValues(e.currentTarget);for(const key of ['repair_price_value','repair_estimate_value','repair_maximum_value'])body[key]=body[key]===''?null:Number(body[key]);
   body.request_key=createKey;const result=await staff.create(body);$('#create-dialog').close();await refresh({preserve:false});await openCase(result.public_id);toast('Vorgang erstellt – Kundenlink und PIN können jetzt manuell geteilt werden.');
 }catch(err){$('#create-message').textContent=err.message;}finally{loading(button,false);}});

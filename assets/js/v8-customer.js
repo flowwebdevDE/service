@@ -5,7 +5,7 @@ const make=(tag,cls='',text='')=>{const n=document.createElement(tag);if(cls)n.c
 const add=(parent,tag,cls='',text='')=>{const n=make(tag,cls,text);parent.append(n);return n;};
 const token=new URLSearchParams(location.search).get('token');
 if(!token&&new URLSearchParams(location.search).get('preview')) location.replace(`legacy-customer.html${location.search}`);
-let item=null,step=0,pending=false,codeTimer=0,working={customer_note:'',service_choice:'none',confirm_scope:false,confirm_accessories:false};
+let item=null,step=0,pending=false,codeTimer=0,stepDirection='next',pdfUrl=null,pdfGeneration=0,working={customer_note:'',service_choice:'none',confirm_scope:false,confirm_accessories:false};
 const names={warranty:'Garantiefall',repair:'Reparaturauftrag',return:'Retourenvorgang'};
 const steps={warranty:['Dein Vorgang','Deine Einsendung','Zusatzarbeiten','Dein Hinweis','Prüfen & bestätigen'],repair:['Dein Vorgang','Deine Einsendung','Arbeiten & Kosten','Dein Hinweis','Prüfen & bestätigen'],return:['Dein Vorgang','Deine Rücksendung','Dein Hinweis','Prüfen & bestätigen']};
 const currentSteps=()=>steps[item.case_type||'warranty'];
@@ -22,7 +22,7 @@ function checkbox(root,name,title,description){const l=add(root,'label','');cons
 function deliveryText(i){return [i.item_type==='battery'?'Akku':'Fahrrad',i.required_charger?'Ladegerät':null,i.required_keys?'Schlüssel':null].filter(Boolean).join(' · ');}
 function repairTerms(i){const m=i.repair_price_mode;return ({fixed:`Festpreis ${money(i.repair_price_value)} · Leistungsumfang: ${i.repair_scope||'–'}`,estimate:`Kostenvoranschlag ${money(i.repair_estimate_value)} · Abweichungsregel: ${i.repair_deviation_rule||'–'}`,maximum:`Freigabe bis maximal ${money(i.repair_maximum_value)}`,actual:`Tatsächlicher Aufwand · Grundlage: ${i.repair_calculation_basis||'–'} · Rücksprachegrenze: ${i.repair_deviation_rule||'Keine gesonderte Grenze dokumentiert'}`,pending:'Einsendung und Prüfung werden bestätigt. Eine Freigabe für kostenpflichtige Reparaturen erfolgt damit nicht.'})[m]||'Noch keine Kostenregel angegeben.';}
 function renderStep(){
-  const panels=currentSteps(),root=$('#flow-step');root.replaceChildren();root.style.animation='none';void root.offsetWidth;root.style.animation='';
+  const panels=currentSteps(),root=$('#flow-step');root.replaceChildren();root.dataset.direction=stepDirection;
   $('#flow-kind').textContent=`SERVICE · ${(names[item.case_type]||names.warranty).toUpperCase()}`;
   $('#step-count').textContent=`${String(step+1).padStart(2,'0')} / ${String(panels.length).padStart(2,'0')}`;
   $('#progress-fill').style.width=`${(step+1)/panels.length*100}%`;
@@ -76,18 +76,52 @@ function renderFrozen(value){const root=$('#frozen-data');root.replaceChildren()
   dataLine(root,'Hinweis',snapshot.customer_note);dataLine(root,'Bestätigt',date(snapshot.confirmed_at));
   $('#flow-panel').replaceChildren(); // irrevocably remove editable interaction after confirmation
   only('frozen-panel');start();
+  preparePdf(value);
 }
-$('#prev-step').addEventListener('click',()=>{if(step>0&&!pending){step--;renderStep();}});
+function revealStep(){requestAnimationFrame(()=>{const card=$('#flow-panel');const top=card.getBoundingClientRect().top;if(top<0||top>window.innerHeight*.48)window.scrollTo({top:window.scrollY+top-12,behavior:'auto'});});}
+$('#prev-step').addEventListener('click',()=>{if(step>0&&!pending){stepDirection='back';step--;renderStep();revealStep();}});
 $('#next-step').addEventListener('click',async()=>{
   if(pending)return;
-  if(step<currentSteps().length-1){step++;renderStep();return;}
+  if(step<currentSteps().length-1){stepDirection='next';step++;renderStep();revealStep();return;}
   if(!working.confirm_scope||!working.confirm_accessories){$('#flow-error').textContent='Bitte bestätige beide Punkte.';return;}
   pending=true;$('#next-step').disabled=true;$('#next-step').textContent='Bestätigung wird gespeichert …';
   try{const result=await customer.confirm(token,working);if(!result?.ok||result.case?.status!=='confirmed')throw new Error('Server hat die Bestätigung nicht bestätigt.');
-    item=result.case;renderFrozen(item);
-  }catch(e){$('#flow-error').textContent=e.message||'Bestätigung fehlgeschlagen. Bitte erneut versuchen.';pending=false;renderStep();$('#flow-error').textContent=e.message||'Bitte erneut versuchen.';}
+    item=result.case;
+    if(!item.pdf_snapshot){item=await customer.get(token);}
+    if(!item.pdf_snapshot)throw new Error('Bestätigung gespeichert, aber der bestätigte Snapshot wurde nicht übertragen. Bitte neu laden.');
+    renderFrozen(item);
+  }catch(e){pending=false;if(item?.status==='confirmed'){only('frozen-panel');$('#frozen-data').replaceChildren();$('#pdf-error').hidden=false;$('#pdf-error').textContent='Dein Vorgang ist bestätigt. Bitte lade die Seite neu, um die Bestätigung und das PDF zu öffnen.';$('#frozen-pdf').setAttribute('aria-disabled','true');$('#frozen-pdf').removeAttribute('href');$('#frozen-download').hidden=true;return;}renderStep();$('#flow-error').textContent=e.message||'Bitte erneut versuchen.';}
 });
-$('#frozen-pdf').addEventListener('click',async e=>{const button=e.currentTarget;button.disabled=true;try{const url=await pdfBlobUrl(await customerServicePdf(item));window.open(url,'_blank','noopener');}catch(err){const p=add($('#frozen-panel'),'p','message',err.message);p.setAttribute('role','alert');}finally{button.disabled=false;}});
+// Generate before a click: browsers block window.open when an async PDF build precedes it.
+// Expose a normal, user-activated link AND a download link; neither requires a popup API.
+async function preparePdf(value){
+  const serial=++pdfGeneration;
+  const open=$('#frozen-pdf'),download=$('#frozen-download'),retry=$('#pdf-retry'),error=$('#pdf-error');
+  pdfUrl=null;
+  open.removeAttribute('href');open.setAttribute('aria-disabled','true');open.tabIndex=-1;
+  open.textContent='PDF wird vorbereitet …';download.hidden=true;retry.hidden=true;
+  error.hidden=true;error.textContent='';
+  try{
+    const bytes=await customerServicePdf(value);
+    if(serial!==pdfGeneration)return;
+    if(!(bytes instanceof Uint8Array || bytes instanceof ArrayBuffer) || !bytes.byteLength)throw new Error('Die PDF-Datei ist leer.');
+    pdfUrl=await pdfBlobUrl(bytes);
+    const name=`MYVELO_${String(value.public_id||'Service').replace(/[^a-zA-Z0-9_-]/g,'_')}_Bestaetigung.pdf`;
+    open.href=pdfUrl;open.target='_blank';open.rel='noopener noreferrer';
+    open.removeAttribute('aria-disabled');open.removeAttribute('tabindex');
+    open.textContent='Bestätigung als PDF öffnen ↗';
+    download.href=pdfUrl;download.download=name;download.hidden=false;
+  }catch(err){
+    if(serial!==pdfGeneration)return;
+    open.textContent='PDF konnte nicht vorbereitet werden';
+    error.textContent='Die Bestätigung ist gespeichert. Das PDF konnte nicht erstellt werden: '+(err?.message||'Unbekannter Fehler.');
+    error.hidden=false;retry.hidden=false;
+  }
+}
+$('#frozen-pdf').addEventListener('click',e=>{if(!pdfUrl)e.preventDefault();});
+$('#pdf-retry').addEventListener('click',()=>{if(item?.status==='confirmed')preparePdf(item);});
+window.addEventListener('pagehide',e=>{if(!e.persisted && pdfUrl){URL.revokeObjectURL(pdfUrl);pdfUrl=null;}});
+window.addEventListener('pageshow',e=>{if(e.persisted&&item?.status==='confirmed'&&!pdfUrl)preparePdf(item);});
 // One real input: supports OS one-time-code, selection, native paste and full-code paste.
 const input=$('#otp-input');const slots=[...$('#otp-slots').children];
 function drawOtp(){input.value=input.value.replace(/\D/g,'').slice(0,6);const cursor=input.selectionStart??input.value.length;for(let i=0;i<6;i++){slots[i].textContent=input.value[i]||'•';slots[i].classList.toggle('active',document.activeElement===input&&i===Math.min(cursor,5));}}

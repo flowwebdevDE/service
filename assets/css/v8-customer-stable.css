@@ -1,0 +1,40 @@
+/* V8.0.3 – customer-only stability. No changes to the employee layout. */
+.customer-view{overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.customer-view .customer-shell{width:min(calc(100% - 32px),670px);min-width:0;padding:clamp(16px,3.2vh,34px) 0 max(45px,env(safe-area-inset-bottom))}
+.customer-view .customer-header{margin-bottom:clamp(18px,4vh,34px);min-width:0}
+.customer-view .customer-header img{max-width:100%;height:auto}
+.customer-view .customer-card{min-width:0;max-width:100%;overflow-wrap:anywhere;box-shadow:0 15px 42px #11111108}
+.customer-view #flow-panel{display:flex;flex-direction:column;min-height:clamp(480px,calc(100svh - 140px),690px)}
+.customer-view #flow-panel[hidden]{display:none!important}
+.customer-view #flow-step{min-width:0;min-height:0;flex:1;animation:none}
+.customer-view .flow-step > *{animation:customer-enter .19s ease both}
+.customer-view .flow-step[data-direction="back"] > *{animation-name:customer-enter-back}
+.customer-view .flow-step > :nth-child(2){animation-delay:20ms}
+.customer-view .flow-step > :nth-child(3){animation-delay:35ms}
+.customer-view .flow-step > :nth-child(4){animation-delay:50ms}
+.customer-view .flow-actions{margin-top:auto;position:relative;z-index:1;padding-top:16px;flex-shrink:0}
+.customer-view .flow-actions .button{flex:1;min-width:0;white-space:normal}
+.customer-view .data-line{align-items:flex-start;min-width:0}
+.customer-view .data-line > span{min-width:0;flex:0 0 37%}
+.customer-view .data-line > strong{min-width:0;flex:1;overflow-wrap:anywhere;word-break:normal}
+.customer-view .progress-track{min-width:0}
+.customer-view .pdf-actions{display:grid;gap:10px;margin-top:20px}
+.customer-view #frozen-pdf[aria-disabled="true"]{pointer-events:none;opacity:.55;cursor:wait}
+.customer-view .pdf-actions .message{margin:4px 0;text-align:left}
+@keyframes customer-enter{from{opacity:.6;transform:translateX(7px)}to{opacity:1;transform:translateX(0)}}
+@keyframes customer-enter-back{from{opacity:.6;transform:translateX(-7px)}to{opacity:1;transform:translateX(0)}}
+@media(max-width:680px){
+  .customer-view .customer-shell{width:calc(100% - 24px);padding-top:16px}
+  .customer-view .customer-card{padding:clamp(16px,5vw,23px);border-radius:18px}
+  .customer-view #flow-panel{min-height:clamp(460px,calc(100svh - 102px),680px)}
+  .customer-view .customer-card h1{font-size:clamp(25px,7.4vw,36px);line-height:1.14;letter-spacing:-.045em}
+  .customer-view .customer-card p{overflow-wrap:anywhere}
+  .customer-view .progress{margin-bottom:17px}
+  .customer-view .flow-step .data-lines{margin-top:16px}
+  .customer-view .data-line{padding:10px 0;gap:10px}
+  .customer-view .flow-actions{gap:8px}
+  .customer-view .flow-actions .button{padding:10px 8px;font-size:13px}
+  .customer-view .otp-slots{gap:5px}
+  .customer-view .otp-slots span{height:clamp(42px,12vw,62px);font-size:22px}
+}
+@media(prefers-reduced-motion:reduce){.customer-view .flow-step > *{animation:none!important}}
