@@ -8,6 +8,11 @@ const make=(tag,cls,parent,content='')=>{const node=el(tag,cls,content);parent.a
 const label={warranty:'Garantie',repair:'Reparatur',return:'Retoure'};
 const statusLabel={waiting_customer:'Wartet auf Kunde',customer_confirmed:'Kunde hat bestätigt',arrived:'Eingetroffen',in_progress:'In Arbeit',completed:'Abgeschlossen'};
 let all=[],active=null,tab='case',archived=false,dirty=false,inflight=false,viewCounter=0,toastTimer=0,pendingChange=null,createKey='';
+const detailOpen=()=>document.body.classList.contains('detail-open');
+function closeMenu(){document.body.classList.remove('menu-open');$('#menu-toggle').setAttribute('aria-expanded','false');$('#sidebar-overlay').hidden=true;}
+function openMenu(){document.body.classList.add('menu-open');$('#menu-toggle').setAttribute('aria-expanded','true');$('#sidebar-overlay').hidden=false;}
+function showList(){document.body.classList.remove('detail-open');closeMenu();}
+async function returnToList(){if(!await okayToLeave())return;dirty=false;showList();}
 const localKey=id=>`myvelo_v8_staff_draft:${id}`;
 function toast(message,error=false){const node=$('#toast');node.textContent=message;node.classList.toggle('error',error);node.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>node.hidden=true,5000);}
 function loading(button,on){if(button){button.disabled=on;button.dataset.label??=button.textContent;button.textContent=on?'Bitte warten …':button.dataset.label;}}
@@ -35,7 +40,7 @@ function renderList(){
     const b=make('button',`case-entry ${active?.public_id===item.public_id?'selected':''}`,list);b.type='button';
     make('span','case-letter',b,(item.customer_name||'?').slice(0,1).toLocaleUpperCase('de-DE'));
     const main=make('span','case-entry-main',b);make('strong','',main,item.customer_name||'Unbekannter Kunde');
-    make('small','',main,`${item.shopify_ref} · ${item.public_id}`);make('span','case-type',b,label[item.case_type]||'Garantie');
+    make('small','',main,item.public_id);make('span','classic-cell classic-shopify',b,item.shopify_ref||'–');make('span','classic-cell classic-model',b,item.bike_model||'–');make('span','case-type',b,label[item.case_type]||'Garantie');make('span','classic-cell classic-status',b,statusLabel[item.service_status]||item.service_status||'–');
     b.addEventListener('click',()=>openCase(item.public_id));
   }
   if(!entries.length)make('div','empty',list,'Keine Vorgänge für diese Filter.');
@@ -43,6 +48,10 @@ function renderList(){
   $('#active-count').textContent=String(all.filter(v=>!v.archived_at).length);
   $('#archive-count').textContent=String(all.filter(v=>v.archived_at).length);
   $('#list-summary').textContent=`${entries.length} ${archived?'archivierte':'aktive'} Vorgänge`;
+  $('#stat-all').textContent=String(all.filter(v=>!v.archived_at).length);
+  $('#stat-waiting').textContent=String(all.filter(v=>!v.archived_at&&v.service_status==='waiting_customer').length);
+  $('#stat-confirmed').textContent=String(all.filter(v=>!v.archived_at&&v.status==='confirmed').length);
+  $('#stat-progress').textContent=String(all.filter(v=>!v.archived_at&&v.service_status==='in_progress').length);
   $('#active-btn').classList.toggle('selected',!archived);$('#archive-btn').classList.toggle('selected',archived);
   $('#mobile-active-btn').className=`button ${archived?'quiet':'dark'}`;$('#mobile-archive-btn').className=`button ${archived?'dark':'quiet'}`;
 }
@@ -52,10 +61,10 @@ async function refresh({preserve=true}={}){
   renderList();if(active&&!dirty)renderDetail();
 }
 async function openCase(id){
-  if(active?.public_id===id){document.body.classList.add('detail-open');return;}
+  if(active?.public_id===id){document.body.classList.add('detail-open');closeMenu();return;}
   if(!await okayToLeave())return;
   const sequence=++viewCounter;dirty=false;const container=$('#detail-content');clear(container);make('div','empty',container,'Vorgang wird geladen …');
-  document.body.classList.add('detail-open');try{const item=await staff.get(id);if(sequence!==viewCounter)return;active=item;tab='case';renderList();renderDetail();}
+  document.body.classList.add('detail-open');closeMenu();$('#detail-pane').scrollTop=0;try{const item=await staff.get(id);if(sequence!==viewCounter)return;active=item;tab='case';renderList();renderDetail();}
   catch(e){if(sequence===viewCounter){active=null;clear(container);make('div','empty',container,'Vorgang konnte nicht geladen werden.');errorMessage(e);}}
 }
 function detailHead(root){
@@ -201,8 +210,12 @@ $('#create-form').addEventListener('submit',async e=>{e.preventDefault();const b
 }catch(err){$('#create-message').textContent=err.message;}finally{loading(button,false);}});
 $('#refresh').addEventListener('click',async()=>{try{await refresh();toast('Aktualisiert.');}catch(e){errorMessage(e);}});
 $('#logout').addEventListener('click',()=>{logoutPortalSession();location.replace('login.html');});
-$('#back').addEventListener('click',async()=>{if(!await okayToLeave())return;document.body.classList.remove('detail-open');dirty=false;});
-$('#active-btn').addEventListener('click',()=>{archived=false;renderList();});$('#archive-btn').addEventListener('click',()=>{archived=true;renderList();});
+$('#back').addEventListener('click',returnToList);$('#detail-back').addEventListener('click',returnToList);
+$('#menu-toggle').addEventListener('click',()=>document.body.classList.contains('menu-open')?closeMenu():openMenu());
+$('#sidebar-overlay').addEventListener('click',closeMenu);
+$('#sidebar-new').addEventListener('click',()=>{closeMenu();openCreate();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMenu();});
+$('#active-btn').addEventListener('click',async()=>{if(!await okayToLeave())return;dirty=false;archived=false;renderList();showList();});$('#archive-btn').addEventListener('click',async()=>{if(!await okayToLeave())return;dirty=false;archived=true;renderList();showList();});
 $('#mobile-active-btn').addEventListener('click',()=>{archived=false;renderList();});$('#mobile-archive-btn').addEventListener('click',()=>{archived=true;renderList();});
 for(const id of ['search','type-filter','status-filter'])$("#"+id).addEventListener('input',renderList);
 (async()=>{if(!getPortalSession())return;try{await refresh({preserve:false});const id=new URLSearchParams(location.search).get('id');if(id)await openCase(id);$('#app').hidden=false;document.documentElement.classList.remove('ui-loading');$('#boot').remove();}catch(e){$('#boot').classList.add('error');$('#boot').textContent=`Serviceportal nicht erreichbar: ${e.message}`;}})();

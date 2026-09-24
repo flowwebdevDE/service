@@ -4,7 +4,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="referrer" content="no-referrer"><meta name="robots" content="noindex,nofollow">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self';script-src 'self';style-src 'self' 'unsafe-inline';img-src 'self' data: blob:;connect-src 'self' https://dsjhaivwhjtcynwkthiu.supabase.co;object-src 'none';base-uri 'self';form-action 'self';frame-src 'none'">
-<title>MYVELO · Serviceportal</title><link rel="stylesheet" href="assets/css/v8.css?v=8.0.0">
+<title>MYVELO · Serviceportal</title><link rel="stylesheet" href="assets/css/v8.css?v=8.0.1"><link rel="stylesheet" href="assets/css/v8-classic.css?v=8.0.2">
 <script src="assets/js/auth-guard.js?v=7.11.0.2"></script><script src="assets/js/security-bootstrap.js?v=7.10.6"></script>
 </head>
 <body class="staff-view">
@@ -12,25 +12,41 @@
 <div class="app" id="app" hidden>
   <aside class="side">
     <div class="brand"><img src="assets/brand/myvelo-logo.png" alt="MYVELO"><span>SERVICE</span></div>
-    <nav aria-label="Bereiche"><button id="active-btn" class="nav-button selected" type="button">Aktive Vorgänge <span id="active-count">0</span></button><button id="archive-btn" class="nav-button" type="button">Archiv <span id="archive-count">0</span></button></nav>
+    <nav class="classic-nav" aria-label="Bereiche">
+      <div class="classic-nav-heading">Vorgänge</div>
+      <div class="classic-nav-children">
+        <button id="active-btn" class="nav-button selected" type="button">Aktiv <span id="active-count">0</span></button>
+        <button id="archive-btn" class="nav-button" type="button">Archiv <span id="archive-count">0</span></button>
+      </div>
+      <button type="button" id="sidebar-new" class="nav-button sidebar-new"><span class="plus-glyph" aria-hidden="true">＋</span> Neuer Vorgang</button>
+      </nav>
     <button type="button" id="logout" class="nav-button logout">Abmelden</button>
   </aside>
   <main class="workspace">
-    <header class="toolbar"><button class="mobile-back icon-btn" id="back" type="button" aria-label="Zurück zur Liste">←</button><div class="toolbar-title"><span>MYVELO SERVICE</span><strong>Serviceportal</strong></div><div class="toolbar-actions"><button type="button" class="button quiet" id="refresh">Aktualisieren</button><button type="button" class="button dark" id="new">+ Vorgang</button></div></header>
+    <header class="toolbar"><button class="menu-button icon-btn" id="menu-toggle" type="button" aria-label="Menü öffnen" aria-expanded="false">☰</button><button class="mobile-back icon-btn" id="back" type="button" aria-label="Zurück zur Übersicht">←</button><div class="toolbar-title"><span>MYVELO SERVICE</span><strong>Serviceportal</strong></div><div class="toolbar-actions"><button type="button" class="button quiet" id="refresh">Aktualisieren</button><button type="button" class="button dark" id="new">+ Vorgang</button></div></header>
     <div class="workspace-body">
       <section id="list-pane" class="list-pane" aria-label="Vorgangsliste">
-        <div class="pane-title"><h1>Vorgänge</h1><p id="list-summary">Alle aktiven Vorgänge</p></div>
+        <div class="classic-intro"><span class="kicker">MYVELO SERVICE</span><h1>Alles im Blick.</h1><p>Garantie, Reparatur und Retoure – deine Vorgänge an einem Ort.</p></div>
+        <div class="classic-dashboard" aria-label="Vorgänge im Überblick">
+           <div class="classic-stat"><span>Alle aktiven</span><strong id="stat-all">0</strong><small>Vorgänge</small></div>
+           <div class="classic-stat"><span>Wartet auf Kunde</span><strong id="stat-waiting">0</strong><small>Bestätigung offen</small></div>
+           <div class="classic-stat"><span>Bestätigt</span><strong id="stat-confirmed">0</strong><small>Bestätigung eingegangen</small></div>
+           <div class="classic-stat"><span>In Bearbeitung</span><strong id="stat-progress">0</strong><small>Aktueller Bearbeitungsstand</small></div>
+        </div>
+        <div class="classic-panel"><div class="pane-title"><h2>Vorgänge</h2><p id="list-summary">Alle aktiven Vorgänge</p></div>
         <label class="sr-only" for="search">Vorgänge suchen</label><input class="search" id="search" type="search" placeholder="Name, Shopify, Vorgangs-ID, Modell" autocomplete="off">
         <div class="mobile-scope" aria-label="Ansichtsfilter"><button id="mobile-active-btn" type="button" class="button dark">Aktiv</button><button id="mobile-archive-btn" type="button" class="button quiet">Archiv</button></div>
         <div class="filters"><label><span>Art</span><select id="type-filter"><option value="all">Alle</option><option value="warranty">Garantie</option><option value="repair">Reparatur</option><option value="return">Retoure</option></select></label><label><span>Status</span><select id="status-filter"><option value="all">Alle</option><option value="waiting_customer">Wartet auf Kunde</option><option value="customer_confirmed">Bestätigt</option><option value="arrived">Eingetroffen</option><option value="in_progress">In Arbeit</option><option value="completed">Abgeschlossen</option></select></label></div>
-        <div id="case-list" class="case-list" aria-live="polite"></div>
+        <div class="classic-table-head" aria-hidden="true"><span>Kunde / Vorgang</span><span>Shopify</span><span>Modell</span><span>Art</span><span>Status</span></div>
+        <div id="case-list" class="case-list" aria-live="polite"></div></div>
       </section>
-      <section class="detail-pane" id="detail-pane" aria-label="Ausgewählter Vorgang"><div id="detail-content" class="detail-content"><div class="empty"><strong>Wähle einen Vorgang aus.</strong><p>Details, Freigaben, Verlauf und Dokumente erscheinen hier.</p></div></div></section>
+      <section class="detail-pane" id="detail-pane" aria-label="Ausgewählter Vorgang"><div class="classic-detail-top"><button id="detail-back" class="button quiet" type="button">← Alle Vorgänge</button></div><div id="detail-content" class="detail-content"><div class="empty"><strong>Wähle einen Vorgang aus.</strong><p>Details, Freigaben, Verlauf und Dokumente erscheinen hier.</p></div></div></section>
     </div>
   </main>
 </div>
+<button class="sidebar-overlay" id="sidebar-overlay" type="button" aria-label="Menü schließen" hidden></button>
 <dialog id="create-dialog" class="modal"><form id="create-form" class="modal-form"><div class="modal-head"><span>MYVELO SERVICE</span><h2>Neuen Vorgang anlegen</h2><p>Jeder Vorgang benötigt eine vorhandene Shopify-Referenz.</p></div><label>Vorgangsart<select name="case_type" id="create-type"><option value="warranty">Garantie</option><option value="repair">Reparatur</option><option value="return">Retoure</option></select></label><label>Kundenname<input name="customer_name" required maxlength="200" autocomplete="off"></label><label>Shopify-Referenz<input name="shopify_ref" required maxlength="200" autocomplete="off"></label><label>Fahrradmodell<input name="bike_model" required maxlength="200"></label><label>Gegenstand<select name="item_type"><option value="bike">Fahrrad</option><option value="battery">Akku</option></select></label><label>Anliegen / Arbeitsauftrag<textarea name="case_subject" required rows="3"></textarea></label><div class="checks"><label><input type="checkbox" name="required_charger"> Ladegerät erforderlich</label><label><input type="checkbox" name="required_keys"> Schlüssel erforderlich</label></div><div id="create-repair-fields" class="price-fields" hidden><div class="field-header">Kostenregel für diese Reparatur</div><label>Preis-/Freigabeart<select name="repair_price_mode" id="create-price-mode"><option value="pending">Noch nicht vereinbart</option><option value="fixed">Festpreis</option><option value="estimate">Kostenvoranschlag</option><option value="maximum">Höchstbetrag</option><option value="actual">Tatsächlicher Aufwand</option></select></label><label>Leistungsumfang<textarea name="repair_scope" rows="2"></textarea></label><label data-price="fixed">Festpreis (€)<input name="repair_price_value" type="number" min="0" step="0.01"></label><label data-price="estimate">Schätzbetrag (€)<input name="repair_estimate_value" type="number" min="0" step="0.01"></label><label data-price="maximum">Höchstbetrag (€)<input name="repair_maximum_value" type="number" min="0" step="0.01"></label><label data-price="estimate actual">Abweichungs-/Rücksprachegrenze<textarea name="repair_deviation_rule" rows="2"></textarea></label><label data-price="actual">Berechnungsgrundlage<textarea name="repair_calculation_basis" rows="2"></textarea></label></div><p class="message" id="create-message" role="alert"></p><div class="modal-actions"><button type="button" class="button quiet" id="create-cancel">Abbrechen</button><button type="submit" class="button dark">Vorgang anlegen</button></div></form></dialog>
 <dialog id="confirm-dialog" class="modal small"><form method="dialog" id="confirm-form"><h2 id="confirm-title">Aktion bestätigen</h2><p id="confirm-description"></p><div class="modal-actions"><button value="cancel" class="button quiet">Abbrechen</button><button value="confirm" class="button dark">Bestätigen</button></div></form></dialog>
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
-<script type="module" src="assets/js/v8-workspace.js?v=8.0.0"></script>
+<script type="module" src="assets/js/v8-workspace.js?v=8.0.2"></script>
 </body></html>
