@@ -38,3 +38,13 @@
   .customer-view .otp-slots span{height:clamp(42px,12vw,62px);font-size:22px}
 }
 @media(prefers-reduced-motion:reduce){.customer-view .flow-step > *{animation:none!important}}
+
+/* PDF actions are anchors styled as buttons; suppress browser link underlines. */
+.customer-view #frozen-pdf,
+.customer-view #frozen-download,
+.customer-view #frozen-pdf:hover,
+.customer-view #frozen-download:hover,
+.customer-view #frozen-pdf:focus-visible,
+.customer-view #frozen-download:focus-visible {
+  text-decoration: none;
+}
