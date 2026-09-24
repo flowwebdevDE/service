@@ -19,11 +19,15 @@ if (reason === "expired") {
 function targetAfterLogin() {
   const next = new URLSearchParams(location.search).get("next");
 
-  if (!next || next.includes("login.html") || next.startsWith("http")) {
-    return "index.html";
-  }
-
-  return next;
+  if (!next) return "index.html";
+  try {
+    const target = new URL(next, location.href);
+    const basename = target.pathname.split("/").pop();
+    if (target.origin === location.origin && ["index.html", "case.html", "legacy-index.html"].includes(basename)) {
+      return basename + target.search + target.hash;
+    }
+  } catch { /* invalid destination */ }
+  return "index.html";
 }
 
 if (getPortalSession()) {

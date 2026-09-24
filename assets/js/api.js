@@ -1,16 +1,5 @@
 import { renderWarrantyFlowPdf } from "./pdf/warranty-flowpdf.js?v=7.5.2";
 import { CONFIG, hasSupabaseConfig } from "./config.js?v=7.5.2";
-import {
-  confirmDemoCase,
-  createDemoCase,
-  getDemoCaseById,
-  getDemoCaseByToken,
-  listDemoCases,
-  updateDemoCaseById,
-  updateDemoCaseByToken,
-  updateDemoCaseStatus
-} from "./demo-store.js?v=7.5.2";
-
 let backendAvailable;
 let brandLogoPromise;
 
@@ -204,21 +193,7 @@ function customerHeaders(token, json = false) {
 }
 
 export async function verifyCustomerAccess(token, code) {
-  if (!(await hasBackend())) {
-    if (String(code || "") !== "123456") {
-      throw new Error("Demo-Code: 123456");
-    }
-
-    const expires = Math.floor(Date.now() / 1000) + 8 * 60 * 60;
-    const payload = btoa(JSON.stringify({
-      v: 1,
-      typ: "customer-session",
-      exp: expires
-    })).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
-    const fake = `${payload}.demo`;
-    writeCustomerSession(token, fake);
-    return { ok: true, session_token: fake };
-  }
+  if (!(await hasBackend())) throw new Error("Backend nicht erreichbar. Kein Demo-Fallback im produktiven Betrieb.");
 
   const response = await fetch(
     apiUrl(`customer/${encodeURIComponent(token)}/verify`),
@@ -285,9 +260,7 @@ export async function hasBackend(force = false) {
 }
 
 export async function listCases() {
-  if (!(await hasBackend())) {
-    return { items: listDemoCases(), demo: true };
-  }
+  if (!(await hasBackend())) throw new Error("Backend nicht erreichbar. Kein Demo-Fallback im produktiven Betrieb.");
 
   const response = await fetch(apiUrl("admin/cases"), {
     headers: await adminHeaders()
@@ -297,9 +270,7 @@ export async function listCases() {
 }
 
 export async function createCase(data) {
-  if (!(await hasBackend())) {
-    return createDemoCase(data);
-  }
+  if (!(await hasBackend())) throw new Error("Backend nicht erreichbar. Kein Demo-Fallback im produktiven Betrieb.");
 
   const response = await fetch(apiUrl("admin/cases"), {
     method: "POST",
@@ -322,11 +293,7 @@ export async function createCase(data) {
 }
 
 export async function getAdminCase(id) {
-  if (!(await hasBackend())) {
-    const item = getDemoCaseById(id);
-    if (!item) throw new Error("Vorgang nicht gefunden.");
-    return item;
-  }
+  if (!(await hasBackend())) throw new Error("Backend nicht erreichbar. Kein Demo-Fallback im produktiven Betrieb.");
 
   const response = await fetch(apiUrl(`admin/cases/${encodeURIComponent(id)}`), {
     headers: await adminHeaders()
@@ -336,9 +303,7 @@ export async function getAdminCase(id) {
 }
 
 export async function updateAdminCase(id, data) {
-  if (!(await hasBackend())) {
-    return updateDemoCaseById(id, data);
-  }
+  if (!(await hasBackend())) throw new Error("Backend nicht erreichbar. Kein Demo-Fallback im produktiven Betrieb.");
 
   const response = await fetch(apiUrl(`admin/cases/${encodeURIComponent(id)}`), {
     method: "PUT",
@@ -350,11 +315,7 @@ export async function updateAdminCase(id, data) {
 }
 
 export async function updateAdminCaseStatus(id, serviceStatus) {
-  if (!(await hasBackend())) {
-    const item = updateDemoCaseStatus(id, serviceStatus);
-    if (!item) throw new Error("Vorgang nicht gefunden.");
-    return item;
-  }
+  if (!(await hasBackend())) throw new Error("Backend nicht erreichbar. Kein Demo-Fallback im produktiven Betrieb.");
 
   const response = await fetch(
     apiUrl(`admin/cases/${encodeURIComponent(id)}/status`),
@@ -369,9 +330,7 @@ export async function updateAdminCaseStatus(id, serviceStatus) {
 }
 
 export async function deleteAdminCase(id) {
-  if (!(await hasBackend())) {
-    throw new Error("Löschen ist im Demo-Modus nicht verfügbar.");
-  }
+  if (!(await hasBackend())) throw new Error("Backend nicht erreichbar. Kein Demo-Fallback im produktiven Betrieb.");
 
   const response = await fetch(apiUrl(`admin/cases/${encodeURIComponent(id)}`), {
     method: "DELETE",
@@ -382,9 +341,7 @@ export async function deleteAdminCase(id) {
 }
 
 export async function getAdminCustomerLink(id) {
-  if (!(await hasBackend())) {
-    throw new Error("Kundenlink ist im Demo-Modus nicht verfügbar.");
-  }
+  if (!(await hasBackend())) throw new Error("Backend nicht erreichbar. Kein Demo-Fallback im produktiven Betrieb.");
 
   const response = await fetch(
     apiUrl(`admin/cases/${encodeURIComponent(id)}/customer-link`),
@@ -412,13 +369,7 @@ export async function getAdminCustomerLink(id) {
 
 
 export async function getAdminCustomerAccess(id) {
-  if (!(await hasBackend())) {
-    return {
-      ok: true,
-      verification_code: "123456",
-      demo: true
-    };
-  }
+  if (!(await hasBackend())) throw new Error("Backend nicht erreichbar. Kein Demo-Fallback im produktiven Betrieb.");
 
   const response = await fetch(
     apiUrl(`admin/cases/${encodeURIComponent(id)}/customer-access`),
@@ -432,11 +383,7 @@ export async function getAdminCustomerAccess(id) {
 }
 
 export async function getAdminCustomerPreview(id) {
-  if (!(await hasBackend())) {
-    const item = getDemoCaseById(id);
-    if (!item) throw new Error("Vorgang nicht gefunden.");
-    return item;
-  }
+  if (!(await hasBackend())) throw new Error("Backend nicht erreichbar. Kein Demo-Fallback im produktiven Betrieb.");
 
   const response = await fetch(
     apiUrl(`admin/cases/${encodeURIComponent(id)}/customer-preview`),
@@ -447,11 +394,7 @@ export async function getAdminCustomerPreview(id) {
 }
 
 export async function getCustomerCase(token) {
-  if (!(await hasBackend())) {
-    const item = getDemoCaseByToken(token);
-    if (!item) throw new Error("Kundenlink ungültig.");
-    return item;
-  }
+  if (!(await hasBackend())) throw new Error("Backend nicht erreichbar. Kein Demo-Fallback im produktiven Betrieb.");
 
   const response = await fetch(
     apiUrl(`customer/${encodeURIComponent(token)}`),
@@ -462,9 +405,7 @@ export async function getCustomerCase(token) {
 }
 
 export async function saveCustomerDraft(token, data) {
-  if (!(await hasBackend())) {
-    return updateDemoCaseByToken(token, data);
-  }
+  if (!(await hasBackend())) throw new Error("Backend nicht erreichbar. Kein Demo-Fallback im produktiven Betrieb.");
 
   const response = await fetch(
     apiUrl(`customer/${encodeURIComponent(token)}`),
@@ -479,16 +420,7 @@ export async function saveCustomerDraft(token, data) {
 }
 
 export async function confirmCustomer(token, data) {
-  if (!(await hasBackend())) {
-    if (!data.confirm_scope || !data.confirm_accessories) {
-      throw new Error("Bitte beide Bestätigungen aktivieren.");
-    }
-
-    return {
-      ok: true,
-      case: confirmDemoCase(token, data)
-    };
-  }
+  if (!(await hasBackend())) throw new Error("Backend nicht erreichbar. Kein Demo-Fallback im produktiven Betrieb.");
 
   const response = await fetch(
     apiUrl(`customer/${encodeURIComponent(token)}/confirm`),

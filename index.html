@@ -1,266 +1,36 @@
 <!doctype html>
-<html lang="de" class="auth-pending employee-booting">
+<html lang="de" class="auth-pending ui-loading">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://dsjhaivwhjtcynwkthiu.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'none'; worker-src 'self' blob:; upgrade-insecure-requests">
-  <meta name="referrer" content="no-referrer">
-<title>MYVELO Service · Garantiefälle</title>
-  <link rel="stylesheet" href="assets/css/app.css?v=7.10.6">
-  <link rel="stylesheet" href="assets/css/employee-apple.css?v=7.11.0.1">
-  <script src="assets/js/auth-guard.js?v=7.11.0.2"></script>
-  <script src="assets/js/security-bootstrap.js?v=7.10.6"></script>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="referrer" content="no-referrer"><meta name="robots" content="noindex,nofollow">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self';script-src 'self';style-src 'self' 'unsafe-inline';img-src 'self' data: blob:;connect-src 'self' https://dsjhaivwhjtcynwkthiu.supabase.co;object-src 'none';base-uri 'self';form-action 'self';frame-src 'none'">
+<title>MYVELO · Serviceportal</title><link rel="stylesheet" href="assets/css/v8.css?v=8.0.0">
+<script src="assets/js/auth-guard.js?v=7.11.0.2"></script><script src="assets/js/security-bootstrap.js?v=7.10.6"></script>
 </head>
-<body class="flow-employee">
-
-  <div class="employee-dashboard-loader" id="employee-dashboard-loader" role="status" aria-live="polite">
-    <div class="employee-dashboard-loader__inner">
-      <span class="employee-dashboard-loader__mark" aria-hidden="true"></span>
-      <strong>Service wird vorbereitet</strong>
-      <span>Vorgänge werden synchronisiert.</span>
+<body class="staff-view">
+<div id="boot" class="boot" role="status">MYVELO SERVICE <small>Vorgänge werden geladen …</small></div>
+<div class="app" id="app" hidden>
+  <aside class="side">
+    <div class="brand"><img src="assets/brand/myvelo-logo.png" alt="MYVELO"><span>SERVICE</span></div>
+    <nav aria-label="Bereiche"><button id="active-btn" class="nav-button selected" type="button">Aktive Vorgänge <span id="active-count">0</span></button><button id="archive-btn" class="nav-button" type="button">Archiv <span id="archive-count">0</span></button></nav>
+    <button type="button" id="logout" class="nav-button logout">Abmelden</button>
+  </aside>
+  <main class="workspace">
+    <header class="toolbar"><button class="mobile-back icon-btn" id="back" type="button" aria-label="Zurück zur Liste">←</button><div class="toolbar-title"><span>MYVELO SERVICE</span><strong>Serviceportal</strong></div><div class="toolbar-actions"><button type="button" class="button quiet" id="refresh">Aktualisieren</button><button type="button" class="button dark" id="new">+ Vorgang</button></div></header>
+    <div class="workspace-body">
+      <section id="list-pane" class="list-pane" aria-label="Vorgangsliste">
+        <div class="pane-title"><h1>Vorgänge</h1><p id="list-summary">Alle aktiven Vorgänge</p></div>
+        <label class="sr-only" for="search">Vorgänge suchen</label><input class="search" id="search" type="search" placeholder="Name, Shopify, Vorgangs-ID, Modell" autocomplete="off">
+        <div class="mobile-scope" aria-label="Ansichtsfilter"><button id="mobile-active-btn" type="button" class="button dark">Aktiv</button><button id="mobile-archive-btn" type="button" class="button quiet">Archiv</button></div>
+        <div class="filters"><label><span>Art</span><select id="type-filter"><option value="all">Alle</option><option value="warranty">Garantie</option><option value="repair">Reparatur</option><option value="return">Retoure</option></select></label><label><span>Status</span><select id="status-filter"><option value="all">Alle</option><option value="waiting_customer">Wartet auf Kunde</option><option value="customer_confirmed">Bestätigt</option><option value="arrived">Eingetroffen</option><option value="in_progress">In Arbeit</option><option value="completed">Abgeschlossen</option></select></label></div>
+        <div id="case-list" class="case-list" aria-live="polite"></div>
+      </section>
+      <section class="detail-pane" id="detail-pane" aria-label="Ausgewählter Vorgang"><div id="detail-content" class="detail-content"><div class="empty"><strong>Wähle einen Vorgang aus.</strong><p>Details, Freigaben, Verlauf und Dokumente erscheinen hier.</p></div></div></section>
     </div>
-  </div>
-
-  <div class="flow-shell">
-    <aside class="flow-sidebar" id="flowSidebar">
-      <div class="flow-brand">
-        <img class="brand-logo-image brand-logo-image--sidebar" src="assets/brand/myvelo-logo.png?v=7.0" width="118" height="22" alt="MYVELO" data-hide-on-error>
-        <span class="flow-brand-sub">SERVICE</span>
-      </div>
-
-      <nav class="flow-nav">
-        <div class="flow-nav-group">
-          <div class="flow-nav-item flow-nav-item--parent">
-            <span class="flow-nav-dot"></span>
-            <span>Vorgänge</span>
-          </div>
-          <div class="flow-nav-sub">
-            <button class="flow-nav-subitem is-active" data-work-view="active" type="button">
-              <span>Aktiv</span>
-              <small id="sidebar-active-count">0</small>
-            </button>
-            <button class="flow-nav-subitem" data-work-view="archive" type="button">
-              <span>Archiv</span>
-              <small id="sidebar-archive-count">0</small>
-            </button>
-          </div>
-        </div>
-        <button class="flow-nav-item" id="sidebarNewCase" type="button">
-          <span class="flow-nav-plus" aria-hidden="true"></span>
-          <span>Neu</span>
-        </button>
-      </nav>
-
-      <div class="flow-sidebar-spacer"></div>
-
-      <button class="flow-nav-item" id="logout-button" type="button">
-        <span class="flow-nav-dot flow-nav-dot--muted"></span>
-        <span>Abmelden</span>
-      </button>
-    </aside>
-
-    <div class="flow-main">
-      <header class="flow-topbar">
-        <div class="flow-topbar-left">
-          <button class="flow-burger" id="mobileMenuButton" type="button" aria-label="Menü">
-            <span></span><span></span><span></span>
-          </button>
-          <div>
-            <strong>Garantiefälle</strong>
-          </div>
-        </div>
-
-        <div class="flow-topbar-actions">
-          <button class="flow-action secondary" id="reload" type="button">Aktualisieren</button>
-          <button class="flow-action primary" id="newCaseButton" type="button">＋ Neuer Fall</button>
-        </div>
-      </header>
-
-      <main class="flow-workspace">
-
-        <section class="flow-page-intro" aria-labelledby="employee-overview-title">
-          <div class="flow-page-intro__copy">
-            <span class="flow-page-intro__eyebrow">MYVELO Service</span>
-            <h1 id="employee-overview-title">Alles im Blick.</h1>
-            <p>Aktive Garantiefälle, Kundenbestätigungen und Bearbeitungsstände in einer ruhigen, fokussierten Ansicht.</p>
-          </div>
-        </section>
-
-<section class="flow-dashboard" id="active-dashboard" aria-label="Dashboard">
-          <button class="flow-dashboard-card is-active" type="button" data-status-filter="all">
-            <span>Alle aktiven</span>
-            <strong id="stat-total">0</strong>
-            <small>Vorgänge</small>
-          </button>
-
-          <button class="flow-dashboard-card status-waiting" type="button" data-status-filter="waiting_customer">
-            <span>Wartet auf Kunde</span>
-            <strong id="stat-waiting">0</strong>
-            <small>Bestätigung offen</small>
-          </button>
-
-          <button class="flow-dashboard-card status-confirmed" type="button" data-status-filter="customer_confirmed">
-            <span>Bestätigt</span>
-            <strong id="stat-confirmed">0</strong>
-            <small>Status noch nicht gesetzt</small>
-          </button>
-
-          <button class="flow-dashboard-card status-arrived" type="button" data-status-filter="arrived">
-            <span>Angekommen</span>
-            <strong id="stat-arrived">0</strong>
-            <small>zur Bearbeitung bereit</small>
-          </button>
-
-          <button class="flow-dashboard-card status-progress" type="button" data-status-filter="in_progress">
-            <span>In Bearbeitung</span>
-            <strong id="stat-progress">0</strong>
-            <small>aktuell aktiv</small>
-          </button>
-        </section>
-
-        <section class="flow-panel">
-          <div class="flow-panel-head">
-            <div>
-              <strong>Vorgänge</strong>
-              <span id="case-list-subtitle">Alle Garantiefälle</span>
-            </div>
-          </div>
-
-          <div class="flow-case-list" id="case-rows"></div>
-        </section>
-      </main>
-    </div>
-  </div>
-
-  <div class="flow-backdrop" id="flowBackdrop"></div>
-
-  <dialog class="flow-dialog" id="newCaseDialog">
-    <form id="create-form">
-      <div class="flow-dialog-head">
-        <div>
-          <span>Neuer Garantiefall</span>
-          <strong>Schnell anlegen</strong>
-        </div>
-        <button class="flow-close" id="closeDialogButton" type="button">×</button>
-      </div>
-
-      <div class="flow-create-layout">
-        <div class="flow-create-pair">
-          <label>
-            <span>Shopify-Referenz *</span>
-            <input name="shopify_ref" required placeholder="#4832">
-          </label>
-
-          <label>
-            <span>Kundenname *</span>
-            <input name="customer_name" required placeholder="Vor- und Nachname">
-          </label>
-        </div>
-<div class="flow-create-pair">
-          <label>
-            <span>Gegenstand</span>
-            <select name="item_type" id="create-item-type">
-              <option value="bike">Fahrrad</option>
-              <option value="battery">Akku</option>
-            </select>
-          </label>
-
-          <label class="flow-model-quick-field">
-            <span id="create-model-label">Modell</span>
-            <input type="hidden" name="bike_model">
-            <button id="create-model-trigger" class="flow-model-trigger" type="button">
-              <span class="flow-model-trigger__value">Modell auswählen</span>
-              <span class="flow-model-trigger__arrow">›</span>
-            </button>
-          </label>
-        </div>
-
-        <label class="flow-block-field">
-          <span>Garantiefall / Betreff</span>
-          <input name="case_subject" placeholder="Kurzbeschreibung">
-        </label>
-
-        <div class="flow-create-pair flow-create-pair--switches">
-          <label class="flow-inline-control flow-inline-control--switch">
-            <span>
-              <strong>Ladegerät</strong>
-              <small>mitgeben</small>
-            </span>
-            <span class="flow-switch">
-              <input type="checkbox" name="required_charger">
-              <span class="flow-switch__track">
-                <span class="flow-switch__thumb"></span>
-              </span>
-            </span>
-          </label>
-
-          <label class="flow-inline-control flow-inline-control--switch">
-            <span>
-              <strong>Schlüssel</strong>
-              <small>mitgeben</small>
-            </span>
-            <span class="flow-switch">
-              <input type="checkbox" name="required_keys">
-              <span class="flow-switch__track">
-                <span class="flow-switch__thumb"></span>
-              </span>
-            </span>
-          </label>
-        </div>
-      </div>
-
-      <details class="flow-details">
-        <summary>Weitere Angaben <span>optional</span></summary>
-        <div class="flow-details-body">
-          <div class="flow-create-grid">
-<label>
-              <span>Farbe</span>
-              <input name="bike_color">
-            </label>
-            <label>
-              <span>Zusatzleistung</span>
-              <select name="service_choice">
-                <option value="">Keine Vorauswahl</option>
-                <option value="none">Nur Garantiefall</option>
-                <option value="inspection">Inspektion · 96 €</option>
-                <option value="inspection_wear">Inspektion + Verschleißteile</option>
-              </select>
-            </label>
-            <label class="span-2">
-              <span>Hinweis an uns</span>
-              <textarea name="customer_note"></textarea>
-            </label>
-            
-          </div>
-        </div>
-      </details>
-
-      <div class="flow-dialog-actions">
-        <button class="flow-action secondary" id="cancelDialogButton" type="button">Abbrechen</button>
-        <button class="flow-action primary" type="submit">Kundenlink erstellen</button>
-      </div>
-    </form>
-  </dialog>
-
-  <dialog class="flow-dialog flow-dialog--small" id="linkDialog">
-    <div class="flow-dialog-head">
-      <div>
-        <span>Fertig</span>
-        <strong>Kundenlink erstellt</strong>
-      </div>
-    </div>
-    <input class="flow-copy-input" id="createdLink" readonly>
-    <div class="flow-access-code-row">
-      <span>Verifizierungscode</span>
-      <strong id="createdVerificationCode">••••••</strong>
-    </div>
-    <div class="flow-dialog-actions">
-      <button class="flow-action secondary" id="openCreatedLink" type="button">Öffnen</button>
-      <button class="flow-action secondary" id="copyCreatedCode" type="button">Code kopieren</button>
-      <button class="flow-action primary" id="copyCreatedLink" type="button">Kopieren</button>
-    </div>
-  </dialog>
-
-  <script type="module" src="assets/js/admin.js?v=7.11.0"></script>
-</body>
-</html>
+  </main>
+</div>
+<dialog id="create-dialog" class="modal"><form id="create-form" class="modal-form"><div class="modal-head"><span>MYVELO SERVICE</span><h2>Neuen Vorgang anlegen</h2><p>Jeder Vorgang benötigt eine vorhandene Shopify-Referenz.</p></div><label>Vorgangsart<select name="case_type" id="create-type"><option value="warranty">Garantie</option><option value="repair">Reparatur</option><option value="return">Retoure</option></select></label><label>Kundenname<input name="customer_name" required maxlength="200" autocomplete="off"></label><label>Shopify-Referenz<input name="shopify_ref" required maxlength="200" autocomplete="off"></label><label>Fahrradmodell<input name="bike_model" required maxlength="200"></label><label>Gegenstand<select name="item_type"><option value="bike">Fahrrad</option><option value="battery">Akku</option></select></label><label>Anliegen / Arbeitsauftrag<textarea name="case_subject" required rows="3"></textarea></label><div class="checks"><label><input type="checkbox" name="required_charger"> Ladegerät erforderlich</label><label><input type="checkbox" name="required_keys"> Schlüssel erforderlich</label></div><div id="create-repair-fields" class="price-fields" hidden><div class="field-header">Kostenregel für diese Reparatur</div><label>Preis-/Freigabeart<select name="repair_price_mode" id="create-price-mode"><option value="pending">Noch nicht vereinbart</option><option value="fixed">Festpreis</option><option value="estimate">Kostenvoranschlag</option><option value="maximum">Höchstbetrag</option><option value="actual">Tatsächlicher Aufwand</option></select></label><label>Leistungsumfang<textarea name="repair_scope" rows="2"></textarea></label><label data-price="fixed">Festpreis (€)<input name="repair_price_value" type="number" min="0" step="0.01"></label><label data-price="estimate">Schätzbetrag (€)<input name="repair_estimate_value" type="number" min="0" step="0.01"></label><label data-price="maximum">Höchstbetrag (€)<input name="repair_maximum_value" type="number" min="0" step="0.01"></label><label data-price="estimate actual">Abweichungs-/Rücksprachegrenze<textarea name="repair_deviation_rule" rows="2"></textarea></label><label data-price="actual">Berechnungsgrundlage<textarea name="repair_calculation_basis" rows="2"></textarea></label></div><p class="message" id="create-message" role="alert"></p><div class="modal-actions"><button type="button" class="button quiet" id="create-cancel">Abbrechen</button><button type="submit" class="button dark">Vorgang anlegen</button></div></form></dialog>
+<dialog id="confirm-dialog" class="modal small"><form method="dialog" id="confirm-form"><h2 id="confirm-title">Aktion bestätigen</h2><p id="confirm-description"></p><div class="modal-actions"><button value="cancel" class="button quiet">Abbrechen</button><button value="confirm" class="button dark">Bestätigen</button></div></form></dialog>
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+<script type="module" src="assets/js/v8-workspace.js?v=8.0.0"></script>
+</body></html>

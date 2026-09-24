@@ -5,9 +5,7 @@ export const CONFIG = {
   edgeFunctionName: "portal-api",
 
   // Local browser state.
-  authSessionStorage: "garantieportal_company_session",
-  demoStorage: "garantieportal_demo_v2",
-  demoToken: "demo-customer-token"
+  authSessionStorage: "garantieportal_company_session"
 };
 
 export function hasSupabaseConfig() {
