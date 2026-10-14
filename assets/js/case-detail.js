@@ -7,9 +7,9 @@ import {
   updateAdminCaseStatus,
   logoutPortalSession,
   requirePortalSession
-} from "./api.js?v=7.12.1-eu";
+} from "./api.js?v=7.14.1";
 import { initModelPopup } from "./model-picker.js?v=7.6.1";
-import { setButtonLoading, pulseElement, beginGlobalBusy, endGlobalBusy, transitionSurface } from "./motion.js?v=7.11.0";
+import { setButtonLoading, pulseElement, beginGlobalBusy, endGlobalBusy, transitionSurface } from "./motion.js?v=7.14.1";
 import { showError, showInfo, showSuccess } from "./banner.js?v=7.10.6";
 
 
@@ -18,7 +18,7 @@ const bootLoaderTitle = document.querySelector("#app-boot-loader-title");
 const bootLoaderText = document.querySelector("#app-boot-loader-text");
 
 function finishBoot() {
-  document.documentElement.classList.remove("ui-loading");
+  document.documentElement.classList.remove("employee-content-loading");
 
   if (!bootLoader) return;
 
@@ -27,7 +27,7 @@ function finishBoot() {
 }
 
 function failBoot(message) {
-  document.documentElement.classList.add("ui-loading");
+  document.documentElement.classList.add("employee-content-loading");
 
   if (!bootLoader) return;
 
@@ -69,6 +69,46 @@ const customerLinkValue = document.querySelector("#customer-link-value");
 const customerVerificationCode = document.querySelector("#customer-verification-code");
 const customerLinkNote = document.querySelector("#customer-link-note");
 let currentItem = null;
+
+const CASE_TYPE_META = Object.freeze({
+  warranty: {
+    label: "Garantiefall",
+    subject: "Garantiefall / Betreff",
+    service: true,
+    serviceHeading: "Zusatzauftrag",
+    serviceLabel: "Zusatzleistung zum Garantiefall",
+    frozenServiceLabel: "Zusatzauftrag",
+    none: "Nur Garantiefall"
+  },
+  repair: {
+    label: "Reparatur",
+    subject: "Reparatur / Fehlerbild",
+    service: true,
+    serviceHeading: "Zusätzliche Arbeiten",
+    serviceLabel: "Zusatzleistung zur Reparatur",
+    frozenServiceLabel: "Zusätzliche Arbeiten",
+    none: "Nur Reparatur"
+  },
+  return: { label: "Rückgabe", subject: "Grund der Rückgabe", service: false, none: "Keine Zusatzleistung" },
+  exchange: { label: "Tausch", subject: "Grund für den Tausch", service: false, none: "Keine Zusatzleistung" }
+});
+
+function caseTypeMeta(value) {
+  return CASE_TYPE_META[value] || CASE_TYPE_META.warranty;
+}
+
+function applyCaseTypeUi(value) {
+  const meta = caseTypeMeta(value);
+  document.querySelector("#case-type-label")?.replaceChildren(document.createTextNode(meta.label));
+  document.querySelector("#case-subject-label")?.replaceChildren(document.createTextNode(meta.subject));
+  document.querySelector("#case-service-heading")?.replaceChildren(document.createTextNode(meta.serviceHeading || "Zusatzauftrag"));
+  document.querySelector("#case-service-label")?.replaceChildren(document.createTextNode(meta.serviceLabel || "Zusatzleistung"));
+  document.querySelector("#case-service-panel")?.classList.toggle("hidden", !meta.service);
+  const serviceSelect = form.elements.service_choice;
+  const noneOption = serviceSelect?.querySelector('option[value="none"]');
+  if (noneOption) noneOption.textContent = meta.none;
+  if (!meta.service && serviceSelect) serviceSelect.value = "none";
+}
 
 
 function statusLabel(value) {
@@ -128,6 +168,7 @@ function renderServiceStatus(item) {
 
 function collect() {
   return {
+    case_type: form.elements.case_type.value,
     customer_name: form.elements.customer_name.value.trim(),
     bike_model: form.elements.bike_model.value.trim(),
     bike_color: form.elements.bike_color.value.trim(),
@@ -141,9 +182,11 @@ function collect() {
 }
 
 
-function serviceDisplay(value) {
+function serviceDisplay(value, caseType = "warranty") {
+  const meta = caseTypeMeta(caseType);
+  if (!meta.service) return [meta.label, "Keine zusätzliche Leistung vorgesehen"];
   return {
-    none: ["Nur Garantiefall", "Keine zusätzliche kostenpflichtige Arbeit"],
+    none: [meta.none, "Keine zusätzliche kostenpflichtige Arbeit"],
     inspection: ["Inspektion · 96 €", "Vom Kunden zusätzlich beauftragt"],
     inspection_wear: [
       "Inspektion + Verschleißteile",
@@ -169,7 +212,8 @@ function confirmedSnapshot(item) {
 
 function renderEmployeeFrozen(item) {
   const snapshot = confirmedSnapshot(item);
-  const [service, serviceNote] = serviceDisplay(snapshot.service_choice);
+  const meta = caseTypeMeta(snapshot.case_type);
+  const [service, serviceNote] = serviceDisplay(snapshot.service_choice, snapshot.case_type);
 
   document.querySelector("#frozen-employee-customer").textContent =
     snapshot.customer_name || "–";
@@ -182,6 +226,7 @@ function renderEmployeeFrozen(item) {
   document.querySelector("#frozen-employee-model").textContent =
     modelParts.length ? modelParts.join(" · ") : "Kein Modell ergänzt";
 
+  document.querySelector("#frozen-employee-type-label").textContent = meta.label;
   document.querySelector("#frozen-employee-subject").textContent =
     snapshot.case_subject || "Kein Betreff hinterlegt";
 
@@ -191,6 +236,11 @@ function renderEmployeeFrozen(item) {
   document.querySelector("#frozen-employee-delivery").textContent =
     deliveryDisplay(snapshot);
 
+  const frozenServiceCard = document.querySelector("#frozen-employee-service-card");
+  frozenServiceCard?.classList.toggle("hidden", !meta.service);
+  document.querySelector("#frozen-employee-service-label")?.replaceChildren(
+    document.createTextNode(meta.frozenServiceLabel || "Zusatzauftrag")
+  );
   document.querySelector("#frozen-employee-service").textContent = service;
   document.querySelector("#frozen-employee-service-note").textContent = serviceNote;
 
@@ -209,11 +259,13 @@ function renderEmployeeFrozen(item) {
 
 function fill(item) {
   document.querySelector("#case-title")?.replaceChildren(document.createTextNode(item.public_id));
+  applyCaseTypeUi(item.case_type);
   document.querySelector("#sidebarCaseRef")?.replaceChildren(document.createTextNode(item.shopify_ref));
   document.querySelector("#shopify-ref")?.replaceChildren(document.createTextNode(item.shopify_ref));
   renderServiceStatus(item);
 
   for (const name of [
+    "case_type",
     "customer_name",
     "bike_model",
     "bike_color",
@@ -248,6 +300,10 @@ function fill(item) {
 
     for (const element of form.elements) {
       element.disabled = false;
+    }
+    if (form.elements.case_type) {
+      form.elements.case_type.disabled = true;
+      form.elements.case_type.title = "Die Vorgangsart wird beim Anlegen festgelegt.";
     }
 
     if (saveButton) {
@@ -341,7 +397,7 @@ serviceStatusMenu?.querySelectorAll("[data-service-status]").forEach(button => {
 
       showSuccess(
         next === "completed"
-          ? "Rückversand erfasst. Auftrag abgeschlossen und ins Archiv verschoben."
+          ? "Vorgang abgeschlossen und ins Archiv verschoben."
           : "Bearbeitungsstatus aktualisiert.",
         { title: "Status aktualisiert" }
       );

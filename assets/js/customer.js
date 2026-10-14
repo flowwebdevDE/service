@@ -8,7 +8,11 @@ import {
   getCustomerSession,
   getPortalSession,
   verifyCustomerAccess
-} from "./api.js?v=7.12.1-eu";
+} from "./api.js?v=7.14.1";
+import {
+  confirmationActionLabel,
+  confirmationRequirements
+} from "./case-confirmations.js?v=7.14.1";
 
 
 const bootLoader = document.querySelector("#app-boot-loader");
@@ -69,6 +73,7 @@ const stickyButton = document.querySelector("#sticky-action-button");
 
 const serviceState = document.querySelector("#service-state");
 const confirmState = document.querySelector("#confirm-state");
+const confirmRows = document.querySelector("#confirm-rows");
 
 
 let current;
@@ -427,11 +432,112 @@ function setText(id, value) {
   if (element) element.textContent = value;
 }
 
+const CUSTOMER_CASE_TYPES = Object.freeze({
+  warranty: {
+    label: "Garantiefall",
+    subjectLabel: "Beanstandung",
+    subjectPlaceholder: "Beanstandung prüfen oder ergänzen",
+    intro: "Wir haben deinen Garantievorgang vorbereitet. Bitte prüfe die Angaben und triff die noch offenen Entscheidungen.",
+    deliveryHeading: "Lieferumfang",
+    deliveryCopy: "Bitte vollständig mitsenden oder übergeben. Der Lieferumfang wird gemeinsam mit dem Garantievorgang bestätigt.",
+    service: true,
+    serviceHeading: "Zusätzliche Arbeiten",
+    serviceCopy: "Wähle aus, was wir zusätzlich zum Garantiefall ausführen dürfen.",
+    noneTitle: "Nur Garantiefall",
+    noneCopy: "Keine kostenpflichtigen Zusatzarbeiten",
+    inspectionCopy: "Zusätzlich zum Garantiefall",
+  },
+  repair: {
+    label: "Reparatur",
+    subjectLabel: "Reparatur / Fehlerbild",
+    subjectPlaceholder: "Fehlerbild oder Reparaturwunsch prüfen oder ergänzen",
+    intro: "Wir haben deinen Reparaturvorgang vorbereitet. Bitte prüfe Fehlerbild, Lieferumfang und die noch offenen Entscheidungen.",
+    deliveryHeading: "Lieferumfang",
+    deliveryCopy: "Bitte vollständig mitsenden oder übergeben. Der Lieferumfang wird gemeinsam mit dem Reparaturauftrag bestätigt.",
+    service: true,
+    serviceHeading: "Zusätzliche Arbeiten",
+    serviceCopy: "Prüfe, welche zusätzlichen Arbeiten zusammen mit der Reparatur ausgeführt werden dürfen.",
+    noneTitle: "Nur Reparatur",
+    noneCopy: "Keine zusätzliche Inspektion beauftragt",
+    inspectionCopy: "Zusätzlich zur Reparatur",
+  },
+  return: {
+    label: "Rückgabe",
+    subjectLabel: "Grund der Rückgabe",
+    subjectPlaceholder: "Grund der Rückgabe prüfen oder ergänzen",
+    intro: "Wir haben deine Rückgabe vorbereitet. Bitte prüfe Artikel, Rückgabegrund und den vereinbarten Lieferumfang.",
+    deliveryHeading: "Zur Rückgabe mitgeben",
+    deliveryCopy: "Dieser Lieferumfang gehört zur Rückgabe und wird gemeinsam mit ihr bestätigt.",
+    service: false,
+  },
+  exchange: {
+    label: "Tausch",
+    subjectLabel: "Grund für den Tausch",
+    subjectPlaceholder: "Grund für den Tausch prüfen oder ergänzen",
+    intro: "Wir haben deinen Tauschvorgang vorbereitet. Bitte prüfe Artikel, Tauschgrund und den vereinbarten Lieferumfang.",
+    deliveryHeading: "Zum Tausch mitgeben",
+    deliveryCopy: "Dieser Lieferumfang gehört zum Tausch und wird gemeinsam mit ihm bestätigt.",
+    service: false,
+  }
+});
+
+function customerCaseType(item = current) {
+  return CUSTOMER_CASE_TYPES[item?.case_type] || CUSTOMER_CASE_TYPES.warranty;
+}
+
+function caseTypeValue(item = current) {
+  return CUSTOMER_CASE_TYPES[item?.case_type] ? item.case_type : "warranty";
+}
+
+function requiresServiceChoice(item = current) {
+  return customerCaseType(item).service !== false;
+}
+
+function applyCustomerCaseType(item) {
+  const meta = customerCaseType(item);
+  const type = caseTypeValue(item);
+  document.body.dataset.caseType = type;
+  document.title = `${meta.label} · MYVELO Service`;
+
+  setText("customer-case-type-kicker", meta.label);
+  setText("customer-intro-copy", meta.intro);
+  setText("customer-subject-label", meta.subjectLabel);
+  setText("customer-delivery-heading", meta.deliveryHeading || "Das muss mit");
+  setText("customer-delivery-copy", meta.deliveryCopy || "Bitte vollständig mitsenden oder übergeben.");
+  setText("customer-service-heading", meta.serviceHeading || "Bearbeitungsumfang");
+  setText("customer-service-copy", meta.serviceCopy || "Dieser Vorgang enthält keine zusätzlichen auswählbaren Arbeiten.");
+  setText("service-none-title", meta.noneTitle || meta.label);
+  setText("service-none-copy", meta.noneCopy || "Keine zusätzliche Leistung vorgesehen");
+  setText("service-inspection-copy", meta.inspectionCopy || "Zusätzlich zum Vorgang");
+
+  const subject = byId("customer-case-subject");
+  if (subject) subject.placeholder = meta.subjectPlaceholder;
+
+  const serviceSection = byId("section-service");
+  serviceSection?.classList.toggle("hidden", !meta.service);
+  serviceSection?.toggleAttribute("inert", !meta.service);
+  serviceSection?.setAttribute("aria-hidden", meta.service ? "false" : "true");
+
+  const summaryService = byId("summary-service")?.closest("div");
+  summaryService?.classList.toggle("hidden", !meta.service);
+
+  setText("section-note-number", meta.service ? "4" : "3");
+  setText("section-confirm-number", meta.service ? "5" : "4");
+
+  if (!meta.service && form) {
+    const none = form.querySelector('input[name="service_choice"][value="none"]');
+    if (none) none.checked = true;
+  }
+}
+
 function selectedService() {
   return form.querySelector('input[name="service_choice"]:checked')?.value || "";
 }
 
-function serviceText(value) {
+function serviceText(value, item = current) {
+  const meta = customerCaseType(item);
+  if (!meta.service) return meta.label;
+
   if (value === "inspection") {
     return "Inspektion · 96 €";
   }
@@ -441,7 +547,7 @@ function serviceText(value) {
   }
 
   if (value === "none") {
-    return "Nur Garantiefall";
+    return meta.noneTitle || "Keine Zusatzleistung";
   }
 
   return "Noch keine Auswahl";
@@ -474,18 +580,81 @@ function collect() {
   };
 }
 
-function confirmationCount() {
-  let count = 0;
+let confirmationContext = "";
 
-  if (form.elements.confirm_scope.checked) {
-    count += 1;
+function confirmationInput(key) {
+  return confirmRows?.querySelector(`[data-confirmation-key="${key}"]`) || null;
+}
+
+function currentConfirmationRequirements() {
+  return confirmationRequirements({
+    case_type: caseTypeValue(current),
+    service_choice: selectedService() || "none"
+  });
+}
+
+function renderConfirmationRows({ preserve = true } = {}) {
+  if (!confirmRows || !current) return;
+
+  const rules = currentConfirmationRequirements();
+  const nextContext = `${caseTypeValue(current)}:${selectedService() || "none"}`;
+  const oldState = {};
+
+  if (preserve) {
+    confirmRows.querySelectorAll("[data-confirmation-key]").forEach(input => {
+      oldState[input.dataset.confirmationKey] = input.checked;
+    });
   }
 
-  if (form.elements.confirm_accessories.checked) {
-    count += 1;
+  const paidContextChanged = confirmationContext && confirmationContext !== nextContext;
+  confirmRows.replaceChildren();
+
+  for (const rule of rules) {
+    const label = document.createElement("label");
+    label.className = "customer-confirm-row";
+
+    const input = document.createElement("input");
+    input.type = "checkbox";
+    input.dataset.confirmationKey = rule.key;
+    input.name = `confirm_${rule.key}`;
+    input.checked = Boolean(oldState[rule.key]) && !(paidContextChanged && rule.key === "paid_service");
+
+    const box = document.createElement("span");
+    box.className = "customer-confirm-box";
+    box.textContent = "✓";
+
+    const text = document.createElement("span");
+    const title = document.createElement("strong");
+    title.textContent = rule.title;
+    const copy = document.createElement("small");
+    copy.textContent = rule.copy;
+    text.append(title, copy);
+
+    label.append(input, box, text);
+    confirmRows.append(label);
   }
 
-  return count;
+  confirmationContext = nextContext;
+}
+
+function confirmationProgress() {
+  const rules = currentConfirmationRequirements();
+  const checked = rules.filter(rule => confirmationInput(rule.key)?.checked).length;
+  const remaining = rules.length - checked;
+  return { rules, checked, remaining, done: remaining === 0 };
+}
+
+function confirmationPayload() {
+  const state = confirmationProgress();
+  const result = {};
+  for (const rule of state.rules) {
+    result[`confirm_${rule.key}`] = Boolean(confirmationInput(rule.key)?.checked);
+  }
+
+  // Legacy fields keep older Worker revisions compatible during a rolling update.
+  result.confirm_scope = Boolean(result.confirm_primary);
+  result.confirm_accessories = state.done;
+  return result;
 }
 
 function renderSummary() {
@@ -496,7 +665,7 @@ function renderSummary() {
   setText("summary-ref", current.shopify_ref);
   setText("summary-item", current.item_type === "battery" ? "Akku" : "Komplettes Fahrrad");
   setText("summary-accessories", accessoryList(current).join(", "));
-  setText("summary-service", serviceText(data.service_choice));
+  setText("summary-service", serviceText(data.service_choice, current));
 }
 
 function setSectionAttention(sectionId, active) {
@@ -521,28 +690,29 @@ function updateFlowState() {
 
   showStickyAction(true);
 
-  const serviceChosen = Boolean(selectedService());
-  const confirms = confirmationCount();
-  const confirmationsDone = confirms === 2;
+  const serviceRequired = requiresServiceChoice(current);
+  const serviceChosen = !serviceRequired || Boolean(selectedService());
+  const confirmation = confirmationProgress();
+  const confirmationsDone = confirmation.done;
 
   if (serviceState) {
-    serviceState.textContent = serviceChosen
-      ? "Ausgewählt"
-      : "Auswahl erforderlich";
+    serviceState.textContent = serviceRequired
+      ? (serviceChosen ? "Ausgewählt" : "Auswahl erforderlich")
+      : "Nicht erforderlich";
     serviceState.classList.toggle("is-done", serviceChosen);
   }
 
   if (confirmState) {
     confirmState.textContent = confirmationsDone
       ? "Bestätigt"
-      : `${2 - confirms} Bestätigung${2 - confirms === 1 ? "" : "en"} offen`;
+      : `${confirmation.remaining} Bestätigung${confirmation.remaining === 1 ? "" : "en"} offen`;
     confirmState.classList.toggle("is-done", confirmationsDone);
   }
 
-  setSectionAttention("#section-service", !serviceChosen);
+  setSectionAttention("#section-service", serviceRequired && !serviceChosen);
   setSectionAttention("#section-confirm", serviceChosen && !confirmationsDone);
 
-  if (!serviceChosen) {
+  if (serviceRequired && !serviceChosen) {
     setDynamicStatus({
       kicker: "Nächster Schritt",
       title: "Zusatzarbeit auswählen",
@@ -562,19 +732,22 @@ function updateFlowState() {
   if (!confirmationsDone) {
     setDynamicStatus({
       kicker: "Bestätigung",
-      title: confirms === 1
-        ? "Noch eine Bestätigung"
+      title: confirmation.remaining === 1
+        ? confirmation.rules.find(rule => !confirmationInput(rule.key)?.checked)?.title || "Noch eine Bestätigung"
         : "Angaben bestätigen",
-      detail: confirms === 1
-        ? "Ein Punkt ist bereits bestätigt."
-        : "Bitte Auftrag und Lieferumfang bestätigen.",
-      progress: confirms === 1 ? 82 : 68,
-      state: confirms === 1 ? "Fast geschafft" : "Prüfung offen"
+      detail: confirmation.remaining === 1
+        ? "Ein letzter inhaltlich eigenständiger Punkt ist noch offen."
+        : confirmationActionLabel({ case_type: caseTypeValue(current), service_choice: selectedService() || "none" }),
+      progress: confirmation.checked > 0 ? 82 : 68,
+      state: confirmation.checked > 0 ? "Fast geschafft" : "Prüfung offen"
     });
 
     stickyTitle.textContent =
-      `${2 - confirms} Bestätigung${2 - confirms === 1 ? "" : "en"} offen`;
-    stickySubtitle.textContent = "Auftrag und Lieferumfang bestätigen";
+      `${confirmation.remaining} Bestätigung${confirmation.remaining === 1 ? "" : "en"} offen`;
+    const nextRule = confirmation.rules.find(rule => !confirmationInput(rule.key)?.checked);
+    stickySubtitle.textContent = confirmation.remaining === 1
+      ? (nextRule?.title || "Vorgang bestätigen")
+      : confirmationActionLabel({ case_type: caseTypeValue(current), service_choice: selectedService() || "none" });
     stickyButton.textContent = "Bestätigen";
     stickyButton.dataset.action = "confirm";
     stickyButton.disabled = false;
@@ -591,7 +764,7 @@ function updateFlowState() {
   });
 
   stickyTitle.textContent = "Bereit zum Absenden";
-  stickySubtitle.textContent = serviceText(selectedService());
+  stickySubtitle.textContent = serviceRequired ? serviceText(selectedService(), current) : customerCaseType(current).label;
   stickyButton.textContent = "Absenden";
   stickyButton.dataset.action = "submit";
   stickyButton.disabled = false;
@@ -605,9 +778,12 @@ function scrollToSection(id) {
 }
 
 
-function frozenServiceDisplay(value) {
+function frozenServiceDisplay(value, item) {
+  const meta = customerCaseType(item);
+  if (!meta.service) return [meta.label, "Keine zusätzliche Leistung ausgewählt"];
+
   return {
-    none: ["Nur Garantiefall", "Keine zusätzliche kostenpflichtige Arbeit"],
+    none: [meta.noneTitle || "Keine Zusatzleistung", meta.noneCopy || "Keine zusätzliche kostenpflichtige Arbeit"],
     inspection: ["Inspektion · 96 €", "Zusätzlich von dir beauftragt"],
     inspection_wear: [
       "Inspektion + Verschleißteile",
@@ -633,7 +809,20 @@ function frozenSnapshot(item) {
 
 function renderCustomerFrozen(item) {
   const snapshot = frozenSnapshot(item);
-  const [service, serviceNote] = frozenServiceDisplay(snapshot.service_choice);
+  applyCustomerCaseType(snapshot);
+  const meta = customerCaseType(snapshot);
+  const type = caseTypeValue(snapshot);
+  const [service, serviceNote] = frozenServiceDisplay(snapshot.service_choice, snapshot);
+
+  const confirmedTitle = {
+    warranty: "Dein Garantiefall ist bestätigt.",
+    repair: "Deine Reparatur ist bestätigt.",
+    return: "Deine Rückgabe ist bestätigt.",
+    exchange: "Dein Tausch ist bestätigt."
+  }[type] || "Dein Vorgang ist bestätigt.";
+
+  setText("frozen-customer-kicker", `${meta.label.toUpperCase()} · BESTÄTIGT`);
+  setText("customer-frozen-title", confirmedTitle);
 
   document.body.classList.add("customer-frozen-mode");
 
@@ -650,7 +839,11 @@ function renderCustomerFrozen(item) {
 
   setText("frozen-customer-order", snapshot.shopify_ref || "–");
   setText("frozen-customer-case", snapshot.public_id || item.public_id || "–");
-  setText("frozen-customer-subject", snapshot.case_subject || "Garantiefall");
+  setText("frozen-customer-subject", snapshot.case_subject || meta.label);
+  const frozenServiceCard = byId("frozen-customer-service-card");
+  frozenServiceCard?.classList.toggle("hidden", !meta.service);
+  setText("frozen-customer-note-number", meta.service ? "04" : "03");
+  setText("frozen-customer-service-label", meta.service ? "Zusätzliche Arbeiten" : "Vorgangsart");
 
   const bike = [
     snapshot.item_type === "battery" ? "Akku" : "Komplettes Fahrrad",
@@ -722,6 +915,7 @@ function fill(item) {
   }
 
   renderCustomerEditable();
+  applyCustomerCaseType(item);
 
   setText("public-id", item.public_id);
   setText("shopify-ref", item.shopify_ref);
@@ -746,9 +940,13 @@ function fill(item) {
     form.elements[name].value = item[name] || "";
   }
 
+  form.querySelectorAll('input[name="service_choice"]').forEach(input => { input.checked = false; });
   const serviceValue = item.service_choice || "";
 
-  if (serviceValue && serviceValue !== "none") {
+  if (!requiresServiceChoice(item)) {
+    const noneInput = form.querySelector('input[name="service_choice"][value="none"]');
+    if (noneInput) noneInput.checked = true;
+  } else if (serviceValue && serviceValue !== "none") {
     const serviceInput = form.querySelector(
       `input[name="service_choice"][value="${serviceValue}"]`
     );
@@ -765,6 +963,9 @@ function fill(item) {
       noneInput.checked = true;
     }
   }
+
+  confirmationContext = "";
+  renderConfirmationRows({ preserve: false });
 
   document.querySelector("#accessory-list").innerHTML =
     accessoryList(item)
@@ -787,7 +988,10 @@ form.addEventListener("input", () => {
   updateFlowState();
 });
 
-form.addEventListener("change", () => {
+form.addEventListener("change", event => {
+  if (event.target?.name === "service_choice") {
+    renderConfirmationRows({ preserve: true });
+  }
   renderSummary();
   updateFlowState();
 });
@@ -821,13 +1025,13 @@ form.addEventListener("submit", async event => {
 
   const serviceChoice = selectedService();
 
-  if (!serviceChoice) {
+  if (requiresServiceChoice(current) && !serviceChoice) {
     scrollToSection("#section-service");
     updateFlowState();
     return;
   }
 
-  if (!form.elements.confirm_scope.checked || !form.elements.confirm_accessories.checked) {
+  if (!confirmationProgress().done) {
     scrollToSection("#section-confirm");
     updateFlowState();
     return;
@@ -845,8 +1049,7 @@ form.addEventListener("submit", async event => {
   try {
     const payload = {
       ...collect(),
-      confirm_scope: form.elements.confirm_scope.checked,
-      confirm_accessories: form.elements.confirm_accessories.checked
+      ...confirmationPayload()
     };
 
     const result = await confirmCustomer(token, payload);

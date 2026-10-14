@@ -1,5 +1,27 @@
 import { CONFIG } from "./config.js";
 
+const CASE_TYPES = new Set(["warranty", "repair", "return", "exchange"]);
+const SERVICE_CHOICES = new Set(["none", "inspection", "inspection_wear"]);
+
+function normalizeCaseType(value) {
+  return CASE_TYPES.has(value) ? value : "warranty";
+}
+
+function serviceChoiceForCaseType(caseType, value) {
+  const type = normalizeCaseType(caseType);
+  if (type === "return" || type === "exchange") return "none";
+  return SERVICE_CHOICES.has(value) ? value : "none";
+}
+
+function publicIdPrefix(caseType) {
+  return {
+    warranty: "GAR",
+    repair: "REP",
+    return: "RET",
+    exchange: "TAU"
+  }[normalizeCaseType(caseType)];
+}
+
 function initialState() {
   return {
     cases: [
@@ -7,13 +29,13 @@ function initialState() {
         public_id: "GAR-2026-DEMO01",
         shopify_ref: "#4832",
         status: "draft",
-    service_status: "waiting_customer",
         service_status: "waiting_customer",
         customer_name: "Max Mustermann",
         customer_email: "max@example.com",
         bike_model: "Modell Platzhalter",
         bike_color: "Schwarz",
         case_subject: "Garantiefall bereits telefonisch besprochen",
+        case_type: "warranty",
         item_type: "bike",
         required_charger: true,
         required_keys: false,
@@ -55,8 +77,10 @@ export function createDemoCase(data) {
   const token = crypto.randomUUID().replaceAll("-", "");
   const suffix = crypto.randomUUID().split("-")[0].toUpperCase();
 
+  const caseType = normalizeCaseType(data.case_type);
+
   const item = {
-    public_id: `GAR-${new Date().getFullYear()}-${suffix}`,
+    public_id: `${publicIdPrefix(caseType)}-${new Date().getFullYear()}-${suffix}`,
     shopify_ref: data.shopify_ref,
     status: "draft",
     customer_name: data.customer_name || "",
@@ -64,13 +88,14 @@ export function createDemoCase(data) {
     bike_model: data.bike_model || "",
     bike_color: data.bike_color || "",
     case_subject: data.case_subject || "",
+    case_type: caseType,
     item_type: data.item_type || "bike",
     required_charger: Boolean(data.required_charger),
     required_keys: Boolean(data.required_keys),
     key_count: Number(data.key_count || 0),
     staff_note: data.staff_note || "",
     customer_note: data.customer_note || "",
-    service_choice: data.service_choice || "none",
+    service_choice: serviceChoiceForCaseType(caseType, data.service_choice),
     confirmed_at: null,
     read_only: false,
     token,
@@ -102,9 +127,17 @@ export function updateDemoCaseById(publicId, patch) {
   if (index < 0) return null;
   if (state.cases[index].status === "confirmed") return state.cases[index];
 
+  const current = state.cases[index];
+  const caseType = normalizeCaseType(current.case_type);
+
   state.cases[index] = {
-    ...state.cases[index],
-    ...patch
+    ...current,
+    ...patch,
+    case_type: caseType,
+    service_choice: serviceChoiceForCaseType(
+      caseType,
+      patch.service_choice === undefined ? current.service_choice : patch.service_choice
+    )
   };
 
   setState(state);
@@ -118,9 +151,17 @@ export function updateDemoCaseByToken(token, patch) {
   if (index < 0) return null;
   if (state.cases[index].status === "confirmed") return state.cases[index];
 
+  const current = state.cases[index];
+  const caseType = normalizeCaseType(current.case_type);
+
   state.cases[index] = {
-    ...state.cases[index],
-    ...patch
+    ...current,
+    ...patch,
+    case_type: caseType,
+    service_choice: serviceChoiceForCaseType(
+      caseType,
+      patch.service_choice === undefined ? current.service_choice : patch.service_choice
+    )
   };
 
   setState(state);
@@ -133,9 +174,17 @@ export function confirmDemoCase(token, patch) {
 
   if (index < 0) return null;
 
+  const current = state.cases[index];
+  const caseType = normalizeCaseType(current.case_type);
+
   state.cases[index] = {
-    ...state.cases[index],
+    ...current,
     ...patch,
+    case_type: caseType,
+    service_choice: serviceChoiceForCaseType(
+      caseType,
+      patch.service_choice === undefined ? current.service_choice : patch.service_choice
+    ),
     status: "confirmed",
     service_status: "customer_confirmed",
     confirmed_at: new Date().toISOString(),

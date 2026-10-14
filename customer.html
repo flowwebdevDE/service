@@ -6,7 +6,7 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://myvelo-service.red-dawn-bec6.workers.dev https://*.myvelo.de; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'none'; worker-src 'self' blob:; upgrade-insecure-requests">
   <meta name="referrer" content="no-referrer">
 <meta name="color-scheme" content="light">
-  <title>Garantiefall · MYVELO Service</title>
+  <title>Servicevorgang · MYVELO Service</title>
   <link rel="stylesheet" href="assets/css/app.css?v=7.12.2">
   <link rel="stylesheet" href="assets/css/customer-layout.css?v=7.0">
   <script src="assets/js/security-bootstrap.js?v=7.10.6"></script>
@@ -103,7 +103,7 @@
     }
   </style>
 
-  <script src="portal-config.js?v=7.12.1-eu"></script>
+  <script src="portal-config.js?v=7.14.2"></script>
 </head>
 <body class="customer-bg customer-mobile-first customer-locked">
 
@@ -181,7 +181,7 @@
     <section id="customer-frozen-view" class="customer-frozen-view hidden" aria-labelledby="customer-frozen-title" inert aria-hidden="true">
       <div class="customer-frozen-hero">
         <img class="customer-frozen-logo" src="assets/brand/myvelo-logo.png?v=7.0" alt="MYVELO" data-hide-on-error>
-        <span class="customer-frozen-kicker">SERVICE · BESTÄTIGT</span>
+        <span class="customer-frozen-kicker" id="frozen-customer-kicker">SERVICE · BESTÄTIGT</span>
         <h1 id="customer-frozen-title">Dein Vorgang ist bestätigt.</h1>
         <p>Hier siehst du genau den Stand, den du bestätigt hast. Die Angaben können nicht mehr verändert werden.</p>
 
@@ -216,17 +216,17 @@
           </div>
         </section>
 
-        <section class="customer-frozen-card">
+        <section class="customer-frozen-card" id="frozen-customer-service-card">
           <span class="customer-frozen-number">03</span>
           <div>
-            <small>Zusätzliche Arbeiten</small>
+            <small id="frozen-customer-service-label">Zusätzliche Arbeiten</small>
             <h2 id="frozen-customer-service">–</h2>
             <p id="frozen-customer-service-note">–</p>
           </div>
         </section>
 
         <section class="customer-frozen-card customer-frozen-card--note">
-          <span class="customer-frozen-number">04</span>
+          <span class="customer-frozen-number" id="frozen-customer-note-number">04</span>
           <div>
             <small>Dein Hinweis</small>
             <p id="frozen-customer-note">Kein Hinweis hinterlegt.</p>
@@ -249,11 +249,10 @@
 
 
     <section class="customer-mobile-head">
-      <div class="customer-mobile-kicker">Garantiefall</div>
+      <div class="customer-mobile-kicker" id="customer-case-type-kicker">Servicevorgang</div>
       <h1 id="customer-greeting">Hallo</h1>
       <p>
-        Wir haben deinen Vorgang vorbereitet. Bitte prüfe die Angaben und triff
-        die noch offenen Entscheidungen.
+        <span id="customer-intro-copy">Wir haben deinen Vorgang vorbereitet. Bitte prüfe die Angaben und triff die noch offenen Entscheidungen.</span>
       </p>
 
       <div class="customer-case-strip">
@@ -302,8 +301,8 @@
         </div>
 
         <label class="customer-note-field">
-          <span>Beanstandung</span>
-          <input name="case_subject" placeholder="Beanstandung prüfen oder ergänzen">
+          <span id="customer-subject-label">Betreff</span>
+          <input name="case_subject" id="customer-case-subject" placeholder="Angabe prüfen oder ergänzen">
         </label>
       </section>
 
@@ -311,12 +310,12 @@
         <div class="customer-flow-section__head">
           <div>
             <span class="section-number">2</span>
-            <h2>Das muss mit</h2>
+            <h2 id="customer-delivery-heading">Das muss mit</h2>
           </div>
           <span class="section-state section-state--done">Festgelegt</span>
         </div>
 
-        <p class="customer-flow-copy">
+        <p class="customer-flow-copy" id="customer-delivery-copy">
           Bitte vollständig mitsenden oder übergeben.
         </p>
 
@@ -327,24 +326,22 @@
         <div class="customer-flow-section__head">
           <div>
             <span class="section-number">3</span>
-            <h2>Zusätzliche Arbeiten</h2>
+            <h2 id="customer-service-heading">Zusätzliche Arbeiten</h2>
           </div>
           <span class="section-state section-state--required" id="service-state">
             Auswahl erforderlich
           </span>
         </div>
 
-        <p class="customer-flow-copy">
-          Wähle aus, was wir zusätzlich zum Garantiefall ausführen dürfen.
-        </p>
+        <p class="customer-flow-copy" id="customer-service-copy">Wähle aus, was wir zusätzlich ausführen dürfen.</p>
 
         <div class="service-choice-list" role="radiogroup" aria-label="Zusätzliche Arbeiten">
           <label class="service-choice-row">
             <input type="radio" name="service_choice" value="none">
             <span class="service-choice-radio"></span>
             <span class="service-choice-main">
-              <strong>Nur Garantiefall</strong>
-              <small>Keine kostenpflichtigen Zusatzarbeiten</small>
+              <strong id="service-none-title">Keine Zusatzleistung</strong>
+              <small id="service-none-copy">Keine kostenpflichtigen Zusatzarbeiten</small>
             </span>
             <span class="service-choice-price">0 €</span>
           </label>
@@ -354,7 +351,7 @@
             <span class="service-choice-radio"></span>
             <span class="service-choice-main">
               <strong>Inspektion</strong>
-              <small>Zusätzlich zum Garantiefall</small>
+              <small id="service-inspection-copy">Zusätzlich zum Vorgang</small>
             </span>
             <span class="service-choice-price">96 €</span>
           </label>
@@ -377,7 +374,7 @@
       <section class="customer-flow-section" id="section-note">
         <div class="customer-flow-section__head">
           <div>
-            <span class="section-number">4</span>
+            <span class="section-number" id="section-note-number">4</span>
             <h2>Hinweis an uns</h2>
           </div>
           <span class="section-state">Optional</span>
@@ -393,11 +390,11 @@
       <section class="customer-flow-section customer-flow-section--action" id="section-confirm">
         <div class="customer-flow-section__head">
           <div>
-            <span class="section-number">5</span>
+            <span class="section-number" id="section-confirm-number">5</span>
             <h2>Bestätigen</h2>
           </div>
           <span class="section-state section-state--required" id="confirm-state">
-            2 Bestätigungen offen
+            Wird vorbereitet
           </span>
         </div>
 
@@ -422,40 +419,18 @@
           </div>
 
           <div>
-            <span>Zusätzlich</span>
+            <span id="summary-service-label">Zusätzlich</span>
             <strong id="summary-service">Noch keine Auswahl</strong>
           </div>
         </div>
 
         <div id="confirm-area">
-          <label class="customer-confirm-row">
-            <input type="checkbox" name="confirm_scope">
-            <span class="customer-confirm-box">✓</span>
-            <span>
-              <strong>Auftragsumfang bestätigen</strong>
-              <small>
-                Neben dem Garantiefall dürfen ausschließlich die oben ausgewählten
-                zusätzlichen kostenpflichtigen Arbeiten ausgeführt werden.
-              </small>
-            </span>
-          </label>
-
-          <label class="customer-confirm-row">
-            <input type="checkbox" name="confirm_accessories">
-            <span class="customer-confirm-box">✓</span>
-            <span>
-              <strong>Lieferumfang bestätigen</strong>
-              <small>
-                Die oben aufgeführten Teile werden vollständig mitgesendet bzw. übergeben.
-              </small>
-            </span>
-          </label>
+          <div id="confirm-rows"></div>
 
           <details class="customer-legal-details">
             <summary>Hinweise zur Datenverarbeitung</summary>
             <p>
-              Die Angaben werden zur Bearbeitung und Dokumentation dieses Garantie-
-              und Servicevorgangs verarbeitet. Die Vorgangsdaten werden in einer
+              Die Angaben werden zur Bearbeitung und Dokumentation dieses Servicevorgangs verarbeitet. Die Vorgangsdaten werden in einer
               Cloudflare-D1-Datenbank mit EU-Jurisdiction gespeichert. Weitere
               Informationen findest du in der Datenschutzerklärung.
             </p>
@@ -482,8 +457,8 @@
   <div class="customer-sticky-action" id="sticky-action">
     <div class="customer-sticky-action__inner">
       <div class="customer-sticky-action__status">
-        <strong id="sticky-action-title">2 Schritte offen</strong>
-        <span id="sticky-action-subtitle">Zusatzarbeit auswählen und bestätigen</span>
+        <strong id="sticky-action-title">Vorgang prüfen</strong>
+        <span id="sticky-action-subtitle">Angaben prüfen und bestätigen</span>
       </div>
       <button class="button primary" id="sticky-action-button" type="button">
         Weiter
@@ -491,6 +466,6 @@
     </div>
   </div>
 
-  <script type="module" src="assets/js/customer.js?v=7.12.2"></script>
+  <script type="module" src="assets/js/customer.js?v=7.14.2"></script>
 </body>
 </html>

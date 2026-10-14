@@ -1,5 +1,6 @@
-import { renderWarrantyFlowPdf } from "./pdf/warranty-flowpdf.js?v=7.5.2";
-import { CONFIG, hasBackendConfig } from "./config.js?v=7.12.1-eu";
+import { renderWarrantyFlowPdf } from "./pdf/warranty-flowpdf.js?v=7.14.1";
+import { confirmationRequirements } from "./case-confirmations.js?v=7.14.1";
+import { CONFIG, hasBackendConfig } from "./config.js?v=7.14.1";
 import {
   confirmDemoCase,
   createDemoCase,
@@ -9,7 +10,7 @@ import {
   updateDemoCaseById,
   updateDemoCaseByToken,
   updateDemoCaseStatus
-} from "./demo-store.js?v=7.5.2";
+} from "./demo-store.js?v=7.14.1";
 
 let backendAvailable;
 let brandLogoPromise;
@@ -49,7 +50,7 @@ export function buildCustomerUrl(token) {
 
 function commonHeaders() {
   return {
-    "x-portal-client-version": "7.12.1-eu"
+    "x-portal-client-version": "7.14.1-eu"
   };
 }
 
@@ -476,8 +477,23 @@ export async function saveCustomerDraft(token, data) {
 
 export async function confirmCustomer(token, data) {
   if (!(await hasBackend())) {
-    if (!data.confirm_scope || !data.confirm_accessories) {
-      throw new Error("Bitte beide Bestätigungen aktivieren.");
+    const item = getDemoCaseByToken(token);
+    if (!item) throw new Error("Kundenlink ungültig.");
+
+    const rules = confirmationRequirements({
+      case_type: item.case_type,
+      service_choice: data.service_choice || item.service_choice || "none"
+    });
+
+    const allConfirmed = rules.every(rule => {
+      if (data[`confirm_${rule.key}`]) return true;
+      if (rule.key === "primary") return Boolean(data.confirm_scope);
+      if (rule.key === "paid_service") return Boolean(data.confirm_accessories);
+      return false;
+    });
+
+    if (!allConfirmed) {
+      throw new Error("Bitte alle angezeigten Bestätigungen aktivieren.");
     }
 
     return {

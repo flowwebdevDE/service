@@ -3,9 +3,9 @@ import {
   listCases,
   logoutPortalSession,
   requirePortalSession
-} from "./api.js?v=7.12.1-eu";
+} from "./api.js?v=7.14.1";
 import { initModelPopup } from "./model-picker.js?v=7.6.1";
-import { setButtonLoading, renderCaseSkeleton, pulseElement, beginGlobalBusy, endGlobalBusy, transitionSurface } from "./motion.js?v=7.11.0";
+import { setButtonLoading, renderCaseSkeleton, pulseElement, beginGlobalBusy, endGlobalBusy, transitionSurface } from "./motion.js?v=7.14.1";
 import { showError, showInfo, showSuccess } from "./banner.js?v=7.10.6";
 
 const form = document.querySelector("#create-form");
@@ -25,13 +25,87 @@ const createdLink = document.querySelector("#createdLink");
 const createdVerificationCode = document.querySelector("#createdVerificationCode");
 let lastCreatedPublicId = "";
 const dashboardLoader = document.querySelector("#employee-dashboard-loader");
+const dashboardSurface = document.querySelector("#employee-data-surface");
 let initialDashboardLoad = true;
+
+const CASE_TYPE_META = Object.freeze({
+  warranty: {
+    label: "Garantiefall",
+    subjectLabel: "Garantiefall / Betreff",
+    subjectPlaceholder: "Beanstandung oder Fehlerbild",
+    service: true,
+    serviceLabel: "Zusatzleistung zum Garantiefall",
+    noneLabel: "Nur Garantiefall"
+  },
+  repair: {
+    label: "Reparatur",
+    subjectLabel: "Reparatur / Fehlerbild",
+    subjectPlaceholder: "Was soll repariert werden?",
+    service: true,
+    serviceLabel: "Zusatzleistung zur Reparatur",
+    noneLabel: "Nur Reparatur"
+  },
+  return: {
+    label: "Rückgabe",
+    subjectLabel: "Grund der Rückgabe",
+    subjectPlaceholder: "Rückgabe kurz beschreiben",
+    service: false,
+    noneLabel: "Keine Zusatzleistung"
+  },
+  exchange: {
+    label: "Tausch",
+    subjectLabel: "Grund für den Tausch",
+    subjectPlaceholder: "Tausch kurz beschreiben",
+    service: false,
+    noneLabel: "Keine Zusatzleistung"
+  }
+});
+
+function caseTypeMeta(value) {
+  return CASE_TYPE_META[value] || CASE_TYPE_META.warranty;
+}
+
+function caseTypeLabel(value) {
+  return caseTypeMeta(value).label;
+}
+
+function applyCreateCaseType(value = "") {
+  const meta = value ? caseTypeMeta(value) : null;
+  const subjectLabel = document.querySelector("#create-case-subject-label");
+  const subject = document.querySelector("#create-case-subject");
+  const serviceField = document.querySelector("#create-service-choice-field");
+  const serviceLabel = document.querySelector("#create-service-choice-label");
+  const serviceSelect = document.querySelector("#create-service-choice");
+
+  if (subjectLabel) subjectLabel.textContent = meta?.subjectLabel || "Betreff";
+  if (subject) subject.placeholder = meta?.subjectPlaceholder || "Kurzbeschreibung";
+  if (serviceLabel) serviceLabel.textContent = meta?.serviceLabel || "Zusatzleistung";
+
+  if (serviceSelect) {
+    const none = serviceSelect.querySelector('option[value="none"]');
+    if (none) none.textContent = meta?.noneLabel || "Keine Zusatzleistung";
+    if (meta && !meta.service) serviceSelect.value = "none";
+  }
+
+  serviceField?.classList.toggle("hidden", !meta || !meta.service);
+}
+
+document.querySelectorAll('input[name="case_type"]').forEach(input => {
+  input.addEventListener("change", () => applyCreateCaseType(input.value));
+});
+
+function setDashboardLoading(loading, message = "Die aktuelle Übersicht wird synchronisiert.") {
+  if (dashboardSurface) dashboardSurface.classList.toggle("is-loading", loading);
+  if (dashboardLoader) {
+    dashboardLoader.setAttribute("aria-hidden", loading ? "false" : "true");
+    const copy = dashboardLoader.querySelector("span:last-child");
+    if (copy) copy.textContent = message;
+  }
+}
 
 function finishDashboardBoot() {
   document.documentElement.classList.remove("employee-booting");
-  if (!dashboardLoader) return;
-  dashboardLoader.classList.add("is-leaving");
-  window.setTimeout(() => dashboardLoader.remove(), 210);
+  setDashboardLoading(false);
 }
 
 
@@ -126,6 +200,7 @@ function dataFromForm() {
   const data = new FormData(form);
 
   return {
+    case_type: data.get("case_type"),
     shopify_ref: data.get("shopify_ref")?.trim(),
     customer_name: data.get("customer_name")?.trim(),
     bike_model: data.get("bike_model")?.trim(),
@@ -143,6 +218,13 @@ form.addEventListener("submit", async event => {
   event.preventDefault();
 
   const customerName = form.elements.customer_name.value.trim();
+  const caseType = new FormData(form).get("case_type");
+
+  if (!caseType) {
+    document.querySelector("#create-case-type-picker")?.scrollIntoView({ behavior: "smooth", block: "center" });
+    showError("Bitte zuerst Rückgabe, Tausch, Reparatur oder Garantiefall auswählen.", { title: "Vorgangsart fehlt" });
+    return;
+  }
 
   if (!customerName) {
     form.elements.customer_name.focus();
@@ -176,6 +258,7 @@ const submitButton = form.querySelector('button[type="submit"]');
     });
 
     form.reset();
+    applyCreateCaseType("");
     createModelPopup?.sync();
 
     await setWorkView(activeWorkView, { updateUrl: false });
@@ -251,13 +334,13 @@ function updateListSubtitle() {
   if (!subtitle) return;
 
   if (activeWorkView === "archive") {
-    subtitle.textContent = "Zurückgesendete / abgeschlossene Vorgänge";
+    subtitle.textContent = "Abgeschlossene Servicevorgänge";
     return;
   }
 
   subtitle.textContent =
     activeStatusFilter === "all"
-      ? "Aktive Garantiefälle"
+      ? "Aktive Servicevorgänge"
       : statusLabel(activeStatusFilter);
 }
 
@@ -334,7 +417,7 @@ function renderCaseList(items) {
           }</strong>
           <span>${
             activeWorkView === "archive"
-              ? "Nach dem Rückversand abgeschlossene Aufträge erscheinen automatisch hier."
+              ? "Abgeschlossene Vorgänge erscheinen automatisch hier."
               : "Wähle oben einen anderen Bereich."
           }</span>
         </div>
@@ -350,7 +433,12 @@ function renderCaseList(items) {
       <a class="flow-case-row" href="case.html?id=${encodeURIComponent(item.public_id)}">
         <div class="flow-case-main">
           <strong>${item.customer_name || "Unbekannter Kunde"}</strong>
-          <span>${item.shopify_ref} · ${item.case_subject || "Kein Betreff"}</span>
+          <span>${item.public_id || "–"} · ${item.shopify_ref || "–"}</span>
+        </div>
+
+        <div class="flow-case-kind">
+          <strong>${caseTypeLabel(item.case_type)}</strong>
+          <span>${item.case_subject || "Kein Betreff"}</span>
         </div>
 
         <div class="flow-case-meta">
@@ -362,7 +450,7 @@ function renderCaseList(items) {
           ${statusLabel(currentStatus)}
         </span>
 
-        <span class="flow-case-arrow">›</span>
+        <span class="flow-case-arrow" aria-hidden="true">›</span>
       </a>
     `;
   }).join("");
@@ -370,8 +458,11 @@ function renderCaseList(items) {
 }
 
 async function renderCases() {
-  renderCaseSkeleton(caseList, 5);
-  beginGlobalBusy();
+  setDashboardLoading(true, initialDashboardLoad
+    ? "Die aktuelle Übersicht wird synchronisiert."
+    : "Vorgänge werden aktualisiert.");
+
+  if (initialDashboardLoad) renderCaseSkeleton(caseList, 5);
 
   try {
     const { items } = await listCases();
@@ -381,13 +472,13 @@ async function renderCases() {
     updateListSubtitle();
     renderCaseList(items);
   } catch (error) {
-    caseList.innerHTML = `<div class="flow-case-row"><div class="flow-case-main"><strong>Vorgänge konnten nicht geladen werden</strong><span>${error.message}</span></div></div>`;
+    caseList.innerHTML = `<div class="flow-case-row flow-case-row--error"><div class="flow-case-main"><strong>Vorgänge konnten nicht geladen werden</strong><span>${error.message}</span></div></div>`;
   } finally {
-    endGlobalBusy();
-
     if (initialDashboardLoad) {
       initialDashboardLoad = false;
       requestAnimationFrame(() => requestAnimationFrame(finishDashboardBoot));
+    } else {
+      setDashboardLoading(false);
     }
   }
 }

@@ -1,6 +1,7 @@
 import { renderFlowPdfSpec } from "./flowpdf-spec.js?v=7.5";
 import { EMBEDDED_MYVELO_LOGO_BYTES } from "./brand-logo-data.js?v=7.5";
 import { decodePng } from "./flowpdf.js?v=7.5";
+import { confirmationRequirements } from "../case-confirmations.js?v=7.14.1";
 
 function formatDate(value) {
   if (!value) return "-";
@@ -24,7 +25,64 @@ function itemText(snapshot) {
     : "Komplettes Fahrrad";
 }
 
-function serviceText(value) {
+function caseTypeMeta(value) {
+  return {
+    warranty: {
+      service: true,
+      label: "Garantiefall",
+      title: "Bestätigung zum Garantie- und Servicevorgang",
+      subjectHeading: "2. Besprochener Garantiefall",
+      serviceHeading: "4. Zusätzliche kostenpflichtige Arbeiten",
+      serviceLabel: "Beauftragt",
+      confirmation: "Die oben aufgeführten zusätzlichen kostenpflichtigen Arbeiten dürfen neben dem bereits besprochenen Garantiefall ausgeführt werden.",
+      legal: "Diese Bestätigung dokumentiert den vom Kunden bestätigten Stand des Garantie- und Servicevorgangs. Sie stellt keine gesonderte Anerkennung eines Garantieanspruchs dar."
+    },
+    repair: {
+      service: true,
+      label: "Reparatur",
+      title: "Bestätigung zum Reparaturvorgang",
+      subjectHeading: "2. Reparatur / Fehlerbild",
+      serviceHeading: "4. Zusätzliche Arbeiten zur Reparatur",
+      serviceLabel: "Zusatzleistung",
+      confirmation: "Der beschriebene Reparaturauftrag wird bestätigt. Kostenpflichtige Arbeiten erfolgen nur im ausgewählten beziehungsweise gesondert vereinbarten Umfang.",
+      legal: "Diese Bestätigung dokumentiert den vom Kunden bestätigten Stand des Reparaturvorgangs."
+    },
+    return: {
+      service: false,
+      label: "Rückgabe",
+      title: "Bestätigung zur Rückgabe",
+      subjectHeading: "2. Grund der Rückgabe",
+      serviceHeading: "4. Bearbeitungsumfang",
+      serviceLabel: "Vorgangsart",
+      confirmation: "Die Rückgabe des oben beschriebenen Artikels mit dem aufgeführten Lieferumfang wird bestätigt.",
+      legal: "Diese Bestätigung dokumentiert den vom Kunden bestätigten Stand des Rückgabevorgangs."
+    },
+    exchange: {
+      service: false,
+      label: "Tausch",
+      title: "Bestätigung zum Tauschvorgang",
+      subjectHeading: "2. Grund für den Tausch",
+      serviceHeading: "4. Bearbeitungsumfang",
+      serviceLabel: "Vorgangsart",
+      confirmation: "Der Tauschvorgang für den oben beschriebenen Artikel mit dem aufgeführten Lieferumfang wird bestätigt.",
+      legal: "Diese Bestätigung dokumentiert den vom Kunden bestätigten Stand des Tauschvorgangs."
+    }
+  }[value] || {
+    service: true,
+    label: "Garantiefall",
+    title: "Bestätigung zum Garantie- und Servicevorgang",
+    subjectHeading: "2. Besprochener Garantiefall",
+    serviceHeading: "4. Zusätzliche kostenpflichtige Arbeiten",
+    serviceLabel: "Beauftragt",
+    confirmation: "Die oben aufgeführten zusätzlichen kostenpflichtigen Arbeiten dürfen neben dem bereits besprochenen Garantiefall ausgeführt werden.",
+    legal: "Diese Bestätigung dokumentiert den vom Kunden bestätigten Stand des Garantie- und Servicevorgangs. Sie stellt keine gesonderte Anerkennung eines Garantieanspruchs dar."
+  };
+}
+
+function serviceText(value, caseType = "warranty") {
+  if (caseType === "return") return "Rückgabe";
+  if (caseType === "exchange") return "Tausch";
+
   if (value === "inspection") {
     return "Inspektion, 96,00 EUR";
   }
@@ -33,6 +91,7 @@ function serviceText(value) {
     return "Inspektion einschließlich erforderlicher Verschleißteile, 96,00 EUR zuzüglich Material nach tatsächlichem Aufwand";
   }
 
+  if (caseType === "repair") return "Nur Reparatur";
   return "Keine zusätzlichen kostenpflichtigen Arbeiten";
 }
 
@@ -59,6 +118,8 @@ export function buildWarrantyFlowSpec(snapshot, options = {}) {
     ? "Noch nicht bestätigt"
     : formatDate(snapshot.confirmed_at);
 
+  const meta = caseTypeMeta(snapshot.case_type);
+
   const data = {
     case: {
       documentId,
@@ -68,32 +129,53 @@ export function buildWarrantyFlowSpec(snapshot, options = {}) {
       item: itemText(snapshot),
       model: snapshot.bike_model || "-",
       color: snapshot.bike_color || "-",
-      subject: snapshot.case_subject || "Bereits besprochener Garantiefall",
+      subject: snapshot.case_subject || meta.label,
       delivery: deliveryItems(snapshot),
-      service: serviceText(snapshot.service_choice),
+      service: serviceText(snapshot.service_choice, snapshot.case_type),
       note: snapshot.customer_note || "Kein zusätzlicher Hinweis",
-      confirmations: [
-        {
-          text: "Die oben aufgeführten zusätzlichen kostenpflichtigen Arbeiten dürfen neben dem bereits besprochenen Garantiefall ausgeführt werden.",
-          checked: !draft
-        },
-        {
-          text: "Der aufgeführte Lieferumfang wird vollständig mitgesendet beziehungsweise übergeben.",
-          checked: !draft
-        }
-      ],
+      confirmations: confirmationRequirements(snapshot).map(rule => ({
+        text: rule.pdfText || rule.copy,
+        checked: !draft
+      })),
       legal: draft
         ? "Dieser PDF-Export zeigt den aktuellen internen Vorgangsstand. Er ist noch nicht vom Kunden bestätigt und stellt keine Kundenbestätigung dar."
-        : "Diese Bestätigung dokumentiert den vom Kunden bestätigten Stand des Garantie- und Servicevorgangs. Sie stellt keine gesonderte Anerkennung eines Garantieanspruchs dar."
+        : meta.legal
     }
   };
+
+  const serviceBlocks = meta.service
+    ? [
+        {
+          type: "heading",
+          level: 2,
+          text: meta.serviceHeading,
+          size: 9.8,
+          color: [17, 18, 17],
+          accentBar: true,
+          accentBarColor: [18, 18, 18],
+          gapBefore: 1,
+          gapAfter: 4
+        },
+        {
+          type: "field",
+          label: meta.serviceLabel,
+          field: "case.service",
+          size: 8.15,
+          labelWidth: 105,
+          labelColor: [18, 18, 18],
+          gapAfter: 5
+        }
+      ]
+    : [];
+
+  const noteNumber = meta.service ? 5 : 4;
 
   const schema = {
     blocks: [
       {
         type: "heading",
         level: 1,
-        text: draft ? "Servicevorgang - Entwurf" : "Bestätigung zum Garantie- und Servicevorgang",
+        text: draft ? `${meta.label} - Entwurf` : meta.title,
         size: 17.0,
         color: [17, 18, 17],
         gapAfter: 4
@@ -158,7 +240,7 @@ export function buildWarrantyFlowSpec(snapshot, options = {}) {
       {
         type: "heading",
         level: 2,
-        text: "2. Besprochener Garantiefall",
+        text: meta.subjectHeading,
         size: 9.8,
         color: [17, 18, 17],
         accentBar: true,
@@ -198,31 +280,12 @@ export function buildWarrantyFlowSpec(snapshot, options = {}) {
         checkColor: [18, 18, 18]
       },
 
-      {
-        type: "heading",
-        level: 2,
-        text: "4. Zusätzliche kostenpflichtige Arbeiten",
-        size: 9.8,
-        color: [17, 18, 17],
-        accentBar: true,
-        accentBarColor: [18, 18, 18],
-        gapBefore: 1,
-        gapAfter: 4
-      },
-      {
-        type: "field",
-        label: "Beauftragt",
-        field: "case.service",
-        size: 8.15,
-        labelWidth: 105,
-        labelColor: [18, 18, 18],
-        gapAfter: 5
-      },
+      ...serviceBlocks,
 
       {
         type: "heading",
         level: 2,
-        text: "5. Hinweis des Kunden",
+        text: `${noteNumber}. Hinweis des Kunden`,
         size: 9.8,
         color: [17, 18, 17],
         accentBar: true,
@@ -322,12 +385,12 @@ export function buildWarrantyFlowSpec(snapshot, options = {}) {
     },
     meta: {
       title: draft
-        ? `Servicevorgang Entwurf ${documentId}`
-        : `Bestätigung Garantie- und Servicevorgang ${documentId}`,
+        ? `${meta.label} Entwurf ${documentId}`
+        : `${meta.title} ${documentId}`,
       author: "MYVELO Service",
       subject: draft
-        ? "Interner Entwurf zum Garantie- und Servicevorgang"
-        : "Kundenbestätigung zum Garantie- und Servicevorgang"
+        ? `Interner Entwurf · ${meta.label}`
+        : `Kundenbestätigung · ${meta.label}`
     },
     header: {
       brand: "",

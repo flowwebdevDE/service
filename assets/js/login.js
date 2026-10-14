@@ -3,7 +3,7 @@ import { showError } from "./banner.js?v=7.10.6";
 import {
   getPortalSession,
   loginWithCompanyKey
-} from "./api.js?v=7.12.1-eu";
+} from "./api.js?v=7.14.1";
 
 const form = document.querySelector("#login-form");
 const reason = new URLSearchParams(location.search).get("reason");

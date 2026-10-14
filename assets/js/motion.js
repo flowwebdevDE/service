@@ -36,6 +36,10 @@ export function renderCaseSkeleton(container, count = 5) {
         <span class="flow-skeleton flow-skeleton--title"></span>
         <span class="flow-skeleton flow-skeleton--text"></span>
       </div>
+      <div class="flow-case-kind">
+        <span class="flow-skeleton flow-skeleton--meta"></span>
+        <span class="flow-skeleton flow-skeleton--text"></span>
+      </div>
       <div class="flow-case-meta">
         <span class="flow-skeleton flow-skeleton--meta"></span>
         <span class="flow-skeleton flow-skeleton--tiny"></span>
