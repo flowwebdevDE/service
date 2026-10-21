@@ -11,21 +11,34 @@ export function hasPaidServiceConfirmation(caseType, serviceChoice) {
   return (type === "warranty" || type === "repair") && PAID_SERVICE_CHOICES.has(serviceChoice);
 }
 
-function paidServiceText(caseType, serviceChoice) {
+function formattedKnownPrice(input = {}) {
+  if (input.service_price_mode !== "known") return "";
+  const cents = Number(input.service_price_amount_cents);
+  if (!Number.isFinite(cents) || cents < 0) return "";
+  return new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR" }).format(cents / 100);
+}
+
+function paidServiceText(caseType, serviceChoice, input = {}) {
   const context = normalizeCaseType(caseType) === "repair"
     ? "zur Reparatur"
     : "zum Garantiefall";
 
+  const knownPrice = formattedKnownPrice(input);
+  const inspectionPriceCopy = knownPrice
+    ? ` zum vereinbarten Preis von ${knownPrice}`
+    : ". Die konkreten Kosten werden vor der Ausführung abgestimmt";
+
   if (serviceChoice === "inspection") {
     return {
       title: "Kostenpflichtige Inspektion bestätigen",
-      copy: `Zusätzlich ${context} beauftrage ich die Inspektion für 96 €.`
+      copy: `Zusätzlich ${context} beauftrage ich die Inspektion${inspectionPriceCopy}.`
     };
   }
 
+  const materialCopy = " Erforderliche Verschleißteile werden nach tatsächlichem Materialaufwand berechnet.";
   return {
     title: "Kostenpflichtige Zusatzarbeit bestätigen",
-    copy: `Zusätzlich ${context} beauftrage ich die Inspektion inklusive erforderlicher Verschleißteile für 96 € zuzüglich tatsächlich benötigtem Material.`
+    copy: `Zusätzlich ${context} beauftrage ich die Inspektion${inspectionPriceCopy}.${materialCopy}`.replace("..", ".")
   };
 }
 
@@ -63,7 +76,7 @@ export function confirmationRequirements(input = {}) {
   const rules = [primary];
 
   if (hasPaidServiceConfirmation(type, serviceChoice)) {
-    const paid = paidServiceText(type, serviceChoice);
+    const paid = paidServiceText(type, serviceChoice, input);
     rules.push({
       key: "paid_service",
       title: paid.title,

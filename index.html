@@ -6,11 +6,11 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://myvelo-service.red-dawn-bec6.workers.dev https://*.myvelo.de; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'none'; worker-src 'self' blob:; upgrade-insecure-requests">
   <meta name="referrer" content="no-referrer">
 <title>MYVELO Service · Servicevorgänge</title>
-  <link rel="stylesheet" href="assets/css/app.css?v=7.10.6">
-  <link rel="stylesheet" href="assets/css/employee-apple.css?v=7.14.2">
-  <script src="assets/js/auth-guard.js?v=7.11.0.2"></script>
+  <link rel="stylesheet" href="assets/css/app.css?v=7.15.4">
+  <link rel="stylesheet" href="assets/css/employee-apple.css?v=7.15.15">
+  <script src="assets/js/auth-guard.js?v=7.15.1"></script>
   <script src="assets/js/security-bootstrap.js?v=7.10.6"></script>
-  <script src="portal-config.js?v=7.14.2"></script>
+  <script src="portal-config.js?v=7.15.1"></script>
 </head>
 <body class="flow-employee">
 
@@ -46,6 +46,10 @@
 
       <div class="flow-sidebar-spacer"></div>
 
+      <a class="flow-nav-item" href="profile.html">
+        <span class="flow-nav-person" aria-hidden="true">MA</span>
+        <span>Mitarbeiter</span>
+      </a>
       <button class="flow-nav-item" id="logout-button" type="button">
         <span class="flow-nav-dot flow-nav-dot--muted"></span>
         <span>Abmelden</span>
@@ -89,7 +93,17 @@
             </div>
           </div>
 
-          <section class="flow-dashboard" id="active-dashboard" aria-label="Statusfilter">
+          <div class="flow-dashboard-sentinel" id="dashboard-filter-sentinel" aria-hidden="true"></div>
+
+          <section class="flow-dashboard-section" aria-label="Arbeitsstatus">
+            <div class="flow-section-heading">
+              <div>
+                <strong>Arbeitsstatus</strong>
+                <span>Vorgänge nach aktuellem Bearbeitungsstand filtern</span>
+              </div>
+            </div>
+
+            <section class="flow-dashboard" id="active-dashboard" aria-label="Statusfilter">
             <button class="flow-dashboard-card is-active" type="button" data-status-filter="all">
               <span>Aktiv gesamt</span>
               <strong id="stat-total">0</strong>
@@ -119,6 +133,7 @@
               <strong id="stat-progress">0</strong>
               <small>Aktuell in Bearbeitung</small>
             </button>
+            </section>
           </section>
 
           <section class="flow-panel flow-case-panel">
@@ -138,6 +153,22 @@
               <span></span>
             </div>
             <div class="flow-case-list" id="case-rows"></div>
+
+            <nav class="flow-pagination" id="case-pagination" aria-label="Seitennavigation der Vorgänge">
+              <div class="flow-pagination__meta">
+                <strong id="case-page-state">Seite 1 von 1</strong>
+                <span id="case-page-count">0 Vorgänge · maximal 15 pro Seite</span>
+              </div>
+              <div class="flow-pagination__controls">
+                <button class="flow-pagination__arrow" id="case-page-prev" type="button" aria-label="Vorherige Seite" disabled>
+                  <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M12.75 4.75 7.5 10l5.25 5.25"/></svg>
+                </button>
+                <div class="flow-pagination__pages" id="case-page-buttons" aria-label="Seiten"></div>
+                <button class="flow-pagination__arrow" id="case-page-next" type="button" aria-label="Nächste Seite" disabled>
+                  <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M7.25 4.75 12.5 10l-5.25 5.25"/></svg>
+                </button>
+              </div>
+            </nav>
           </section>
         </section>
       </main>
@@ -180,9 +211,10 @@
         </fieldset>
 
         <div class="flow-create-pair">
-          <label>
-            <span>Shopify-Referenz *</span>
-            <input name="shopify_ref" required placeholder="#4832">
+          <label class="flow-shopify-reference-field">
+            <span>Shopify-Auftragsnummer *</span>
+            <input name="shopify_ref" required placeholder="#4832" autocomplete="off">
+            <small>Die Shopify-Auftragsnummer ist die reguläre Referenz im Serviceportal.</small>
           </label>
 
           <label>
@@ -190,6 +222,16 @@
             <input name="customer_name" required placeholder="Vor- und Nachname">
           </label>
         </div>
+
+        <label class="flow-internal-reference-exception" id="internal-reference-exception">
+          <input type="checkbox" name="use_internal_reference" value="1">
+          <span class="flow-internal-reference-exception__check" aria-hidden="true"></span>
+          <span>
+            <strong>Keine Shopify-Auftragsnummer vorhanden</strong>
+            <small>Nur für Ausnahmefälle. Dann wird die interne Service-Referenz als Ersatz verwendet.</small>
+          </span>
+        </label>
+
 <div class="flow-create-pair">
           <label>
             <span>Gegenstand</span>
@@ -256,10 +298,23 @@
               <select name="service_choice" id="create-service-choice">
                 <option value="">Keine Vorauswahl</option>
                 <option value="none">Keine Zusatzleistung</option>
-                <option value="inspection">Inspektion · 96 €</option>
+                <option value="inspection">Inspektion</option>
                 <option value="inspection_wear">Inspektion + Verschleißteile</option>
               </select>
             </label>
+            <div class="flow-price-settings span-2 hidden" id="create-price-settings">
+              <label>
+                <span>Preis im Kundenportal</span>
+                <select name="service_price_mode" id="create-service-price-mode">
+                  <option value="hidden">Keinen Preis anzeigen</option>
+                  <option value="known">Bekannten Preis anzeigen</option>
+                </select>
+              </label>
+              <label class="hidden" id="create-service-price-amount-field">
+                <span>Bekannter Preis in €</span>
+                <input name="service_price_eur" inputmode="decimal" pattern="[0-9]+([,.][0-9]{1,2})?" placeholder="0,00">
+              </label>
+            </div>
             <label class="span-2">
               <span>Hinweis an uns</span>
               <textarea name="customer_note"></textarea>
@@ -276,25 +331,33 @@
     </form>
   </dialog>
 
-  <dialog class="flow-dialog flow-dialog--small" id="linkDialog">
+  <dialog class="flow-dialog flow-dialog--access" id="linkDialog">
     <div class="flow-dialog-head">
       <div>
         <span>Fertig</span>
-        <strong>Kundenlink erstellt</strong>
+        <strong>Kundenzugang erstellt</strong>
       </div>
+      <button class="flow-close" id="closeCreatedLinkDialog" type="button" aria-label="Dialog schließen">×</button>
     </div>
-    <input class="flow-copy-input" id="createdLink" readonly>
-    <div class="flow-access-code-row">
-      <span>Verifizierungscode</span>
-      <strong id="createdVerificationCode">••••••</strong>
+    <div class="flow-access-dialog-body">
+      <label>
+        <span>Kundenlink</span>
+        <input class="flow-copy-input" id="createdLink" readonly>
+      </label>
+      <div class="flow-access-code-row">
+        <span>Verifizierungscode</span>
+        <strong id="createdVerificationCode">••••••</strong>
+      </div>
+      <p>Link und Code getrennt an den Kunden weitergeben. Der Link allein reicht nicht zur Anmeldung.</p>
     </div>
     <div class="flow-dialog-actions">
-      <button class="flow-action secondary" id="openCreatedLink" type="button">Öffnen</button>
+      <button class="flow-action secondary" id="openCreatedCase" type="button">Vorgang öffnen</button>
+      <button class="flow-action secondary" id="openCreatedLink" type="button">Kundenansicht</button>
       <button class="flow-action secondary" id="copyCreatedCode" type="button">Code kopieren</button>
-      <button class="flow-action primary" id="copyCreatedLink" type="button">Kopieren</button>
+      <button class="flow-action primary" id="copyCreatedLink" type="button">Link kopieren</button>
     </div>
   </dialog>
 
-  <script type="module" src="assets/js/admin.js?v=7.14.2"></script>
+  <script type="module" src="assets/js/admin.js?v=7.15.15"></script>
 </body>
 </html>

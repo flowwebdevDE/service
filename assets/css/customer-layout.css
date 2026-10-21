@@ -1026,3 +1026,1727 @@
     font-size: 8px;
   }
 }
+
+/* =========================================================
+   V7.15.0 · Mobile confirmation clearance & stable CTA
+   ========================================================= */
+body.customer-mobile-first:not(.customer-locked):not(.customer-frozen-mode) .customer-mobile-shell {
+  padding-bottom: calc(104px + env(safe-area-inset-bottom)) !important;
+}
+
+body.customer-mobile-first:not(.customer-locked):not(.customer-frozen-mode) #customer-legal-global {
+  padding-bottom: calc(104px + env(safe-area-inset-bottom)) !important;
+}
+
+.customer-mobile-first .customer-sticky-action__inner {
+  min-width: 0;
+}
+
+.customer-mobile-first .customer-sticky-action__status {
+  min-width: 0;
+}
+
+.customer-mobile-first .customer-sticky-action__status strong,
+.customer-mobile-first .customer-sticky-action__status span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.customer-mobile-first .customer-sticky-action .button {
+  min-height: 44px !important;
+  height: 44px !important;
+  flex: 0 0 auto;
+  padding: 0 12px !important;
+  white-space: nowrap;
+  transform: none !important;
+}
+
+.customer-mobile-first .customer-sticky-action[hidden],
+.customer-mobile-first .customer-sticky-action.hidden,
+body.customer-frozen-mode .customer-sticky-action {
+  display: none !important;
+}
+
+@media (max-width: 390px) {
+  .customer-mobile-first .customer-sticky-action__inner {
+    grid-template-columns: minmax(0, 1fr) 104px !important;
+    gap: 8px !important;
+  }
+
+  .customer-mobile-first .customer-sticky-action .button {
+    width: 104px !important;
+    min-width: 104px !important;
+    font-size: 11px !important;
+  }
+}
+
+/* =========================================================
+   V7.15.2 · True desktop customer workspace
+   Desktop is a dedicated composition, not an enlarged phone stack.
+   Mobile/tablet behavior below 980px remains unchanged.
+   ========================================================= */
+@media (min-width: 980px) {
+  body.customer-mobile-first {
+    --customer-axis-width: 1240px;
+    --customer-axis-edge: 30px;
+    --customer-header-height: 74px;
+    --customer-desktop-gap: 18px;
+    padding-bottom: 0 !important;
+    background: #f3f3f0 !important;
+  }
+
+  /* Wide desktop header */
+  .customer-mobile-first .customer-topbar--mobile {
+    height: var(--customer-header-height) !important;
+    min-height: var(--customer-header-height) !important;
+    padding-inline: max(
+      var(--customer-axis-edge),
+      calc((100vw - var(--customer-axis-width)) / 2)
+    ) !important;
+    border-bottom-color: #deded9 !important;
+    background: rgba(255, 255, 255, .985) !important;
+  }
+
+  .customer-mobile-first .customer-topbar__inner {
+    gap: 28px !important;
+  }
+
+  .customer-mobile-first .customer-topbar .brand-logo-image {
+    width: 132px !important;
+    max-width: 132px !important;
+    height: 25px !important;
+    max-height: 25px !important;
+  }
+
+  .customer-mobile-first .customer-topbar .brand-divider,
+  .customer-mobile-first .customer-topbar .brand-section {
+    display: inline-flex !important;
+  }
+
+  /* Desktop canvas */
+  .customer-mobile-first .customer-mobile-shell {
+    width: calc(100% - (var(--customer-axis-edge) * 2)) !important;
+    max-width: var(--customer-axis-width) !important;
+    margin: 0 auto !important;
+    padding: 34px 0 52px !important;
+  }
+
+  .customer-mobile-first #customer-live-content {
+    display: grid;
+    gap: 22px;
+  }
+
+  /* Hero becomes a horizontal workspace header. */
+  .customer-mobile-first .customer-mobile-head {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1.55fr) minmax(360px, .85fr) !important;
+    grid-template-rows: auto auto auto !important;
+    column-gap: 54px !important;
+    row-gap: 0 !important;
+    align-items: end !important;
+    padding: 4px 4px 26px !important;
+    border-bottom: 1px solid #dcdcd7 !important;
+  }
+
+  .customer-mobile-first .customer-mobile-kicker {
+    grid-column: 1;
+    grid-row: 1;
+    margin: 0 0 9px !important;
+    color: #6d6d68 !important;
+    font-size: 11px !important;
+    letter-spacing: .095em !important;
+  }
+
+  .customer-mobile-first .customer-mobile-head h1 {
+    grid-column: 1;
+    grid-row: 2;
+    max-width: 760px;
+    margin: 0 !important;
+    font-size: clamp(42px, 4vw, 58px) !important;
+    line-height: .98 !important;
+    letter-spacing: -.052em !important;
+  }
+
+  .customer-mobile-first .customer-mobile-head > p {
+    grid-column: 1;
+    grid-row: 3;
+    max-width: 700px;
+    margin: 13px 0 0 !important;
+    font-size: 15px !important;
+    line-height: 1.55 !important;
+  }
+
+  .customer-mobile-first .customer-case-strip {
+    grid-column: 2;
+    grid-row: 1 / span 3;
+    align-self: stretch;
+    width: 100% !important;
+    min-height: 126px;
+    margin: 0 !important;
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    grid-template-rows: repeat(2, minmax(0, 1fr)) !important;
+    border: 1px solid #d9d9d5 !important;
+    border-radius: 18px !important;
+    background: #fff !important;
+    box-shadow: 0 14px 38px rgba(17, 17, 17, .035) !important;
+  }
+
+  .customer-mobile-first .customer-case-strip > div {
+    min-height: 0 !important;
+    display: grid;
+    align-content: center;
+    padding: 18px 20px !important;
+  }
+
+  .customer-mobile-first .customer-case-strip > div + div {
+    border-top: 1px solid #e2e2de !important;
+    border-left: 0 !important;
+  }
+
+  .customer-mobile-first .customer-case-strip span {
+    margin-bottom: 5px !important;
+    font-size: 10px !important;
+    letter-spacing: .075em !important;
+  }
+
+  .customer-mobile-first .customer-case-strip strong {
+    font-size: 16px !important;
+    line-height: 1.25 !important;
+    text-align: left !important;
+  }
+
+  /* Two-column desktop form. */
+  .customer-mobile-first .customer-mobile-form {
+    display: grid !important;
+    grid-template-columns: repeat(12, minmax(0, 1fr)) !important;
+    grid-auto-flow: row dense !important;
+    align-items: stretch !important;
+    gap: var(--customer-desktop-gap) !important;
+  }
+
+  .customer-mobile-first .customer-flow-section,
+  .customer-mobile-first .customer-flow-section--action {
+    min-width: 0;
+    height: 100%;
+    padding: 24px !important;
+    border-radius: 19px !important;
+    border-color: #dcdcd7 !important;
+    box-shadow: 0 10px 30px rgba(17, 17, 17, .025) !important;
+  }
+
+  .customer-mobile-first #section-case,
+  .customer-mobile-first #section-service {
+    grid-column: span 7;
+  }
+
+  .customer-mobile-first #section-delivery,
+  .customer-mobile-first #section-note {
+    grid-column: span 5;
+  }
+
+  .customer-mobile-first #section-service.hidden + #section-note {
+    grid-column: 1 / -1;
+  }
+
+  .customer-mobile-first #section-confirm {
+    grid-column: 1 / -1;
+    display: grid !important;
+    grid-template-columns: minmax(0, .96fr) minmax(0, 1.04fr) !important;
+    grid-template-rows: auto auto auto !important;
+    column-gap: 34px !important;
+    row-gap: 14px !important;
+    align-items: start !important;
+    padding: 28px !important;
+    background: #fbfbf9 !important;
+  }
+
+  .customer-mobile-first #section-confirm .customer-flow-section__head {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    margin-bottom: 0 !important;
+  }
+
+  .customer-mobile-first #section-confirm .customer-personal-confirm {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    max-width: 780px;
+    margin: -2px 0 4px !important;
+  }
+
+  .customer-mobile-first #section-confirm .customer-final-summary {
+    grid-column: 1;
+    grid-row: 3;
+    align-self: start;
+    border-radius: 15px !important;
+    background: #fff;
+  }
+
+  .customer-mobile-first #section-confirm #confirm-area {
+    grid-column: 2;
+    grid-row: 3;
+    min-width: 0;
+    align-self: start;
+  }
+
+  .customer-mobile-first #section-confirm #confirmed-panel {
+    grid-column: 1 / -1;
+    grid-row: 3;
+  }
+
+  .customer-mobile-first .customer-flow-section__head {
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    gap: 18px !important;
+    min-height: 34px !important;
+    margin-bottom: 18px !important;
+  }
+
+  .customer-mobile-first .customer-flow-section__head > div {
+    grid-template-columns: 30px minmax(0, 1fr) !important;
+    gap: 11px !important;
+  }
+
+  .customer-mobile-first .customer-flow-section__head h2 {
+    font-size: 21px !important;
+  }
+
+  .customer-mobile-first .section-state {
+    width: auto !important;
+    max-width: 180px !important;
+    min-width: 94px;
+    padding-inline: 10px !important;
+  }
+
+  /* Desktop data density: readable, not phone-like rows. */
+  .customer-mobile-first .customer-data-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    border: 1px solid #deded9 !important;
+    border-radius: 14px !important;
+    background: #fff;
+  }
+
+  .customer-mobile-first .customer-data-row,
+  .customer-mobile-first .customer-final-summary > div {
+    grid-template-columns: minmax(84px, auto) minmax(0, 1fr) !important;
+    gap: 16px !important;
+    min-height: 58px !important;
+    padding: 0 16px !important;
+  }
+
+  .customer-mobile-first .customer-data-row:nth-child(even) {
+    border-left: 1px solid #e3e3df !important;
+  }
+
+  .customer-mobile-first .customer-data-row + .customer-data-row {
+    border-top: 0 !important;
+  }
+
+  .customer-mobile-first .customer-data-row:nth-child(n + 3) {
+    border-top: 1px solid #e3e3df !important;
+  }
+
+  .customer-mobile-first .customer-data-row input,
+  .customer-mobile-first .customer-data-row strong {
+    text-align: left !important;
+  }
+
+  .customer-mobile-first .customer-note-field {
+    margin-top: 16px !important;
+  }
+
+  .customer-mobile-first .customer-note-field input,
+  .customer-mobile-first .customer-textarea {
+    min-height: 50px;
+    background: #fcfcfa !important;
+  }
+
+  .customer-mobile-first .customer-textarea {
+    min-height: 142px !important;
+  }
+
+  .customer-mobile-first .delivery-list--mobile {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px !important;
+  }
+
+  .customer-mobile-first .delivery-list--mobile .delivery-item {
+    min-height: 58px;
+  }
+
+  .customer-mobile-first .service-choice-list {
+    gap: 10px !important;
+  }
+
+  .customer-mobile-first .service-choice-row,
+  .customer-mobile-first .service-choice-row--two-line {
+    min-height: 76px !important;
+    grid-template-columns: 24px minmax(0, 1fr) minmax(118px, auto) !important;
+    gap: 14px !important;
+    padding: 15px 16px !important;
+  }
+
+  .customer-mobile-first .service-choice-price {
+    width: auto !important;
+    min-width: 118px;
+    font-size: 12px !important;
+  }
+
+  .customer-mobile-first .customer-final-summary > div {
+    min-height: 54px !important;
+  }
+
+  .customer-mobile-first .customer-final-summary strong {
+    text-align: right !important;
+  }
+
+  .customer-mobile-first .customer-confirm-row {
+    margin-top: 0;
+    margin-bottom: 10px;
+    padding: 15px 16px;
+  }
+
+  .customer-mobile-first .customer-legal-details {
+    margin-top: 14px;
+  }
+
+  /* Desktop action surface: compact floating controller instead of a phone footer. */
+  body.customer-mobile-first:not(.customer-locked):not(.customer-frozen-mode) .customer-mobile-shell {
+    padding-bottom: 110px !important;
+  }
+
+  body.customer-mobile-first:not(.customer-locked):not(.customer-frozen-mode) #customer-legal-global {
+    padding-bottom: 30px !important;
+  }
+
+  .customer-mobile-first .customer-sticky-action {
+    right: max(
+      var(--customer-axis-edge),
+      calc((100vw - var(--customer-axis-width)) / 2)
+    ) !important;
+    left: auto !important;
+    bottom: 24px !important;
+    width: 390px !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    border: 1px solid #d7d7d2 !important;
+    border-radius: 18px !important;
+    background: rgba(255, 255, 255, .985) !important;
+    box-shadow: 0 20px 55px rgba(17, 17, 17, .13) !important;
+    transform: none !important;
+    overflow: hidden;
+  }
+
+  .customer-mobile-first .customer-sticky-action__inner {
+    width: 100% !important;
+    max-width: none !important;
+    min-height: 78px !important;
+    margin: 0 !important;
+    padding: 13px !important;
+    grid-template-columns: minmax(0, 1fr) 126px !important;
+    gap: 14px !important;
+  }
+
+  .customer-mobile-first .customer-sticky-action__status strong,
+  .customer-mobile-first .customer-sticky-action__status span {
+    text-align: left;
+  }
+
+  .customer-mobile-first .customer-sticky-action .button {
+    width: 126px !important;
+    min-width: 126px !important;
+    height: 48px !important;
+    min-height: 48px !important;
+  }
+
+  /* Frozen/confirmed mode also has a real desktop layout. */
+  .customer-mobile-first .customer-frozen-view {
+    width: 100%;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .customer-mobile-first .customer-frozen-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.55fr) minmax(320px, .75fr);
+    grid-template-rows: auto auto auto;
+    column-gap: 52px;
+    align-items: center;
+    padding: 34px 36px;
+    border-radius: 22px;
+  }
+
+  .customer-mobile-first .customer-frozen-kicker {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .customer-mobile-first .customer-frozen-hero h1 {
+    grid-column: 1;
+    grid-row: 2;
+    max-width: 760px;
+    font-size: clamp(42px, 4vw, 58px);
+  }
+
+  .customer-mobile-first .customer-frozen-hero > p {
+    grid-column: 1;
+    grid-row: 3;
+    max-width: 700px;
+    font-size: 15px;
+  }
+
+  .customer-mobile-first .customer-frozen-reference {
+    grid-column: 2;
+    grid-row: 1 / span 3;
+    align-self: stretch;
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(2, 1fr);
+    margin: 0;
+    border: 1px solid #dfdfda;
+    border-radius: 16px;
+    overflow: hidden;
+    background: #f7f7f4;
+  }
+
+  .customer-mobile-first .customer-frozen-reference > div {
+    display: grid;
+    align-content: center;
+    padding: 18px 20px !important;
+  }
+
+  .customer-mobile-first .customer-frozen-reference > div + div {
+    padding-left: 20px !important;
+    border-top: 1px solid #dfdfda;
+    border-left: 0;
+  }
+
+  .customer-mobile-first .customer-frozen-stack {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--customer-desktop-gap);
+    margin-top: var(--customer-desktop-gap);
+  }
+
+  .customer-mobile-first .customer-frozen-card {
+    min-height: 160px;
+    padding: 24px;
+    border-radius: 18px;
+  }
+
+  .customer-mobile-first .customer-frozen-confirmation {
+    grid-column: 1 / -1;
+    min-height: 82px;
+    padding: 20px 24px;
+  }
+
+  /* Verification is a desktop gate, not a phone card floating in a void. */
+  body.customer-mobile-first .customer-verification {
+    padding: 44px;
+    background:
+      radial-gradient(circle at 18% 20%, rgba(255,255,255,.95), rgba(255,255,255,0) 34%),
+      #f1f1ee;
+  }
+
+  body.customer-mobile-first .customer-verification__card {
+    width: min(100%, 920px);
+    min-height: 430px;
+    box-sizing: border-box;
+    display: grid;
+    grid-template-columns: minmax(0, .88fr) minmax(390px, 1.12fr);
+    grid-template-rows: auto auto auto 1fr auto;
+    column-gap: 64px;
+    align-content: center;
+    padding: 48px 52px;
+    border-radius: 24px;
+    box-shadow: 0 24px 70px rgba(17,17,17,.08);
+  }
+
+  body.customer-mobile-first .customer-verification__logo {
+    grid-column: 1;
+    grid-row: 1;
+    width: 138px;
+    margin: 0 0 48px;
+  }
+
+  body.customer-mobile-first .customer-verification__kicker,
+  body.customer-mobile-first .customer-verification__card h1,
+  body.customer-mobile-first .customer-verification__card > p {
+    grid-column: 1;
+  }
+
+  body.customer-mobile-first .customer-verification__kicker {
+    grid-row: 2;
+  }
+
+  body.customer-mobile-first .customer-verification__card h1 {
+    grid-row: 3;
+    font-size: 34px;
+  }
+
+  body.customer-mobile-first .customer-verification__card > p {
+    grid-row: 4;
+    max-width: 330px;
+    margin-bottom: 0;
+  }
+
+  body.customer-mobile-first .customer-verification__card form {
+    grid-column: 2;
+    grid-row: 1 / span 4;
+    align-self: center;
+    gap: 18px;
+  }
+
+  body.customer-mobile-first .customer-verification__card > small {
+    grid-column: 2;
+    grid-row: 5;
+    margin-top: 18px;
+  }
+
+  body.customer-mobile-first .customer-otp-submit {
+    min-height: 52px;
+  }
+
+  .customer-mobile-first #customer-legal-global {
+    border-top: 1px solid #e0e0dc;
+    background: #f3f3f0;
+  }
+}
+
+@media (min-width: 980px) and (max-width: 1120px) {
+  body.customer-mobile-first {
+    --customer-axis-edge: 22px;
+  }
+
+  .customer-mobile-first .customer-mobile-head {
+    grid-template-columns: minmax(0, 1.35fr) minmax(310px, .75fr) !important;
+    column-gap: 32px !important;
+  }
+
+  .customer-mobile-first #section-case,
+  .customer-mobile-first #section-service {
+    grid-column: span 7;
+  }
+
+  .customer-mobile-first #section-delivery,
+  .customer-mobile-first #section-note {
+    grid-column: span 5;
+  }
+
+  .customer-mobile-first .customer-sticky-action {
+    width: 360px !important;
+  }
+}
+
+/* =========================================================
+   V7.15.3 · Airy desktop customer workspace + utility docks
+   - more whitespace and fewer nested card surfaces
+   - case references become quiet metadata, not another card
+   - legal links live in a compact utility dock, never a footer bar
+   - action control remains a floating contextual dock
+   ========================================================= */
+
+.customer-legal-dock {
+  width: max-content !important;
+  max-width: calc(100vw - 24px) !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 12px !important;
+  margin: 18px auto calc(104px + env(safe-area-inset-bottom)) !important;
+  padding: 9px 12px !important;
+  border: 1px solid #deded9 !important;
+  border-radius: 999px !important;
+  color: #777772 !important;
+  background: rgba(255, 255, 255, .88) !important;
+  box-shadow: 0 8px 24px rgba(17, 17, 17, .045) !important;
+  font-size: 10px !important;
+  line-height: 1 !important;
+  white-space: nowrap;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.customer-legal-dock__label {
+  color: #3f3f3b;
+  font-weight: 800;
+  letter-spacing: .035em;
+  text-transform: uppercase;
+}
+
+.customer-legal-dock__divider {
+  width: 1px;
+  height: 14px;
+  background: #d8d8d3;
+}
+
+.customer-legal-dock a {
+  color: inherit !important;
+  text-decoration: none !important;
+}
+
+.customer-legal-dock a:hover,
+.customer-legal-dock a:focus-visible {
+  color: #111 !important;
+  text-decoration: none !important;
+}
+
+/* Keep legal access available at the verification gate without a footer strip. */
+body.customer-locked #customer-legal-global {
+  position: fixed !important;
+  right: auto !important;
+  bottom: calc(14px + env(safe-area-inset-bottom)) !important;
+  left: 50% !important;
+  z-index: 16020 !important;
+  width: max-content !important;
+  margin: 0 !important;
+  padding: 9px 12px !important;
+  transform: translateX(-50%) !important;
+  background: rgba(255, 255, 255, .92) !important;
+}
+
+body.customer-locked .customer-verification {
+  padding-bottom: calc(82px + env(safe-area-inset-bottom)) !important;
+}
+
+@media (max-width: 520px) {
+  .customer-legal-dock {
+    gap: 9px !important;
+    padding: 8px 10px !important;
+    font-size: 9.5px !important;
+  }
+
+  .customer-legal-dock__label,
+  .customer-legal-dock__divider {
+    display: none !important;
+  }
+}
+
+@media (min-width: 980px) {
+  body.customer-mobile-first {
+    --customer-axis-width: 1280px;
+    --customer-axis-edge: 34px;
+    --customer-header-height: 78px;
+    --customer-desktop-gap: 28px;
+    background:
+      radial-gradient(circle at 86% 8%, rgba(255,255,255,.92), rgba(255,255,255,0) 28%),
+      #f3f3ef !important;
+  }
+
+  /* Header becomes calmer and gives the page room to breathe. */
+  .customer-mobile-first .customer-topbar--mobile {
+    border-bottom: 1px solid rgba(208, 208, 202, .72) !important;
+    background: rgba(250, 250, 247, .9) !important;
+    backdrop-filter: blur(20px) saturate(115%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(115%) !important;
+  }
+
+  .customer-mobile-first .customer-topbar__inner {
+    gap: 36px !important;
+  }
+
+  /* Much more vertical rhythm than the first desktop pass. */
+  .customer-mobile-first .customer-mobile-shell {
+    padding: 54px 0 168px !important;
+  }
+
+  .customer-mobile-first #customer-live-content {
+    gap: 42px !important;
+  }
+
+  .customer-mobile-first .customer-mobile-head {
+    grid-template-columns: minmax(0, 1.7fr) minmax(300px, .65fr) !important;
+    column-gap: 78px !important;
+    align-items: center !important;
+    padding: 16px 8px 54px !important;
+    border-bottom: 1px solid #d9d9d3 !important;
+  }
+
+  .customer-mobile-first .customer-mobile-kicker {
+    margin-bottom: 13px !important;
+    color: #767670 !important;
+    font-size: 10px !important;
+    letter-spacing: .13em !important;
+  }
+
+  .customer-mobile-first .customer-mobile-head h1 {
+    max-width: 820px !important;
+    font-size: clamp(48px, 4.2vw, 66px) !important;
+    line-height: .97 !important;
+    letter-spacing: -.055em !important;
+  }
+
+  .customer-mobile-first .customer-mobile-head > p {
+    max-width: 690px !important;
+    margin-top: 18px !important;
+    color: #6e6e69 !important;
+    font-size: 16px !important;
+    line-height: 1.65 !important;
+  }
+
+  /* Reference data is deliberately not another card. */
+  .customer-mobile-first .customer-case-strip {
+    align-self: center !important;
+    min-height: 0 !important;
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    grid-template-rows: auto auto !important;
+    gap: 24px !important;
+    padding: 8px 0 8px 30px !important;
+    border: 0 !important;
+    border-left: 1px solid #cfcfca !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+  }
+
+  .customer-mobile-first .customer-case-strip > div {
+    min-height: 0 !important;
+    padding: 0 !important;
+  }
+
+  .customer-mobile-first .customer-case-strip > div + div {
+    border: 0 !important;
+  }
+
+  .customer-mobile-first .customer-case-strip span {
+    margin-bottom: 7px !important;
+    color: #85857f !important;
+    font-size: 9px !important;
+    letter-spacing: .12em !important;
+  }
+
+  .customer-mobile-first .customer-case-strip strong {
+    color: #1b1b19 !important;
+    font-size: 17px !important;
+    font-weight: 760 !important;
+    letter-spacing: -.015em !important;
+  }
+
+  /* Spacious 12-column work area. */
+  .customer-mobile-first .customer-mobile-form {
+    gap: 28px !important;
+  }
+
+  .customer-mobile-first .customer-flow-section,
+  .customer-mobile-first .customer-flow-section--action {
+    padding: 32px 34px 34px !important;
+    border: 1px solid #deded8 !important;
+    border-radius: 24px !important;
+    background: rgba(255,255,255,.93) !important;
+    box-shadow: 0 16px 45px rgba(17, 17, 17, .022) !important;
+  }
+
+  .customer-mobile-first #section-case,
+  .customer-mobile-first #section-service {
+    grid-column: span 7;
+  }
+
+  .customer-mobile-first #section-delivery,
+  .customer-mobile-first #section-note {
+    grid-column: span 5;
+  }
+
+  .customer-mobile-first .customer-flow-section__head {
+    min-height: 38px !important;
+    margin-bottom: 26px !important;
+  }
+
+  .customer-mobile-first .customer-flow-section__head > div {
+    grid-template-columns: 32px minmax(0, 1fr) !important;
+    gap: 13px !important;
+  }
+
+  .customer-mobile-first .customer-flow-section__head h2 {
+    font-size: 23px !important;
+    letter-spacing: -.035em !important;
+  }
+
+  .customer-mobile-first .section-number {
+    width: 30px !important;
+    height: 30px !important;
+    font-size: 11px !important;
+  }
+
+  .customer-mobile-first .section-state {
+    min-width: 0 !important;
+    padding: 6px 10px !important;
+    border-color: #deded8 !important;
+    background: #f4f4f0 !important;
+    font-size: 9.5px !important;
+    letter-spacing: .015em;
+  }
+
+  .customer-mobile-first .customer-flow-copy {
+    max-width: 620px;
+    margin: -8px 0 24px !important;
+    color: #74746f !important;
+    font-size: 14px !important;
+    line-height: 1.65 !important;
+  }
+
+  /* Remove the "card inside card" feeling from case data. */
+  .customer-mobile-first .customer-data-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    column-gap: 30px !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    overflow: visible !important;
+  }
+
+  .customer-mobile-first .customer-data-row,
+  .customer-mobile-first .customer-data-row + .customer-data-row,
+  .customer-mobile-first .customer-data-row:nth-child(n + 3),
+  .customer-mobile-first .customer-data-row:nth-child(even) {
+    min-height: 64px !important;
+    padding: 0 !important;
+    border-top: 0 !important;
+    border-right: 0 !important;
+    border-bottom: 1px solid #e2e2dc !important;
+    border-left: 0 !important;
+    background: transparent !important;
+  }
+
+  .customer-mobile-first .customer-data-row > span {
+    color: #777771 !important;
+    font-size: 11px !important;
+  }
+
+  .customer-mobile-first .customer-data-row input,
+  .customer-mobile-first .customer-data-row strong {
+    font-size: 14px !important;
+    font-weight: 710 !important;
+  }
+
+  .customer-mobile-first .customer-note-field {
+    gap: 10px !important;
+    margin-top: 26px !important;
+  }
+
+  .customer-mobile-first .customer-note-field input,
+  .customer-mobile-first .customer-textarea {
+    padding: 14px 15px !important;
+    border-color: #deded8 !important;
+    border-radius: 14px !important;
+    background: #f8f8f5 !important;
+  }
+
+  .customer-mobile-first .customer-note-field input {
+    min-height: 52px !important;
+  }
+
+  .customer-mobile-first .customer-textarea {
+    min-height: 168px !important;
+    line-height: 1.55 !important;
+  }
+
+  .customer-mobile-first .delivery-list--mobile {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  .customer-mobile-first .delivery-list--mobile .delivery-item {
+    min-height: 64px !important;
+    padding: 14px 16px !important;
+    border-radius: 14px !important;
+    background: #f8f8f5 !important;
+  }
+
+  .customer-mobile-first .service-choice-list {
+    gap: 12px !important;
+  }
+
+  .customer-mobile-first .service-choice-row,
+  .customer-mobile-first .service-choice-row--two-line {
+    min-height: 82px !important;
+    padding: 17px 18px !important;
+    border-color: #deded8 !important;
+    border-radius: 15px !important;
+    background: #fbfbf8 !important;
+  }
+
+  .customer-mobile-first .service-choice-row:hover {
+    background: #f6f6f2 !important;
+  }
+
+  /* Confirmation gets its own broad review stage with generous breathing room. */
+  .customer-mobile-first #section-confirm {
+    margin-top: 10px !important;
+    padding: 38px 40px 40px !important;
+    grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr) !important;
+    column-gap: 64px !important;
+    row-gap: 22px !important;
+    border-radius: 28px !important;
+    background: #fafaf7 !important;
+  }
+
+  .customer-mobile-first #section-confirm .customer-flow-section__head {
+    margin-bottom: 2px !important;
+  }
+
+  .customer-mobile-first #section-confirm .customer-personal-confirm {
+    margin: 0 0 10px !important;
+    color: #6d6d68 !important;
+    font-size: 14px !important;
+    line-height: 1.6 !important;
+  }
+
+  .customer-mobile-first #section-confirm .customer-final-summary {
+    padding: 6px 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+  }
+
+  .customer-mobile-first .customer-final-summary > div {
+    min-height: 62px !important;
+    padding: 0 !important;
+    border-bottom: 1px solid #e0e0da !important;
+  }
+
+  .customer-mobile-first .customer-confirm-row {
+    margin-bottom: 12px !important;
+    padding: 17px 18px !important;
+    border-radius: 15px !important;
+    background: #fff !important;
+  }
+
+  .customer-mobile-first .customer-legal-details {
+    margin-top: 20px !important;
+  }
+
+  /* Floating context controller, visually detached from page chrome. */
+  .customer-mobile-first .customer-sticky-action {
+    right: max(
+      var(--customer-axis-edge),
+      calc((100vw - var(--customer-axis-width)) / 2)
+    ) !important;
+    bottom: 28px !important;
+    width: 430px !important;
+    border: 1px solid rgba(204,204,198,.9) !important;
+    border-radius: 22px !important;
+    background: rgba(255,255,252,.9) !important;
+    box-shadow: 0 18px 60px rgba(17,17,17,.14) !important;
+    backdrop-filter: blur(22px) saturate(120%) !important;
+    -webkit-backdrop-filter: blur(22px) saturate(120%) !important;
+  }
+
+  .customer-mobile-first .customer-sticky-action__inner {
+    min-height: 82px !important;
+    padding: 14px 14px 14px 18px !important;
+    grid-template-columns: minmax(0, 1fr) 132px !important;
+    gap: 18px !important;
+  }
+
+  .customer-mobile-first .customer-sticky-action__status {
+    display: grid;
+    gap: 4px;
+  }
+
+  .customer-mobile-first .customer-sticky-action__status strong {
+    font-size: 13px !important;
+    letter-spacing: -.01em;
+  }
+
+  .customer-mobile-first .customer-sticky-action__status span {
+    color: #74746f !important;
+    font-size: 10.5px !important;
+  }
+
+  .customer-mobile-first .customer-sticky-action .button {
+    width: 132px !important;
+    min-width: 132px !important;
+    height: 52px !important;
+    min-height: 52px !important;
+    border-radius: 15px !important;
+  }
+
+  /* The legal utility lives opposite the action dock — no footer band. */
+  .customer-mobile-first #customer-legal-global,
+  body.customer-locked #customer-legal-global,
+  body.customer-frozen-mode #customer-legal-global {
+    position: fixed !important;
+    right: auto !important;
+    bottom: 28px !important;
+    left: max(
+      var(--customer-axis-edge),
+      calc((100vw - var(--customer-axis-width)) / 2)
+    ) !important;
+    z-index: 120 !important;
+    width: max-content !important;
+    margin: 0 !important;
+    padding: 10px 13px !important;
+    transform: none !important;
+    border: 1px solid rgba(204,204,198,.82) !important;
+    background: rgba(255,255,252,.82) !important;
+    box-shadow: 0 12px 36px rgba(17,17,17,.07) !important;
+  }
+
+  body.customer-locked #customer-legal-global {
+    z-index: 16020 !important;
+  }
+
+  /* Frozen state follows the same spacing philosophy. */
+  .customer-mobile-first .customer-frozen-hero {
+    column-gap: 78px !important;
+    padding: 48px 52px !important;
+    border-radius: 28px !important;
+  }
+
+  .customer-mobile-first .customer-frozen-stack {
+    gap: 28px !important;
+    margin-top: 28px !important;
+  }
+
+  .customer-mobile-first .customer-frozen-card {
+    min-height: 178px !important;
+    padding: 30px !important;
+    border-radius: 22px !important;
+  }
+
+  .customer-mobile-first .customer-frozen-confirmation {
+    min-height: 92px !important;
+    padding: 22px 28px !important;
+    border-radius: 20px !important;
+  }
+
+  /* Verification gate matches the same calmer desktop language. */
+  body.customer-mobile-first .customer-verification__card {
+    width: min(100%, 980px) !important;
+    min-height: 470px !important;
+    column-gap: 82px !important;
+    padding: 58px 62px !important;
+    border-radius: 30px !important;
+    box-shadow: 0 28px 90px rgba(17,17,17,.075) !important;
+  }
+}
+
+@media (min-width: 980px) and (max-width: 1120px) {
+  body.customer-mobile-first {
+    --customer-axis-edge: 24px;
+  }
+
+  .customer-mobile-first .customer-mobile-shell {
+    padding-top: 44px !important;
+  }
+
+  .customer-mobile-first .customer-mobile-head {
+    column-gap: 48px !important;
+  }
+
+  .customer-mobile-first .customer-flow-section,
+  .customer-mobile-first .customer-flow-section--action {
+    padding: 28px !important;
+  }
+
+  .customer-mobile-first #section-confirm {
+    column-gap: 40px !important;
+    padding: 34px !important;
+  }
+
+  .customer-mobile-first .customer-sticky-action {
+    width: 400px !important;
+  }
+}
+
+/* Specificity guard: earlier V7.15.x footer clearance rules must not turn the
+   compact legal dock back into a tall footer-shaped block. */
+body.customer-mobile-first:not(.customer-locked):not(.customer-frozen-mode) #customer-legal-global,
+body.customer-mobile-first.customer-frozen-mode #customer-legal-global {
+  padding: 9px 12px !important;
+}
+
+@media (min-width: 980px) {
+  body.customer-mobile-first:not(.customer-locked):not(.customer-frozen-mode) #customer-legal-global,
+  body.customer-mobile-first.customer-frozen-mode #customer-legal-global {
+    padding: 10px 13px !important;
+  }
+}
+
+/* =========================================================
+   V7.15.4 · Reference hierarchy + embedded desktop confirmation action
+   - customer-visible reference is Shopify first, internal reference only fallback
+   - desktop confirmation action is embedded in section 4/5 instead of floating over it
+   - confirmation gets more breathing room and a stable bottom edge
+   ========================================================= */
+
+@media (min-width: 980px) {
+  body.customer-mobile-first:not(.customer-locked):not(.customer-frozen-mode) .customer-mobile-shell {
+    padding-bottom: 118px !important;
+  }
+
+  .customer-mobile-first .customer-case-strip {
+    grid-template-rows: auto !important;
+    gap: 0 !important;
+    padding-top: 14px !important;
+    padding-bottom: 14px !important;
+  }
+
+  .customer-mobile-first .customer-case-strip > div {
+    min-height: 64px !important;
+  }
+
+  .customer-mobile-first .customer-frozen-reference {
+    grid-template-rows: 1fr !important;
+  }
+
+  .customer-mobile-first #section-confirm {
+    grid-template-rows: auto auto auto auto !important;
+    row-gap: 0 !important;
+    column-gap: 72px !important;
+    padding: 42px 42px 38px !important;
+  }
+
+  .customer-mobile-first #section-confirm .customer-flow-section__head {
+    margin-bottom: 28px !important;
+  }
+
+  .customer-mobile-first #section-confirm .customer-personal-confirm {
+    margin: 0 0 34px !important;
+    max-width: 760px !important;
+  }
+
+  .customer-mobile-first #section-confirm .customer-final-summary,
+  .customer-mobile-first #section-confirm #confirm-area {
+    padding-top: 0 !important;
+  }
+
+  .customer-mobile-first #section-confirm .customer-final-summary {
+    padding-right: 4px !important;
+  }
+
+  .customer-mobile-first #section-confirm #confirm-area {
+    display: grid !important;
+    align-content: start !important;
+    gap: 0 !important;
+  }
+
+  .customer-mobile-first #section-confirm .customer-confirm-row {
+    margin-bottom: 16px !important;
+    padding: 20px 20px !important;
+  }
+
+  .customer-mobile-first #section-confirm .customer-legal-details {
+    margin-top: 24px !important;
+    padding-top: 2px !important;
+  }
+
+  /* Desktop: the action belongs to the confirmation stage. It no longer
+     floats above or overlaps section 4/5. Mobile keeps the fixed CTA. */
+  .customer-mobile-first #section-confirm .customer-sticky-action {
+    position: static !important;
+    grid-column: 2 !important;
+    grid-row: 4 !important;
+    align-self: end !important;
+    right: auto !important;
+    bottom: auto !important;
+    left: auto !important;
+    width: 100% !important;
+    margin: 28px 0 0 !important;
+    padding: 22px 0 0 !important;
+    border: 0 !important;
+    border-top: 1px solid #deded8 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    overflow: visible !important;
+  }
+
+  .customer-mobile-first #section-confirm .customer-sticky-action__inner {
+    width: 100% !important;
+    max-width: none !important;
+    min-height: 58px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    grid-template-columns: minmax(0, 1fr) 138px !important;
+    gap: 24px !important;
+  }
+
+  .customer-mobile-first #section-confirm .customer-sticky-action__status {
+    align-self: center !important;
+    gap: 5px !important;
+  }
+
+  .customer-mobile-first #section-confirm .customer-sticky-action__status strong {
+    font-size: 13px !important;
+  }
+
+  .customer-mobile-first #section-confirm .customer-sticky-action__status span {
+    font-size: 11px !important;
+  }
+
+  .customer-mobile-first #section-confirm .customer-sticky-action .button {
+    width: 138px !important;
+    min-width: 138px !important;
+    height: 52px !important;
+    min-height: 52px !important;
+  }
+
+  .customer-mobile-first #section-confirm #confirmed-panel:not(.hidden) ~ .customer-sticky-action {
+    display: none !important;
+  }
+}
+
+@media (min-width: 980px) and (max-width: 1120px) {
+  .customer-mobile-first #section-confirm {
+    column-gap: 44px !important;
+    padding: 36px 32px 34px !important;
+  }
+}
+
+/* =========================================================
+   V7.15.5 · Desktop confirmation review spacing
+   - compact natural-height review rows
+   - balanced vertical padding around labels/values
+   - no stretched table-like rows inside the confirmation stage
+   ========================================================= */
+
+@media (min-width: 980px) {
+  .customer-mobile-first #section-confirm .customer-final-summary {
+    display: grid !important;
+    grid-auto-flow: row !important;
+    grid-auto-rows: max-content !important;
+    align-self: start !important;
+    height: auto !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+  }
+
+  .customer-mobile-first #section-confirm .customer-final-summary > div {
+    min-height: 76px !important;
+    height: auto !important;
+    padding: 18px 0 !important;
+    grid-template-columns: minmax(128px, .42fr) minmax(0, 1fr) !important;
+    gap: 28px !important;
+    align-items: center !important;
+    align-content: center !important;
+    box-sizing: border-box !important;
+  }
+
+  .customer-mobile-first #section-confirm .customer-final-summary > div + div {
+    border-top: 1px solid #deded8 !important;
+  }
+
+  .customer-mobile-first #section-confirm .customer-final-summary span {
+    align-self: center !important;
+    margin: 0 !important;
+    color: #6f6f69 !important;
+    font-size: 11px !important;
+    line-height: 1.25 !important;
+    letter-spacing: .07em !important;
+  }
+
+  .customer-mobile-first #section-confirm .customer-final-summary strong {
+    align-self: center !important;
+    margin: 0 !important;
+    font-size: 15px !important;
+    line-height: 1.42 !important;
+    text-align: right !important;
+  }
+}
+
+@media (min-width: 980px) and (max-width: 1120px) {
+  .customer-mobile-first #section-confirm .customer-final-summary > div {
+    min-height: 72px !important;
+    padding: 16px 0 !important;
+    grid-template-columns: minmax(112px, .4fr) minmax(0, 1fr) !important;
+    gap: 22px !important;
+  }
+}
+
+
+/* =========================================================
+   V7.15.6 · Review insets, softer geometry + delivery tags
+   - more horizontal breathing room inside the confirmation summary
+   - one calm rounded review surface instead of exposed table rows
+   - delivery scope rendered as individual tags/chips
+   ========================================================= */
+
+.customer-mobile-first .customer-tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  align-items: center;
+}
+
+.customer-mobile-first .customer-summary-tag {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 6px 11px;
+  border: 1px solid #ddddD6;
+  border-radius: 999px;
+  background: #f5f5f1;
+  color: #242421;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -.01em;
+  white-space: nowrap;
+}
+
+.customer-mobile-first .customer-summary-tag--muted {
+  color: #777771;
+  font-weight: 650;
+}
+
+@media (min-width: 980px) {
+  .customer-mobile-first #section-confirm {
+    padding-right: 48px !important;
+    padding-left: 48px !important;
+  }
+
+  .customer-mobile-first #section-confirm .customer-final-summary {
+    width: auto !important;
+    margin: 4px 10px 0 2px !important;
+    padding: 8px 18px !important;
+    border: 1px solid #dfdfd9 !important;
+    border-radius: 22px !important;
+    background: rgba(255, 255, 252, .82) !important;
+    box-shadow: 0 8px 24px rgba(17, 17, 17, .018) !important;
+    overflow: hidden !important;
+  }
+
+  .customer-mobile-first #section-confirm .customer-final-summary > div {
+    min-height: 82px !important;
+    padding: 20px 12px !important;
+    grid-template-columns: minmax(128px, .38fr) minmax(0, 1fr) !important;
+    gap: 34px !important;
+  }
+
+  .customer-mobile-first #section-confirm .customer-final-summary > div + div {
+    border-top-color: #e4e4de !important;
+  }
+
+  .customer-mobile-first #section-confirm .customer-final-summary strong {
+    padding-right: 2px !important;
+  }
+
+  .customer-mobile-first #section-confirm #summary-accessories.customer-tag-list {
+    justify-content: flex-end !important;
+    gap: 8px !important;
+    text-align: right !important;
+  }
+
+  .customer-mobile-first #section-confirm .customer-summary-tag {
+    min-height: 32px;
+    padding: 7px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+  }
+
+  .customer-mobile-first .customer-tag-list--frozen {
+    justify-content: flex-start;
+    gap: 8px;
+  }
+}
+
+@media (min-width: 980px) and (max-width: 1120px) {
+  .customer-mobile-first #section-confirm {
+    padding-right: 38px !important;
+    padding-left: 38px !important;
+  }
+
+  .customer-mobile-first #section-confirm .customer-final-summary {
+    margin-right: 4px !important;
+    padding-right: 14px !important;
+    padding-left: 14px !important;
+  }
+
+  .customer-mobile-first #section-confirm .customer-final-summary > div {
+    min-height: 78px !important;
+    padding: 18px 10px !important;
+    gap: 26px !important;
+  }
+}
+
+@media (max-width: 979px) {
+  .customer-mobile-first #section-confirm .customer-final-summary {
+    overflow: hidden;
+    border-radius: 18px;
+  }
+
+  .customer-mobile-first #summary-accessories.customer-tag-list {
+    justify-content: flex-end;
+  }
+
+  .customer-mobile-first .customer-summary-tag {
+    white-space: normal;
+  }
+}
+
+
+/* =========================================================
+   V7.15.8 · Floating privacy disclosure
+   - opening never changes the confirmation card geometry
+   - desktop uses an anchored popover
+   - mobile uses a compact bottom sheet
+   ========================================================= */
+
+.customer-mobile-first .customer-privacy-note {
+  position: relative;
+  margin-top: 18px;
+  border: 1px solid #dfdfd9;
+  border-radius: 18px;
+  background: rgba(248, 248, 244, .72);
+  overflow: visible;
+  transition: border-color .22s ease, background-color .22s ease, box-shadow .22s ease;
+}
+
+.customer-mobile-first .customer-privacy-note:hover {
+  border-color: #d2d2cb;
+}
+
+.customer-mobile-first .customer-privacy-note.is-open {
+  border-color: #cfcfc8;
+  background: rgba(250, 250, 247, .96);
+  box-shadow: 0 8px 24px rgba(17, 17, 17, .028);
+}
+
+.customer-mobile-first .customer-privacy-note__toggle {
+  width: 100%;
+  min-height: 72px;
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) 18px;
+  align-items: center;
+  gap: 14px;
+  padding: 15px 18px;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  color: #161614;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.customer-mobile-first .customer-privacy-note__toggle:focus-visible {
+  outline: 2px solid #111;
+  outline-offset: -3px;
+}
+
+.customer-mobile-first .customer-privacy-note__icon {
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #d5d5cf;
+  border-radius: 50%;
+  background: #fff;
+  color: #4d4d48;
+  font-size: 13px;
+  font-weight: 800;
+  font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.customer-mobile-first .customer-privacy-note__copy {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.customer-mobile-first .customer-privacy-note__copy strong {
+  font-size: 13px;
+  font-weight: 760;
+  line-height: 1.25;
+  letter-spacing: -.01em;
+}
+
+.customer-mobile-first .customer-privacy-note__copy > span {
+  color: #787873;
+  font-size: 12px;
+  line-height: 1.42;
+}
+
+.customer-mobile-first .customer-privacy-note__chevron {
+  width: 9px;
+  height: 9px;
+  justify-self: end;
+  border-right: 1.8px solid #777772;
+  border-bottom: 1.8px solid #777772;
+  transform: rotate(45deg) translate(-2px, -2px);
+  transform-origin: center;
+  transition: transform .24s cubic-bezier(.2,.75,.25,1), border-color .2s ease;
+}
+
+.customer-mobile-first .customer-privacy-note.is-open .customer-privacy-note__chevron {
+  transform: rotate(225deg) translate(-1px, -1px);
+  border-color: #1a1a18;
+}
+
+/* Detached from document flow on purpose: opening this panel must never
+   change the dimensions of #section-confirm or any parent grid row. */
+.customer-mobile-first .customer-privacy-note__reveal {
+  position: fixed;
+  z-index: 26000;
+  width: min(420px, calc(100vw - 32px));
+  left: var(--privacy-left, 16px);
+  top: var(--privacy-top, 16px);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(-7px) scale(.985);
+  transform-origin: top right;
+  transition: opacity .18s ease, transform .24s cubic-bezier(.2,.75,.25,1), visibility 0s linear .24s;
+}
+
+.customer-mobile-first .customer-privacy-note__reveal.is-visible {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
+  transition-delay: 0s;
+}
+
+.customer-mobile-first .customer-privacy-note__reveal[data-placement="top"] {
+  transform: translateY(7px) scale(.985);
+  transform-origin: bottom right;
+}
+
+.customer-mobile-first .customer-privacy-note__reveal.is-visible[data-placement="top"] {
+  transform: translateY(0) scale(1);
+}
+
+.customer-mobile-first .customer-privacy-note__reveal-inner {
+  overflow: hidden;
+  border: 1px solid rgba(207, 207, 200, .96);
+  border-radius: 20px;
+  background: rgba(255, 255, 252, .985);
+  box-shadow: 0 24px 70px rgba(18, 18, 16, .14), 0 5px 18px rgba(18, 18, 16, .06);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.customer-mobile-first .customer-privacy-note__body {
+  margin: 0;
+  padding: 19px 20px 20px;
+  color: #666661;
+}
+
+.customer-mobile-first .customer-privacy-note__body::before {
+  content: "Datenschutz & Verarbeitung";
+  display: block;
+  margin-bottom: 9px;
+  color: #1e1e1b;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.3;
+  letter-spacing: -.01em;
+}
+
+.customer-mobile-first .customer-privacy-note__body p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.62;
+}
+
+.customer-mobile-first .customer-privacy-note__link {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 13px;
+  color: #242421;
+  font-size: 12px;
+  font-weight: 760;
+  text-decoration: none;
+  border-bottom: 1px solid #aaa9a2;
+}
+
+.customer-mobile-first .customer-privacy-note__link:hover,
+.customer-mobile-first .customer-privacy-note__link:focus-visible {
+  border-bottom-color: #242421;
+}
+
+.customer-mobile-first .customer-privacy-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 25990;
+  border: 0;
+  padding: 0;
+  background: rgba(20, 20, 18, 0);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity .18s ease, visibility 0s linear .2s;
+}
+
+.customer-mobile-first .customer-privacy-backdrop.is-visible {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition-delay: 0s;
+}
+
+@media (min-width: 980px) {
+  .customer-mobile-first #section-confirm .customer-privacy-note {
+    margin-top: 8px;
+    border-radius: 20px;
+  }
+
+  .customer-mobile-first #section-confirm .customer-privacy-note__toggle {
+    min-height: 78px;
+    padding: 17px 20px;
+    grid-template-columns: 36px minmax(0, 1fr) 18px;
+    gap: 16px;
+  }
+}
+
+@media (max-width: 979px) {
+  .customer-mobile-first .customer-privacy-note {
+    margin-top: 14px;
+    border-radius: 16px;
+  }
+
+  .customer-mobile-first .customer-privacy-note__toggle {
+    min-height: 68px;
+    grid-template-columns: 32px minmax(0, 1fr) 16px;
+    gap: 12px;
+    padding: 14px 15px;
+  }
+
+  .customer-mobile-first .customer-privacy-backdrop.is-visible {
+    background: rgba(20, 20, 18, .14);
+    backdrop-filter: blur(1px);
+    -webkit-backdrop-filter: blur(1px);
+  }
+
+  .customer-mobile-first .customer-privacy-note__reveal,
+  .customer-mobile-first .customer-privacy-note__reveal[data-placement="top"] {
+    width: auto;
+    left: 12px !important;
+    right: 12px;
+    top: auto !important;
+    bottom: calc(12px + env(safe-area-inset-bottom));
+    transform: translateY(18px) scale(.99);
+    transform-origin: bottom center;
+  }
+
+  .customer-mobile-first .customer-privacy-note__reveal.is-visible,
+  .customer-mobile-first .customer-privacy-note__reveal.is-visible[data-placement="top"] {
+    transform: translateY(0) scale(1);
+  }
+
+  .customer-mobile-first .customer-privacy-note__reveal-inner {
+    border-radius: 22px;
+    box-shadow: 0 28px 76px rgba(18, 18, 16, .19), 0 6px 20px rgba(18, 18, 16, .08);
+  }
+
+  .customer-mobile-first .customer-privacy-note__body {
+    padding: 20px 19px 21px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .customer-mobile-first .customer-privacy-note,
+  .customer-mobile-first .customer-privacy-note__reveal,
+  .customer-mobile-first .customer-privacy-note__chevron,
+  .customer-mobile-first .customer-privacy-backdrop {
+    transition: none !important;
+  }
+}

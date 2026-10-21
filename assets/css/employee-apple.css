@@ -2139,3 +2139,1747 @@ body.flow-employee .flow-nav-subitem:focus-visible {
 body.flow-employee .flow-nav-subitem.is-active:focus-visible {
   outline-color: #111;
 }
+
+/* =========================================================
+   V7.15.0 · Employee polish, navigation, pricing & progress
+   ========================================================= */
+body.flow-employee {
+  --employee-chrome-height: 62px;
+}
+
+body.flow-employee .flow-sidebar {
+  padding-top: 0;
+}
+
+body.flow-employee .flow-brand {
+  min-height: var(--employee-chrome-height);
+  height: var(--employee-chrome-height);
+  box-sizing: border-box;
+  margin-bottom: 12px;
+  padding: 0 10px;
+}
+
+body.flow-employee .flow-topbar {
+  min-height: var(--employee-chrome-height);
+  height: var(--employee-chrome-height);
+}
+
+body.flow-employee .flow-dashboard-card.is-active,
+body.flow-employee .flow-dashboard-card.is-active:hover,
+body.flow-employee .flow-dashboard-card.is-active:focus-visible {
+  color: #fff !important;
+  background: #111 !important;
+}
+
+body.flow-employee .flow-dashboard-card.is-active > span,
+body.flow-employee .flow-dashboard-card.is-active > strong,
+body.flow-employee .flow-dashboard-card.is-active > small,
+body.flow-employee .flow-dashboard-card.is-active .flow-dashboard-card__value {
+  color: #fff !important;
+}
+
+body.flow-employee .flow-dashboard-card.is-active > span,
+body.flow-employee .flow-dashboard-card.is-active > small {
+  opacity: .72;
+}
+
+body.flow-employee .flow-dashboard-card:focus-visible {
+  outline: 2px solid #111;
+  outline-offset: -2px;
+}
+
+body.flow-employee .flow-back-button {
+  width: 32px;
+  height: 32px;
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 32px;
+  border: 1px solid var(--employee-line-strong);
+  border-radius: 10px;
+  background: rgba(255,255,255,.72);
+  color: #111;
+  text-decoration: none;
+  font-size: 18px;
+  line-height: 1;
+}
+
+body.flow-employee .flow-back-button:hover {
+  background: #fff;
+  border-color: rgba(17,17,17,.22);
+}
+
+body.flow-employee .flow-nav-person {
+  width: 24px;
+  height: 24px;
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 24px;
+  border: 1px solid rgba(17,17,17,.12);
+  border-radius: 8px;
+  background: rgba(255,255,255,.7);
+  color: #555550;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: .04em;
+}
+
+body.flow-employee .flow-case-table-head,
+body.flow-employee .flow-case-row {
+  grid-template-columns: minmax(170px,1.25fr) minmax(180px,1.2fr) minmax(130px,.82fr) 138px 84px;
+}
+
+body.flow-employee .flow-case-row {
+  position: relative;
+}
+
+body.flow-employee .flow-case-row__open {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+}
+
+body.flow-employee .flow-case-row > :not(.flow-case-row__open) {
+  position: relative;
+  z-index: 1;
+  pointer-events: none;
+}
+
+body.flow-employee .flow-case-actions {
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  pointer-events: auto !important;
+}
+
+body.flow-employee .flow-case-customer {
+  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 9px;
+  border: 1px solid rgba(17,17,17,.12);
+  border-radius: 8px;
+  background: #fff;
+  color: #222;
+  text-decoration: none;
+  font-size: 8.5px;
+  font-weight: 760;
+}
+
+body.flow-employee .flow-case-customer:hover {
+  border-color: rgba(17,17,17,.24);
+  background: #f3f3f0;
+}
+
+body.flow-employee .flow-status-panel {
+  grid-template-columns: minmax(0,1fr) auto;
+  gap: 14px;
+}
+
+body.flow-employee .flow-stage-progress {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px 12px;
+  width: 100%;
+  padding-top: 2px;
+}
+
+body.flow-employee .flow-stage-progress__track {
+  position: relative;
+  height: 5px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e8e8e4;
+}
+
+body.flow-employee .flow-stage-progress__bar {
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: #111;
+  transition: width .28s ease;
+}
+
+body.flow-employee .flow-stage-progress__copy {
+  color: var(--employee-muted);
+  font-size: 8.5px;
+  white-space: nowrap;
+}
+
+body.flow-employee .flow-status-menu {
+  max-height: min(420px, 60vh);
+  overflow-y: auto;
+}
+
+body.flow-employee .flow-price-settings {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid var(--employee-line);
+  border-radius: 12px;
+  background: #fafaf8;
+}
+
+body.flow-employee .flow-price-settings.hidden {
+  display: none !important;
+}
+
+body.flow-employee .flow-price-settings label {
+  display: grid;
+  gap: 7px;
+}
+
+body.flow-employee .flow-price-settings label > span {
+  color: var(--employee-muted);
+  font-size: 9px;
+  font-weight: 720;
+}
+
+body.flow-employee .flow-dialog--access {
+  width: min(460px, calc(100vw - 28px));
+  max-height: min(620px, calc(100dvh - 30px));
+}
+
+body.flow-employee .flow-access-dialog-body {
+  display: grid;
+  gap: 12px;
+  padding: 18px 22px 8px;
+}
+
+body.flow-employee .flow-access-dialog-body > p {
+  margin: 0;
+  color: var(--employee-muted);
+  font-size: 10.5px;
+  line-height: 1.55;
+}
+
+body.flow-employee .flow-profile-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+body.flow-employee .flow-profile-card {
+  min-height: 190px;
+  padding: 20px;
+  border: 1px solid var(--employee-line);
+  border-radius: 16px;
+  background: #fff;
+}
+
+body.flow-employee .flow-profile-card h2 {
+  margin: 7px 0 8px;
+  font-size: 18px;
+}
+
+body.flow-employee .flow-profile-card p,
+body.flow-employee .flow-profile-card small {
+  color: var(--employee-muted);
+  line-height: 1.55;
+}
+
+body.flow-employee .flow-profile-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 0 8px;
+  border: 1px solid var(--employee-line);
+  border-radius: 999px;
+  color: #555550;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 860px) {
+  body.flow-employee .flow-sidebar { padding-top: 0; }
+  body.flow-employee .flow-case-row { grid-template-columns: minmax(0,1fr) 112px 78px; }
+  body.flow-employee .flow-case-actions { gap: 5px; }
+  body.flow-employee .flow-price-settings,
+  body.flow-employee .flow-profile-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 560px) {
+  body.flow-employee .flow-case-row { grid-template-columns: minmax(0,1fr) 78px; }
+  body.flow-employee .flow-case-actions { grid-column: 2; }
+  body.flow-employee .flow-case-arrow { display: none; }
+  body.flow-employee .flow-case-customer { min-width: 64px; }
+}
+
+body.flow-employee .flow-profile-identity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 0 14px;
+}
+
+body.flow-employee .flow-profile-avatar {
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 46px;
+  border-radius: 14px;
+  background: #111;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 820;
+  letter-spacing: .05em;
+}
+
+body.flow-employee .flow-profile-identity > div {
+  display: grid;
+  gap: 3px;
+}
+
+body.flow-employee .flow-profile-identity strong {
+  color: #111;
+  font-size: 13px;
+}
+
+body.flow-employee .flow-profile-identity span:not(.flow-profile-avatar) {
+  color: var(--employee-muted);
+  font-size: 9.5px;
+}
+
+body.flow-employee .flow-profile-list {
+  display: grid;
+  gap: 0;
+  margin: 0;
+}
+
+body.flow-employee .flow-profile-list > div {
+  min-height: 38px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 12px;
+  border-top: 1px solid var(--employee-line);
+}
+
+body.flow-employee .flow-profile-list dt,
+body.flow-employee .flow-profile-list dd {
+  margin: 0;
+  font-size: 9.5px;
+}
+
+body.flow-employee .flow-profile-list dt { color: var(--employee-muted); }
+body.flow-employee .flow-profile-list dd { color: #111; font-weight: 680; }
+
+body.flow-employee .flow-profile-state {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: #ecece8;
+  color: #111;
+  font-size: 8px;
+  font-weight: 800;
+}
+
+body.flow-employee .flow-profile-note {
+  padding: 18px 0 14px;
+}
+
+body.flow-employee .flow-profile-note strong { font-size: 12px; }
+body.flow-employee .flow-profile-note p { margin: 7px 0 0; font-size: 10px; }
+
+body.flow-employee .flow-profile-disabled-action {
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 12px;
+  padding: 0 12px;
+  border: 1px dashed rgba(17,17,17,.18);
+  border-radius: 11px;
+  background: #f7f7f4;
+  color: #8a8a85;
+  font-size: 9px;
+  font-weight: 720;
+}
+
+/* Correct progress markup: outer span is the track, inner span is the fill. */
+body.flow-employee .flow-stage-progress__bar {
+  position: relative;
+  height: 5px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e8e8e4;
+}
+
+body.flow-employee .flow-stage-progress__bar > span {
+  display: block;
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: #111;
+  transition: width .28s ease;
+}
+
+body.flow-employee .flow-status {
+  display: grid;
+  gap: 5px;
+  min-width: 112px;
+}
+
+body.flow-employee .flow-status > span:first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body.flow-employee .flow-status-progress {
+  height: 3px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(17,17,17,.10);
+}
+
+body.flow-employee .flow-status-progress i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: currentColor;
+  opacity: .72;
+}
+
+@media (max-width: 560px) {
+  body.flow-employee .flow-status { display: none; }
+}
+
+body.flow-employee .flow-dialog--access .flow-dialog-actions {
+  flex-wrap: wrap;
+}
+
+body.flow-employee .flow-dialog--access .flow-dialog-actions .flow-action {
+  flex: 1 1 calc(50% - 8px);
+  min-width: 150px;
+}
+
+@media (max-width: 520px) {
+  body.flow-employee .flow-dialog--access .flow-dialog-actions .flow-action {
+    flex-basis: 100%;
+    min-width: 0;
+  }
+}
+
+/* V7.15.4 · Shopify-first reference exception */
+.flow-employee .flow-shopify-reference-field small {
+  display: block;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.flow-employee .flow-shopify-reference-field.is-disabled {
+  opacity: .48;
+}
+
+.flow-employee .flow-internal-reference-exception {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  gap: 11px;
+  align-items: start;
+  margin: 0 12px;
+  padding: 13px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fafaf8;
+  cursor: pointer;
+}
+
+.flow-employee .flow-internal-reference-exception:hover,
+.flow-employee .flow-internal-reference-exception.is-active {
+  border-color: #bdbdb7;
+  background: #f5f5f2;
+}
+
+.flow-employee .flow-internal-reference-exception > input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.flow-employee .flow-internal-reference-exception__check {
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  border: 1.5px solid #a9aaa5;
+  border-radius: 6px;
+  background: #fff;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.flow-employee .flow-internal-reference-exception > input:checked + .flow-internal-reference-exception__check {
+  border-color: #111;
+  background: #111;
+}
+
+.flow-employee .flow-internal-reference-exception > input:checked + .flow-internal-reference-exception__check::after {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 2px;
+  width: 5px;
+  height: 9px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.flow-employee .flow-internal-reference-exception strong,
+.flow-employee .flow-internal-reference-exception small {
+  display: block;
+}
+
+.flow-employee .flow-internal-reference-exception strong {
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.flow-employee .flow-internal-reference-exception small {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+/* =========================================================
+   V7.15.9 · Employee dashboard aligned with customer portal
+   Spacious desktop composition, independent status cards,
+   service cards instead of a rigid table, softer geometry.
+   ========================================================= */
+
+@media (min-width: 861px) {
+  body.flow-employee {
+    background:
+      radial-gradient(circle at 76% -12%, rgba(255,255,255,.96), transparent 34%),
+      #f4f4f1;
+  }
+
+  body.flow-employee .flow-main {
+    background: transparent;
+  }
+
+  body.flow-employee .flow-topbar {
+    min-height: 72px;
+    height: 72px;
+    padding-inline: clamp(30px, 3vw, 48px);
+    border-bottom: 0;
+    background: rgba(244,244,241,.82);
+  }
+
+  body.flow-employee .flow-topbar-left strong {
+    color: #6f6f69;
+    font-size: 11px;
+    font-weight: 720;
+    letter-spacing: .02em;
+  }
+
+  body.flow-employee .flow-topbar-actions {
+    gap: 9px;
+  }
+
+  body.flow-employee .flow-topbar .flow-action {
+    min-height: 38px;
+    padding-inline: 15px;
+    border-radius: 12px;
+  }
+
+  body.flow-employee .flow-workspace {
+    width: min(100%, 1440px);
+    padding: 42px clamp(34px, 4vw, 64px) 72px;
+  }
+
+  body.flow-employee .flow-page-intro {
+    margin-bottom: 36px;
+  }
+
+  body.flow-employee .flow-page-intro__copy {
+    max-width: 760px;
+  }
+
+  body.flow-employee .flow-page-intro__eyebrow {
+    margin-bottom: 10px;
+    color: #8d8d87;
+    font-size: 10px;
+    letter-spacing: .11em;
+  }
+
+  body.flow-employee .flow-page-intro h1 {
+    font-size: clamp(38px, 4.2vw, 56px);
+    font-weight: 650;
+    letter-spacing: -.055em;
+    line-height: .98;
+  }
+
+  body.flow-employee .flow-page-intro p {
+    max-width: 640px;
+    margin-top: 16px;
+    color: #777771;
+    font-size: 14px;
+    line-height: 1.55;
+  }
+
+  body.flow-employee .flow-dashboard-section {
+    margin-bottom: 34px;
+  }
+
+  body.flow-employee .flow-section-heading {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 14px;
+    padding-inline: 4px;
+  }
+
+  body.flow-employee .flow-section-heading > div {
+    display: grid;
+    gap: 4px;
+  }
+
+  body.flow-employee .flow-section-heading strong {
+    color: #171715;
+    font-size: 14px;
+    font-weight: 720;
+  }
+
+  body.flow-employee .flow-section-heading span {
+    color: #8e8e88;
+    font-size: 10px;
+  }
+
+  body.flow-employee .flow-dashboard {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 12px;
+    margin: 0;
+    overflow: visible;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  body.flow-employee .flow-dashboard-card,
+  body.flow-employee .flow-dashboard-card:first-child {
+    min-width: 0;
+    min-height: 128px;
+    padding: 19px 20px 17px;
+    border: 1px solid rgba(17,17,17,.075);
+    border-radius: 20px;
+    background: rgba(255,255,255,.83);
+    box-shadow: 0 1px 2px rgba(0,0,0,.018), 0 12px 34px rgba(0,0,0,.025);
+  }
+
+  body.flow-employee .flow-dashboard-card:hover {
+    transform: translateY(-1px);
+    border-color: rgba(17,17,17,.12);
+    background: rgba(255,255,255,.98);
+    box-shadow: 0 16px 38px rgba(0,0,0,.045);
+  }
+
+  body.flow-employee .flow-dashboard-card.is-active,
+  body.flow-employee .flow-dashboard-card.is-active:hover {
+    background: #151513 !important;
+    border-color: #151513 !important;
+    box-shadow: 0 18px 42px rgba(0,0,0,.12);
+  }
+
+  body.flow-employee .flow-dashboard-card > span {
+    color: #7c7c76;
+    font-size: 9px;
+    font-weight: 760;
+    letter-spacing: .075em;
+  }
+
+  body.flow-employee .flow-dashboard-card strong {
+    margin-top: 15px;
+    font-size: 34px;
+    font-weight: 590;
+    letter-spacing: -.055em;
+    line-height: .95;
+  }
+
+  body.flow-employee .flow-dashboard-card small {
+    margin-top: 12px;
+    color: #91918b;
+    font-size: 9.5px;
+    line-height: 1.35;
+  }
+
+  body.flow-employee .flow-case-panel,
+  body.flow-employee .flow-panel.flow-case-panel {
+    overflow: visible;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  body.flow-employee .flow-panel-head {
+    min-height: 0;
+    margin-bottom: 14px;
+    padding: 0 4px;
+    border: 0;
+    background: transparent;
+  }
+
+  body.flow-employee .flow-panel-head > div {
+    display: grid;
+    gap: 4px;
+  }
+
+  body.flow-employee .flow-panel-head strong {
+    font-size: 15px;
+    font-weight: 720;
+  }
+
+  body.flow-employee .flow-panel-head span,
+  body.flow-employee .flow-panel-head__hint {
+    color: #8e8e88 !important;
+    font-size: 10px !important;
+  }
+
+  body.flow-employee .flow-case-table-head {
+    display: none;
+  }
+
+  body.flow-employee .flow-case-list {
+    display: grid;
+    gap: 11px;
+  }
+
+  body.flow-employee .flow-case-row {
+    min-height: 100px;
+    display: grid;
+    grid-template-columns: minmax(220px,1.15fr) minmax(270px,1.25fr) minmax(170px,.8fr) minmax(150px,.7fr) auto;
+    align-items: center;
+    gap: 24px;
+    padding: 18px 20px 18px 24px;
+    border: 1px solid rgba(17,17,17,.072);
+    border-radius: 20px;
+    background: rgba(255,255,255,.86);
+    box-shadow: 0 1px 2px rgba(0,0,0,.016), 0 10px 28px rgba(0,0,0,.022);
+  }
+
+  body.flow-employee .flow-case-row:hover {
+    transform: translateY(-1px);
+    border-color: rgba(17,17,17,.12);
+    background: #fff;
+    box-shadow: 0 16px 40px rgba(0,0,0,.045);
+  }
+
+  body.flow-employee .flow-case-main,
+  body.flow-employee .flow-case-kind,
+  body.flow-employee .flow-case-meta {
+    min-width: 0;
+  }
+
+  body.flow-employee .flow-case-main strong {
+    font-size: 14px;
+    font-weight: 730;
+    letter-spacing: -.02em;
+  }
+
+  body.flow-employee .flow-case-main span:not(.flow-reference-tag),
+  body.flow-employee .flow-case-kind span:not(.flow-case-tag),
+  body.flow-employee .flow-case-meta span:not(.flow-case-tag) {
+    margin-top: 6px;
+    color: #85857f;
+    font-size: 10px;
+  }
+
+  body.flow-employee .flow-reference-tag {
+    width: max-content;
+    max-width: 100%;
+    display: inline-flex;
+    align-items: center;
+    min-height: 25px;
+    margin-top: 7px;
+    padding: 0 9px;
+    overflow: hidden;
+    border: 1px solid rgba(17,17,17,.085);
+    border-radius: 999px;
+    background: #f5f5f2;
+    color: #5f5f5a;
+    font-size: 9px;
+    font-weight: 720;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  body.flow-employee .flow-case-tag-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+  }
+
+  body.flow-employee .flow-case-tag {
+    width: max-content;
+    max-width: 100%;
+    display: inline-flex !important;
+    align-items: center;
+    min-height: 25px;
+    margin: 0 !important;
+    padding: 0 9px;
+    border-radius: 999px;
+    background: #f2f2ef;
+    color: #595954 !important;
+    font-size: 9px !important;
+    font-weight: 700;
+    line-height: 1 !important;
+    white-space: nowrap;
+  }
+
+  body.flow-employee .flow-case-kind > strong,
+  body.flow-employee .flow-case-meta > strong {
+    color: #85857f;
+    font-size: 8.5px;
+    font-weight: 760;
+    letter-spacing: .075em;
+    text-transform: uppercase;
+  }
+
+  body.flow-employee .flow-status {
+    width: 100%;
+    max-width: 176px;
+    min-height: 50px;
+    display: grid;
+    align-content: center;
+    gap: 8px;
+    padding: 10px 12px;
+    border: 0;
+    border-radius: 14px;
+    background: #f3f3f0;
+    color: #30302d;
+    font-size: 9.5px;
+    font-weight: 720;
+  }
+
+  body.flow-employee .flow-status-progress {
+    height: 3px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: rgba(17,17,17,.09);
+  }
+
+  body.flow-employee .flow-status-progress > i {
+    border-radius: inherit;
+    background: #191917;
+  }
+
+  body.flow-employee .flow-case-actions {
+    gap: 10px;
+  }
+
+  body.flow-employee .flow-case-customer {
+    min-height: 36px;
+    padding-inline: 13px;
+    border: 1px solid rgba(17,17,17,.09);
+    border-radius: 12px;
+    background: #f7f7f4;
+    color: #383834;
+    font-size: 9px;
+  }
+
+  body.flow-employee .flow-case-customer:hover {
+    border-color: rgba(17,17,17,.16);
+    background: #eeeeea;
+  }
+
+  body.flow-employee .flow-case-arrow {
+    width: 30px;
+    height: 30px;
+    display: grid;
+    place-items: center;
+    border-radius: 999px;
+    background: #171715;
+    color: #fff;
+    font-size: 17px;
+  }
+
+  body.flow-employee .flow-case-row--empty,
+  body.flow-employee .flow-case-row--error {
+    min-height: 150px;
+    grid-template-columns: 1fr;
+    padding: 34px;
+  }
+
+  body.flow-employee .employee-dashboard-loader {
+    border: 0;
+    border-radius: 22px;
+    background: rgba(244,244,241,.78);
+  }
+}
+
+@media (max-width: 1180px) and (min-width: 861px) {
+  body.flow-employee .flow-dashboard {
+    grid-template-columns: repeat(3, minmax(0,1fr));
+  }
+
+  body.flow-employee .flow-dashboard-card:first-child {
+    grid-column: auto;
+  }
+
+  body.flow-employee .flow-case-row {
+    grid-template-columns: minmax(190px,1.1fr) minmax(230px,1fr) minmax(145px,.7fr) 145px auto;
+    gap: 16px;
+    padding-inline: 18px;
+  }
+}
+
+@media (max-width: 860px) {
+  body.flow-employee .flow-dashboard-section {
+    margin-bottom: 24px;
+  }
+
+  body.flow-employee .flow-section-heading {
+    display: none;
+  }
+
+  body.flow-employee .flow-case-list {
+    display: grid;
+    gap: 9px;
+  }
+
+  body.flow-employee .flow-case-row {
+    border: 1px solid rgba(17,17,17,.075);
+    border-radius: 17px;
+    background: #fff;
+  }
+
+  body.flow-employee .flow-reference-tag {
+    width: max-content;
+    display: inline-flex;
+    margin-top: 5px;
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: #f3f3f0;
+    color: #666660;
+    font-size: 8.5px;
+    font-weight: 720;
+  }
+}
+
+/* =========================================================
+   V7.15.10 · Fixed employee navigation + grounded card areas
+   ========================================================= */
+@media (min-width: 861px) {
+  body.flow-employee .flow-shell {
+    display: block;
+    min-height: 100vh;
+  }
+
+  body.flow-employee .flow-sidebar {
+    position: fixed !important;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 244px;
+    height: 100dvh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    background: #efefeb;
+    border-right: 1px solid rgba(17,17,17,.08);
+    box-shadow: 8px 0 30px rgba(0,0,0,.018);
+  }
+
+  body.flow-employee .flow-main {
+    width: calc(100% - 244px);
+    min-height: 100vh;
+    margin-left: 244px;
+  }
+
+  body.flow-employee .flow-dashboard-section {
+    margin-bottom: 28px;
+    padding: 18px;
+    border: 1px solid rgba(17,17,17,.045);
+    border-radius: 28px;
+    background: #e9e9e5;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.45);
+  }
+
+  body.flow-employee .flow-dashboard-section .flow-section-heading {
+    margin-bottom: 16px;
+    padding-inline: 6px;
+  }
+
+  body.flow-employee .flow-dashboard-card,
+  body.flow-employee .flow-dashboard-card:first-child {
+    background: #ffffff;
+    border-color: rgba(17,17,17,.065);
+  }
+
+  body.flow-employee .flow-case-panel,
+  body.flow-employee .flow-panel.flow-case-panel {
+    padding: 18px;
+    border: 1px solid rgba(17,17,17,.045);
+    border-radius: 28px;
+    background: #e9e9e5;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.45);
+  }
+
+  body.flow-employee .flow-case-panel .flow-panel-head {
+    margin-bottom: 16px;
+    padding-inline: 6px;
+  }
+
+  body.flow-employee .flow-case-row {
+    background: #ffffff;
+  }
+
+  body.flow-employee .flow-case-row:hover {
+    background: #ffffff;
+  }
+
+  body.flow-employee .employee-dashboard-loader {
+    background: #e9e9e5;
+  }
+}
+
+/* =========================================================
+   V7.15.11 · Contained case cards + unified section header
+   Keep the list geometry inside its parent surface and make
+   the heading part of the same grounded section background.
+   ========================================================= */
+@media (min-width: 861px) {
+  body.flow-employee .flow-case-panel,
+  body.flow-employee .flow-panel.flow-case-panel {
+    width: 100%;
+    min-width: 0;
+    padding: 0 !important;
+    overflow: hidden !important;
+    border: 1px solid rgba(17,17,17,.05) !important;
+    border-radius: 28px !important;
+    background: #e9e9e5 !important;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.46) !important;
+  }
+
+  body.flow-employee .flow-case-panel .flow-panel-head {
+    min-height: 76px;
+    margin: 0 !important;
+    padding: 20px 24px 16px !important;
+    border: 0 !important;
+    border-bottom: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  body.flow-employee .flow-case-panel .flow-panel-head > div {
+    gap: 5px;
+  }
+
+  body.flow-employee .flow-case-panel .flow-panel-head strong {
+    font-size: 15px;
+    font-weight: 730;
+    letter-spacing: -.018em;
+  }
+
+  body.flow-employee .flow-case-panel .flow-panel-head span,
+  body.flow-employee .flow-case-panel .flow-panel-head__hint {
+    color: #85857f !important;
+  }
+
+  body.flow-employee .flow-case-list {
+    width: 100%;
+    min-width: 0;
+    padding: 0 18px 18px;
+    gap: 11px;
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+
+  body.flow-employee .flow-case-row {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    margin: 0;
+  }
+
+  body.flow-employee .flow-case-row > * {
+    min-width: 0;
+  }
+
+  body.flow-employee .flow-case-actions {
+    min-width: max-content;
+    justify-self: end;
+  }
+
+  body.flow-employee .flow-case-row:hover {
+    transform: translateY(-1px);
+  }
+}
+
+/* =========================================================
+   V7.15.12 · Case action containment + stable dark chevron
+   Keep all row actions visually inside the child card and
+   never invert the chevron glyph on row hover.
+   ========================================================= */
+@media (min-width: 861px) {
+  body.flow-employee .flow-case-row {
+    padding-right: 26px;
+  }
+
+  body.flow-employee .flow-case-actions {
+    min-width: max-content;
+    justify-self: end;
+    justify-content: flex-end;
+    padding-right: 0;
+    margin-right: 0;
+  }
+
+  body.flow-employee .flow-case-arrow {
+    flex: 0 0 30px;
+    width: 30px;
+    height: 30px;
+    margin: 0;
+    transform: none !important;
+    background: #171715 !important;
+    color: #fff !important;
+  }
+
+  body.flow-employee .flow-case-row:hover .flow-case-arrow,
+  body.flow-employee .flow-case-arrow:hover {
+    transform: none !important;
+    background: #171715 !important;
+    color: #fff !important;
+  }
+}
+
+
+/* =========================================================
+   V7.15.13 · Single SVG case action
+   Replace the separate customer shortcut + text chevron with
+   one clear circular case-open action in the former customer slot.
+   ========================================================= */
+body.flow-employee .flow-case-actions {
+  min-width: 44px;
+  justify-self: end;
+  justify-content: flex-end;
+  gap: 0;
+}
+
+body.flow-employee .flow-case-open-button {
+  position: relative;
+  z-index: 3;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  display: inline-grid;
+  place-items: center;
+  border: 0;
+  border-radius: 999px;
+  background: #171715;
+  color: #fff;
+  text-decoration: none;
+  box-shadow: 0 1px 2px rgba(0,0,0,.08);
+  transition: transform 160ms ease, background-color 160ms ease, box-shadow 160ms ease;
+  pointer-events: auto;
+}
+
+body.flow-employee .flow-case-open-button svg {
+  width: 16px;
+  height: 16px;
+  display: block;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  color: #fff;
+  pointer-events: none;
+}
+
+body.flow-employee .flow-case-open-button:hover,
+body.flow-employee .flow-case-open-button:focus-visible {
+  background: #000;
+  color: #fff;
+  transform: translateX(1px);
+  box-shadow: 0 5px 14px rgba(0,0,0,.13);
+}
+
+body.flow-employee .flow-case-open-button:hover svg,
+body.flow-employee .flow-case-open-button:focus-visible svg,
+body.flow-employee .flow-case-row:hover .flow-case-open-button svg {
+  color: #fff;
+  stroke: currentColor;
+}
+
+body.flow-employee .flow-case-customer,
+body.flow-employee .flow-case-arrow {
+  display: none !important;
+}
+
+@media (max-width: 860px) {
+  body.flow-employee .flow-case-open-button {
+    width: 36px;
+    height: 36px;
+    flex-basis: 36px;
+  }
+}
+
+@media (max-width: 560px) {
+  body.flow-employee .flow-case-actions {
+    min-width: 40px;
+  }
+
+  body.flow-employee .flow-case-open-button {
+    width: 34px;
+    height: 34px;
+    flex-basis: 34px;
+  }
+}
+
+
+/* =========================================================
+   V7.15.14 · Sticky compact filters + 15-item pagination
+   ========================================================= */
+@media (min-width: 861px) {
+  body.flow-employee .flow-dashboard-section {
+    position: sticky;
+    top: var(--dashboard-sticky-top, 72px);
+    z-index: 48;
+    transition: padding 180ms ease, border-radius 180ms ease, box-shadow 180ms ease,
+                background-color 180ms ease, margin-bottom 180ms ease;
+  }
+
+  body.flow-employee .flow-dashboard-section.is-compact {
+    margin-bottom: 22px;
+    padding: 9px 10px;
+    border-color: rgba(17,17,17,.07);
+    border-radius: 20px;
+    background: rgba(233,233,229,.92);
+    box-shadow: 0 10px 32px rgba(0,0,0,.065), inset 0 1px 0 rgba(255,255,255,.58);
+    backdrop-filter: blur(24px) saturate(135%);
+    -webkit-backdrop-filter: blur(24px) saturate(135%);
+  }
+
+  body.flow-employee .flow-dashboard-section.is-compact .flow-section-heading {
+    display: none;
+  }
+
+  body.flow-employee .flow-dashboard-section.is-compact .flow-dashboard {
+    gap: 7px;
+  }
+
+  body.flow-employee .flow-dashboard-section.is-compact .flow-dashboard-card,
+  body.flow-employee .flow-dashboard-section.is-compact .flow-dashboard-card:first-child {
+    min-height: 58px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: 1fr;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 13px;
+    border-radius: 14px;
+    box-shadow: none;
+  }
+
+  body.flow-employee .flow-dashboard-section.is-compact .flow-dashboard-card:hover {
+    transform: none;
+    box-shadow: none;
+  }
+
+  body.flow-employee .flow-dashboard-section.is-compact .flow-dashboard-card > span {
+    min-width: 0;
+    overflow: hidden;
+    font-size: 8.5px;
+    line-height: 1.15;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  body.flow-employee .flow-dashboard-section.is-compact .flow-dashboard-card strong {
+    margin: 0;
+    font-size: 21px;
+    line-height: 1;
+  }
+
+  body.flow-employee .flow-dashboard-section.is-compact .flow-dashboard-card small {
+    display: none;
+  }
+
+  body.flow-employee .flow-case-panel {
+    scroll-margin-top: 154px;
+  }
+}
+
+body.flow-employee .flow-pagination {
+  min-height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin: 0 18px 18px;
+  padding: 11px 12px 11px 16px;
+  border: 1px solid rgba(17,17,17,.055);
+  border-radius: 18px;
+  background: rgba(246,246,243,.88);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.62);
+}
+
+body.flow-employee .flow-pagination__meta {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+body.flow-employee .flow-pagination__meta strong {
+  color: #20201d;
+  font-size: 11px;
+  font-weight: 740;
+}
+
+body.flow-employee .flow-pagination__meta span {
+  color: #8a8a84;
+  font-size: 9px;
+  line-height: 1.3;
+}
+
+body.flow-employee .flow-pagination__controls,
+body.flow-employee .flow-pagination__pages {
+  display: flex;
+  align-items: center;
+}
+
+body.flow-employee .flow-pagination__controls {
+  gap: 7px;
+}
+
+body.flow-employee .flow-pagination__pages {
+  gap: 5px;
+}
+
+body.flow-employee .flow-pagination__arrow,
+body.flow-employee .flow-pagination__page {
+  width: 34px;
+  height: 34px;
+  display: inline-grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgba(17,17,17,.08);
+  border-radius: 11px;
+  background: #fff;
+  color: #343430;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 740;
+  cursor: pointer;
+  transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease, transform 150ms ease;
+}
+
+body.flow-employee .flow-pagination__arrow svg {
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+body.flow-employee .flow-pagination__arrow:hover:not(:disabled),
+body.flow-employee .flow-pagination__page:hover:not(.is-current) {
+  border-color: rgba(17,17,17,.15);
+  background: #f0f0ec;
+  transform: translateY(-1px);
+}
+
+body.flow-employee .flow-pagination__page.is-current {
+  border-color: #171715;
+  background: #171715;
+  color: #fff;
+}
+
+body.flow-employee .flow-pagination__arrow:disabled {
+  border-color: rgba(17,17,17,.045);
+  background: rgba(255,255,255,.45);
+  color: #b6b6b0;
+  cursor: default;
+}
+
+body.flow-employee .flow-pagination__ellipsis {
+  width: 24px;
+  color: #969690;
+  font-size: 9px;
+  text-align: center;
+}
+
+body.flow-employee .flow-pagination:not(.is-active) .flow-pagination__pages {
+  opacity: .72;
+}
+
+@media (max-width: 860px) {
+  body.flow-employee .flow-pagination {
+    min-height: 0;
+    align-items: stretch;
+    flex-direction: column;
+    margin: 2px 0 0;
+    padding: 12px;
+    border-radius: 16px;
+  }
+
+  body.flow-employee .flow-pagination__controls {
+    justify-content: space-between;
+  }
+
+  body.flow-employee .flow-pagination__pages {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+}
+
+
+/* =========================================================
+   V7.15.15 · Zero horizontal overflow + stable sticky morph
+   The dashboard must never create a horizontal page scroller.
+   Compact mode is driven by an external sentinel so changing
+   the filter section's own height cannot retrigger the state.
+   ========================================================= */
+
+html,
+body.flow-employee {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+body.flow-employee .flow-shell,
+body.flow-employee .flow-main,
+body.flow-employee .flow-workspace,
+body.flow-employee .flow-data-surface,
+body.flow-employee .flow-dashboard-section,
+body.flow-employee .flow-dashboard,
+body.flow-employee .flow-case-panel,
+body.flow-employee .flow-case-list,
+body.flow-employee .flow-case-row,
+body.flow-employee .flow-pagination {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+body.flow-employee .flow-dashboard-sentinel {
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  padding: 0;
+  pointer-events: none;
+}
+
+@media (min-width: 861px) {
+  body.flow-employee .flow-main {
+    width: auto !important;
+    max-width: calc(100% - 244px);
+    margin-left: 244px;
+    overflow-x: clip;
+  }
+
+  body.flow-employee .flow-workspace {
+    width: 100%;
+  }
+
+  /* Never fall back to the old horizontally scrolling KPI strip. */
+  body.flow-employee .flow-dashboard {
+    overflow: visible !important;
+  }
+
+  body.flow-employee .flow-dashboard-card,
+  body.flow-employee .flow-dashboard-card:first-child {
+    min-width: 0 !important;
+    max-width: 100%;
+    transition:
+      min-height 300ms var(--employee-ease),
+      padding 300ms var(--employee-ease),
+      border-radius 300ms var(--employee-ease),
+      background-color 220ms ease,
+      border-color 220ms ease,
+      box-shadow 220ms ease,
+      transform 220ms var(--employee-ease);
+  }
+
+  body.flow-employee .flow-dashboard-section {
+    transform: translateZ(0);
+    will-change: padding, border-radius, box-shadow;
+    transition:
+      padding 320ms var(--employee-ease),
+      border-radius 320ms var(--employee-ease),
+      box-shadow 260ms ease,
+      background-color 260ms ease,
+      margin-bottom 320ms var(--employee-ease);
+  }
+
+  body.flow-employee .flow-dashboard-section .flow-section-heading {
+    max-height: 46px;
+    overflow: hidden;
+    opacity: 1;
+    transform: translateY(0);
+    transform-origin: top left;
+    transition:
+      max-height 300ms var(--employee-ease),
+      margin-bottom 300ms var(--employee-ease),
+      opacity 170ms ease,
+      transform 300ms var(--employee-ease),
+      padding 300ms var(--employee-ease);
+  }
+
+  body.flow-employee .flow-dashboard-section .flow-dashboard {
+    transition: gap 300ms var(--employee-ease);
+  }
+
+  body.flow-employee .flow-dashboard-card > span,
+  body.flow-employee .flow-dashboard-card strong,
+  body.flow-employee .flow-dashboard-card small {
+    transition:
+      margin 300ms var(--employee-ease),
+      font-size 300ms var(--employee-ease),
+      line-height 300ms var(--employee-ease),
+      opacity 170ms ease,
+      max-height 300ms var(--employee-ease),
+      transform 300ms var(--employee-ease);
+  }
+
+  /* Compact without switching layout models: avoids a discrete grid jump. */
+  body.flow-employee .flow-dashboard-section.is-compact {
+    margin-bottom: 22px;
+    padding: 10px;
+    border-radius: 20px;
+  }
+
+  body.flow-employee .flow-dashboard-section.is-compact .flow-section-heading {
+    display: flex !important;
+    max-height: 0;
+    margin-bottom: 0;
+    padding-block: 0;
+    opacity: 0;
+    transform: translateY(-7px);
+    pointer-events: none;
+  }
+
+  body.flow-employee .flow-dashboard-section.is-compact .flow-dashboard {
+    gap: 7px;
+  }
+
+  body.flow-employee .flow-dashboard-section.is-compact .flow-dashboard-card,
+  body.flow-employee .flow-dashboard-section.is-compact .flow-dashboard-card:first-child {
+    min-height: 66px;
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto 0fr;
+    align-content: center;
+    gap: 3px;
+    padding: 9px 13px;
+    border-radius: 14px;
+    box-shadow: none;
+  }
+
+  body.flow-employee .flow-dashboard-section.is-compact .flow-dashboard-card > span {
+    font-size: 8.5px;
+    line-height: 1.1;
+  }
+
+  body.flow-employee .flow-dashboard-section.is-compact .flow-dashboard-card strong {
+    margin: 2px 0 0;
+    font-size: 21px;
+    line-height: 1;
+  }
+
+  body.flow-employee .flow-dashboard-section.is-compact .flow-dashboard-card small {
+    display: block !important;
+    max-height: 0;
+    margin: 0;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+
+  body.flow-employee .flow-pagination {
+    flex-wrap: wrap;
+  }
+
+  body.flow-employee .flow-pagination__controls,
+  body.flow-employee .flow-pagination__pages {
+    min-width: 0;
+    max-width: 100%;
+  }
+}
+
+/* Intermediate desktop widths: reflow instead of ever scrolling sideways. */
+@media (min-width: 861px) and (max-width: 1180px) {
+  body.flow-employee .flow-dashboard,
+  body.flow-employee .flow-dashboard-section.is-compact .flow-dashboard {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  body.flow-employee .flow-case-row {
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr) minmax(118px, .72fr) 44px;
+    gap: 10px;
+    padding-inline: 16px;
+  }
+
+  body.flow-employee .flow-case-meta {
+    display: none;
+  }
+
+  body.flow-employee .flow-status {
+    min-width: 0;
+    max-width: 100%;
+  }
+}
+
+@media (min-width: 1181px) {
+  body.flow-employee .flow-dashboard,
+  body.flow-employee .flow-dashboard-section.is-compact .flow-dashboard {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  body.flow-employee .flow-case-row {
+    grid-template-columns:
+      minmax(0, 1.15fr)
+      minmax(0, 1.25fr)
+      minmax(0, .8fr)
+      minmax(132px, .7fr)
+      44px;
+  }
+}
+
+@media (max-width: 860px) {
+  html,
+  body.flow-employee,
+  body.flow-employee .flow-shell,
+  body.flow-employee .flow-main,
+  body.flow-employee .flow-workspace,
+  body.flow-employee .flow-data-surface {
+    max-width: 100%;
+    overflow-x: clip;
+  }
+
+  body.flow-employee .flow-dashboard {
+    overflow: visible !important;
+  }
+
+  body.flow-employee .flow-pagination__controls {
+    width: 100%;
+    min-width: 0;
+  }
+
+  body.flow-employee .flow-pagination__pages {
+    min-width: 0;
+    flex-wrap: wrap;
+  }
+}
+
+/* =========================================================
+   V7.15.16 · Symmetric sticky-filter morph
+   Keep every dimension numeric in both directions so the
+   expanded state is just as interpolable as compact mode.
+   ========================================================= */
+@media (min-width: 861px) {
+  body.flow-employee .flow-dashboard-section,
+  body.flow-employee .flow-dashboard-section.is-compact {
+    --filter-morph-duration: 320ms;
+    --filter-morph-ease: cubic-bezier(.22,.61,.36,1);
+  }
+
+  body.flow-employee .flow-dashboard-section .flow-section-heading {
+    max-height: 46px;
+    margin-bottom: 16px;
+    opacity: 1;
+    transform: translateY(0);
+    transition:
+      max-height var(--filter-morph-duration) var(--filter-morph-ease),
+      margin-bottom var(--filter-morph-duration) var(--filter-morph-ease),
+      padding var(--filter-morph-duration) var(--filter-morph-ease),
+      transform var(--filter-morph-duration) var(--filter-morph-ease),
+      opacity 160ms ease 90ms;
+  }
+
+  body.flow-employee .flow-dashboard-section.is-compact .flow-section-heading {
+    max-height: 0;
+    margin-bottom: 0;
+    padding-block: 0;
+    opacity: 0;
+    transform: translateY(-7px);
+    transition:
+      max-height var(--filter-morph-duration) var(--filter-morph-ease),
+      margin-bottom var(--filter-morph-duration) var(--filter-morph-ease),
+      padding var(--filter-morph-duration) var(--filter-morph-ease),
+      transform var(--filter-morph-duration) var(--filter-morph-ease),
+      opacity 110ms ease;
+  }
+
+  body.flow-employee .flow-dashboard-card,
+  body.flow-employee .flow-dashboard-card:first-child,
+  body.flow-employee .flow-dashboard-section.is-compact .flow-dashboard-card,
+  body.flow-employee .flow-dashboard-section.is-compact .flow-dashboard-card:first-child {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto auto;
+    align-content: space-between;
+    row-gap: 0;
+    transition:
+      min-height var(--filter-morph-duration) var(--filter-morph-ease),
+      padding var(--filter-morph-duration) var(--filter-morph-ease),
+      border-radius var(--filter-morph-duration) var(--filter-morph-ease),
+      background-color 220ms ease,
+      border-color 220ms ease,
+      box-shadow 220ms ease,
+      transform 220ms var(--filter-morph-ease);
+  }
+
+  body.flow-employee .flow-dashboard-card small {
+    display: block !important;
+    max-height: 30px;
+    margin-top: 12px;
+    overflow: hidden;
+    opacity: 1;
+    transform: translateY(0);
+    transition:
+      max-height var(--filter-morph-duration) var(--filter-morph-ease),
+      margin-top var(--filter-morph-duration) var(--filter-morph-ease),
+      font-size var(--filter-morph-duration) var(--filter-morph-ease),
+      line-height var(--filter-morph-duration) var(--filter-morph-ease),
+      transform var(--filter-morph-duration) var(--filter-morph-ease),
+      opacity 160ms ease 90ms;
+  }
+
+  body.flow-employee .flow-dashboard-section.is-compact .flow-dashboard-card small {
+    max-height: 0;
+    margin-top: 0;
+    opacity: 0;
+    transform: translateY(-3px);
+    transition:
+      max-height var(--filter-morph-duration) var(--filter-morph-ease),
+      margin-top var(--filter-morph-duration) var(--filter-morph-ease),
+      font-size var(--filter-morph-duration) var(--filter-morph-ease),
+      line-height var(--filter-morph-duration) var(--filter-morph-ease),
+      transform var(--filter-morph-duration) var(--filter-morph-ease),
+      opacity 110ms ease;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.flow-employee .flow-dashboard-section,
+  body.flow-employee .flow-dashboard-section *,
+  body.flow-employee .flow-dashboard-section::before,
+  body.flow-employee .flow-dashboard-section::after {
+    transition-duration: 1ms !important;
+    transition-delay: 0ms !important;
+  }
+}

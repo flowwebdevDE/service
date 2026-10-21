@@ -1,16 +1,17 @@
 import {
   adminCasePdfUrl,
+  casePdfFilename,
   deleteAdminCase,
   getAdminCase,
   getAdminCustomerLink,
   updateAdminCase,
-  updateAdminCaseStatus,
+  updateAdminCaseStage,
   logoutPortalSession,
   requirePortalSession
-} from "./api.js?v=7.14.1";
+} from "./api.js?v=7.15.4";
 import { initModelPopup } from "./model-picker.js?v=7.6.1";
-import { setButtonLoading, pulseElement, beginGlobalBusy, endGlobalBusy, transitionSurface } from "./motion.js?v=7.14.1";
-import { showError, showInfo, showSuccess } from "./banner.js?v=7.10.6";
+import { setButtonLoading, pulseElement, beginGlobalBusy, endGlobalBusy, transitionSurface } from "./motion.js?v=7.15.1";
+import { showError, showInfo, showSuccess } from "./banner.js?v=7.15.1";
 
 
 const bootLoader = document.querySelector("#app-boot-loader");
@@ -68,7 +69,21 @@ const customerLinkDialog = document.querySelector("#customerLinkDialog");
 const customerLinkValue = document.querySelector("#customer-link-value");
 const customerVerificationCode = document.querySelector("#customer-verification-code");
 const customerLinkNote = document.querySelector("#customer-link-note");
+const stageProgressBar = document.querySelector("#internal-stage-progress-bar");
+const stageProgressCopy = document.querySelector("#internal-stage-progress-copy");
+const priceSettings = document.querySelector("#case-price-settings");
+const priceMode = document.querySelector("#case-service-price-mode");
+const priceAmountField = document.querySelector("#case-service-price-amount-field");
 let currentItem = null;
+
+function visibleCaseReference(item) {
+  const shopify = String(item?.shopify_ref || "").trim();
+  return {
+    label: shopify ? "Shopify" : "Service-Referenz",
+    value: shopify || String(item?.public_id || "–").trim() || "–",
+    fallback: !shopify
+  };
+}
 
 const CASE_TYPE_META = Object.freeze({
   warranty: {
@@ -111,6 +126,62 @@ function applyCaseTypeUi(value) {
 }
 
 
+const INTERNAL_STAGE_META = Object.freeze({
+  awaiting_customer: { label: "Wartet auf Kundenbestätigung", action: "Erst nach Kundenbestätigung", progress: 8 },
+  customer_confirmed: { label: "Kunde hat bestätigt", action: "Interne Stufe setzen", progress: 18 },
+  received: { label: "Eingegangen", action: "Eingegangen", progress: 32 },
+  diagnosis: { label: "Prüfung / Diagnose", action: "Prüfung / Diagnose", progress: 44 },
+  waiting_parts: { label: "Wartet auf Teile", action: "Wartet auf Teile", progress: 52 },
+  work_in_progress: { label: "In Bearbeitung", action: "In Bearbeitung", progress: 66 },
+  quality_check: { label: "Qualitätsprüfung", action: "Qualitätsprüfung", progress: 80 },
+  ready_for_handover: { label: "Abholbereit / Versandbereit", action: "Abholbereit", progress: 92 },
+  completed: { label: "Abgeschlossen", action: "Abgeschlossen", progress: 100 }
+});
+
+function internalStage(item) {
+  if (item?.internal_stage && INTERNAL_STAGE_META[item.internal_stage]) return item.internal_stage;
+  if (item?.service_status === "completed" || item?.service_status === "resolved") return "completed";
+  if (item?.service_status === "arrived") return "received";
+  if (item?.service_status === "in_progress") return "work_in_progress";
+  if (item?.status === "confirmed") return "customer_confirmed";
+  return "awaiting_customer";
+}
+
+function parseEuroToCents(value) {
+  const normalized = String(value || "").trim().replace(/\s/g, "").replace(",", ".");
+  if (!normalized) return null;
+  const amount = Number(normalized);
+  return Number.isFinite(amount) && amount >= 0 ? Math.round(amount * 100) : null;
+}
+
+function centsToEuroInput(value) {
+  const cents = Number(value);
+  if (!Number.isFinite(cents)) return "";
+  return (cents / 100).toFixed(2).replace(".", ",");
+}
+
+function customerPriceText(item, suffix = "") {
+  if (item?.service_price_mode !== "known") return "Preis nach Vereinbarung";
+  const cents = Number(item?.service_price_amount_cents);
+  if (!Number.isFinite(cents)) return "Preis nach Vereinbarung";
+  const amount = new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR" }).format(cents / 100);
+  return suffix ? `${amount} ${suffix}` : amount;
+}
+
+function syncPriceControls() {
+  const meta = caseTypeMeta(form.elements.case_type?.value);
+  const service = form.elements.service_choice?.value || "";
+  const paid = meta.service && ["inspection", "inspection_wear"].includes(service);
+  priceSettings?.classList.toggle("hidden", !paid);
+  if (!paid && priceMode) priceMode.value = "hidden";
+  const showAmount = paid && priceMode?.value === "known";
+  priceAmountField?.classList.toggle("hidden", !showAmount);
+  if (form.elements.service_price_eur) {
+    form.elements.service_price_eur.required = showAmount;
+    if (!showAmount) form.elements.service_price_eur.value = "";
+  }
+}
+
 function statusLabel(value) {
   return {
     waiting_customer: "Wartet auf Kundenbestätigung",
@@ -122,15 +193,9 @@ function statusLabel(value) {
   }[value] || "Wartet auf Kundenbestätigung";
 }
 
-function statusActionLabel(status, confirmed) {
+function statusActionLabel(stage, confirmed) {
   if (!confirmed) return "Erst nach Kundenbestätigung";
-
-  return {
-    arrived: "Angekommen",
-    in_progress: "In Bearbeitung",
-    completed: "Abgeschlossen",
-    resolved: "Abgeschlossen"
-  }[status] || "Status setzen";
+  return INTERNAL_STAGE_META[stage]?.action || "Interne Stufe setzen";
 }
 
 function closeStatusMenu() {
@@ -139,29 +204,29 @@ function closeStatusMenu() {
 }
 
 function renderServiceStatus(item) {
-  const status = item?.service_status || (
-    item?.status === "confirmed"
-      ? "customer_confirmed"
-      : "waiting_customer"
-  );
-
+  const stage = internalStage(item);
+  const meta = INTERNAL_STAGE_META[stage] || INTERNAL_STAGE_META.awaiting_customer;
   const confirmed = item?.status === "confirmed";
-  serviceStatusTrigger.disabled = !confirmed;
-  serviceStatusTriggerText.textContent = statusActionLabel(status, confirmed);
 
-  if (serviceStatusLabel) {
-    serviceStatusLabel.textContent = statusLabel(status);
+  serviceStatusTrigger.disabled = !confirmed;
+  serviceStatusTriggerText.textContent = statusActionLabel(stage, confirmed);
+
+  if (serviceStatusLabel) serviceStatusLabel.textContent = meta.label;
+  if (stageProgressBar) stageProgressBar.style.width = `${meta.progress}%`;
+  if (stageProgressCopy) {
+    stageProgressCopy.textContent = confirmed
+      ? `${meta.progress}% interner Fortschritt · nur für Mitarbeiter sichtbar`
+      : "Kundenbestätigung ausstehend";
   }
 
-  serviceStatusMenu?.querySelectorAll("[data-service-status]").forEach(button => {
-    const normalized = status === "resolved" ? "completed" : status;
-    const selected = button.dataset.serviceStatus === normalized;
+  serviceStatusMenu?.querySelectorAll("[data-internal-stage]").forEach(button => {
+    const selected = button.dataset.internalStage === stage;
     button.classList.toggle("is-selected", selected);
     button.setAttribute("aria-selected", selected ? "true" : "false");
   });
 
   const panel = document.querySelector(".flow-status-panel");
-  panel.dataset.status = status === "resolved" ? "completed" : status;
+  if (panel) panel.dataset.status = stage === "completed" ? "completed" : (stage === "received" ? "arrived" : stage);
 
   if (!confirmed) closeStatusMenu();
 }
@@ -177,20 +242,26 @@ function collect() {
     required_charger: form.elements.required_charger.checked,
     required_keys: form.elements.required_keys.checked,
     customer_note: form.elements.customer_note.value.trim(),
-    service_choice: form.elements.service_choice.value
+    service_choice: form.elements.service_choice.value,
+    service_price_mode: priceMode?.value === "known" ? "known" : "hidden",
+    service_price_amount_cents: priceMode?.value === "known"
+      ? parseEuroToCents(form.elements.service_price_eur?.value)
+      : null
   };
 }
 
 
-function serviceDisplay(value, caseType = "warranty") {
+function serviceDisplay(value, caseType = "warranty", item = currentItem) {
   const meta = caseTypeMeta(caseType);
   if (!meta.service) return [meta.label, "Keine zusätzliche Leistung vorgesehen"];
   return {
     none: [meta.none, "Keine zusätzliche kostenpflichtige Arbeit"],
-    inspection: ["Inspektion · 96 €", "Vom Kunden zusätzlich beauftragt"],
+    inspection: ["Inspektion", customerPriceText(item)],
     inspection_wear: [
       "Inspektion + Verschleißteile",
-      "96 € + tatsächlich benötigtes Material"
+      item?.service_price_mode === "known"
+        ? `${customerPriceText(item)} · Material nach tatsächlichem Aufwand`
+        : "Preis und Material nach Vereinbarung"
     ]
   }[value] || ["Keine Auswahl", "–"];
 }
@@ -213,7 +284,7 @@ function confirmedSnapshot(item) {
 function renderEmployeeFrozen(item) {
   const snapshot = confirmedSnapshot(item);
   const meta = caseTypeMeta(snapshot.case_type);
-  const [service, serviceNote] = serviceDisplay(snapshot.service_choice, snapshot.case_type);
+  const [service, serviceNote] = serviceDisplay(snapshot.service_choice, snapshot.case_type, snapshot);
 
   document.querySelector("#frozen-employee-customer").textContent =
     snapshot.customer_name || "–";
@@ -258,10 +329,12 @@ function renderEmployeeFrozen(item) {
 }
 
 function fill(item) {
-  document.querySelector("#case-title")?.replaceChildren(document.createTextNode(item.public_id));
+  const visibleRef = visibleCaseReference(item);
+  document.querySelector("#case-title")?.replaceChildren(document.createTextNode(visibleRef.value));
   applyCaseTypeUi(item.case_type);
-  document.querySelector("#sidebarCaseRef")?.replaceChildren(document.createTextNode(item.shopify_ref));
-  document.querySelector("#shopify-ref")?.replaceChildren(document.createTextNode(item.shopify_ref));
+  document.querySelector("#sidebarCaseRef")?.replaceChildren(document.createTextNode(visibleRef.value));
+  document.querySelector("#case-reference-label")?.replaceChildren(document.createTextNode(visibleRef.label));
+  document.querySelector("#shopify-ref")?.replaceChildren(document.createTextNode(visibleRef.value));
   renderServiceStatus(item);
 
   for (const name of [
@@ -276,6 +349,12 @@ function fill(item) {
   ]) {
     form.elements[name].value = item[name] ?? "";
   }
+
+  if (priceMode) priceMode.value = item.service_price_mode === "known" ? "known" : "hidden";
+  if (form.elements.service_price_eur) {
+    form.elements.service_price_eur.value = centsToEuroInput(item.service_price_amount_cents);
+  }
+  syncPriceControls();
 
   form.elements.required_charger.checked = Boolean(item.required_charger);
   form.elements.required_keys.checked = Boolean(item.required_keys);
@@ -332,12 +411,18 @@ function fill(item) {
 
   if (deleteConfirmInput) {
     deleteConfirmInput.value = "";
-    deleteConfirmInput.placeholder = item.public_id;
+    deleteConfirmInput.placeholder = visibleRef.value;
+    document.querySelector("#delete-reference-label")?.replaceChildren(
+      document.createTextNode(`Zur Bestätigung ${visibleRef.label === "Shopify" ? "Auftragsnummer" : "Service-Referenz"} eingeben`)
+    );
   }
   if (confirmDeleteButton) {
     confirmDeleteButton.disabled = true;
   }
 }
+
+form.elements.service_choice?.addEventListener("change", syncPriceControls);
+priceMode?.addEventListener("change", syncPriceControls);
 
 form.addEventListener("submit", async event => {
   event.preventDefault();
@@ -358,15 +443,19 @@ form.addEventListener("submit", async event => {
   }
 });
 
-try {
-  const item = await getAdminCase(id);
-  fill(item);
+if (!id) {
+  failBoot("Keine Vorgangs-ID übergeben.");
+} else {
+  try {
+    const item = await getAdminCase(id);
+    fill(item);
 
-  requestAnimationFrame(() => {
-    requestAnimationFrame(finishBoot);
-  });
-} catch (error) {
-  failBoot(error.message);
+    requestAnimationFrame(() => {
+      requestAnimationFrame(finishBoot);
+    });
+  } catch (error) {
+    failBoot(error.message);
+  }
 }
 
 
@@ -379,9 +468,9 @@ serviceStatusTrigger?.addEventListener("click", event => {
   serviceStatusTrigger.setAttribute("aria-expanded", isOpen ? "false" : "true");
 });
 
-serviceStatusMenu?.querySelectorAll("[data-service-status]").forEach(button => {
+serviceStatusMenu?.querySelectorAll("[data-internal-stage]").forEach(button => {
   button.addEventListener("click", async () => {
-    const next = button.dataset.serviceStatus;
+    const next = button.dataset.internalStage;
     if (!next || currentItem?.status !== "confirmed") return;
 
     closeStatusMenu();
@@ -390,7 +479,7 @@ serviceStatusMenu?.querySelectorAll("[data-service-status]").forEach(button => {
     beginGlobalBusy();
 
     try {
-      const item = await updateAdminCaseStatus(id, next);
+      const item = await updateAdminCaseStage(id, next);
       currentItem = item;
       renderServiceStatus(item);
       pulseElement(document.querySelector(".flow-status-panel"));
@@ -398,7 +487,7 @@ serviceStatusMenu?.querySelectorAll("[data-service-status]").forEach(button => {
       showSuccess(
         next === "completed"
           ? "Vorgang abgeschlossen und ins Archiv verschoben."
-          : "Bearbeitungsstatus aktualisiert.",
+          : "Interne Bearbeitungsstufe aktualisiert.",
         { title: "Status aktualisiert" }
       );
     } catch (error) {
@@ -431,20 +520,16 @@ document.querySelector("#internal-print")?.addEventListener("click", async event
   setButtonLoading(button, true, "Erstelle PDF …");
   beginGlobalBusy();
 
-  const popup = window.open("", "_blank");
-
   try {
     const url = await adminCasePdfUrl(id);
-
-    if (popup) {
-      popup.location.href = url;
-    } else {
-      window.location.href = url;
-    }
-
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = casePdfFilename(currentItem, currentItem?.status === "confirmed" ? "confirmation" : "draft");
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
     window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
   } catch (error) {
-    popup?.close();
     showError(error.message);
   } finally {
     setButtonLoading(button, false);
@@ -567,7 +652,11 @@ document.querySelector("#delete-case")?.addEventListener("click", () => {
   if (!currentItem) return;
 
   deleteConfirmInput.value = "";
-  deleteConfirmInput.placeholder = currentItem.public_id;
+  const visibleRef = visibleCaseReference(currentItem);
+  deleteConfirmInput.placeholder = visibleRef.value;
+  document.querySelector("#delete-reference-label")?.replaceChildren(
+    document.createTextNode(`Zur Bestätigung ${visibleRef.label === "Shopify" ? "Auftragsnummer" : "Service-Referenz"} eingeben`)
+  );
   confirmDeleteButton.disabled = true;
 
   if (!deleteDialog.open) {
@@ -587,13 +676,13 @@ document.querySelector("#cancelDeleteCase")?.addEventListener("click", closeDele
 deleteConfirmInput?.addEventListener("input", () => {
   confirmDeleteButton.disabled =
     !currentItem ||
-    deleteConfirmInput.value.trim() !== currentItem.public_id;
+    deleteConfirmInput.value.trim() !== visibleCaseReference(currentItem).value;
 });
 
 confirmDeleteButton?.addEventListener("click", async () => {
   if (
     !currentItem ||
-    deleteConfirmInput.value.trim() !== currentItem.public_id
+    deleteConfirmInput.value.trim() !== visibleCaseReference(currentItem).value
   ) {
     return;
   }

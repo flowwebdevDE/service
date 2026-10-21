@@ -1,6 +1,7 @@
 import { setButtonLoading } from "./motion.js?v=7.9";
-import { showError, showInfo, showSuccess } from "./banner.js?v=7.10.6";
+import { showError, showInfo, showSuccess } from "./banner.js?v=7.15.1";
 import {
+  casePdfFilename,
   confirmCustomer,
   customerPdfUrl,
   getAdminCustomerPreview,
@@ -8,11 +9,11 @@ import {
   getCustomerSession,
   getPortalSession,
   verifyCustomerAccess
-} from "./api.js?v=7.14.1";
+} from "./api.js?v=7.15.4";
 import {
   confirmationActionLabel,
   confirmationRequirements
-} from "./case-confirmations.js?v=7.14.1";
+} from "./case-confirmations.js?v=7.15.1";
 
 
 const bootLoader = document.querySelector("#app-boot-loader");
@@ -78,6 +79,27 @@ const confirmRows = document.querySelector("#confirm-rows");
 
 let current;
 
+function customerReference(item) {
+  const shopify = String(item?.shopify_ref || "").trim();
+  if (shopify) return { label: "Auftrag", value: shopify, fallback: false };
+
+  return {
+    label: "Service-Referenz",
+    value: String(item?.public_id || "–").trim() || "–",
+    fallback: true
+  };
+}
+
+function renderCustomerReference(item, { frozen = false } = {}) {
+  const ref = customerReference(item);
+  setText(frozen ? "frozen-customer-reference-label" : "customer-reference-label", ref.label);
+  setText(frozen ? "frozen-customer-reference" : "customer-reference", ref.value);
+  if (!frozen) {
+    setText("summary-ref-label", ref.label);
+    setText("summary-ref", ref.value);
+  }
+  document.body.classList.toggle("customer-reference-fallback", ref.fallback);
+}
 
 function setCustomerUnlocked(unlocked) {
   document.documentElement.classList.toggle("customer-pin-locked", !unlocked);
@@ -416,8 +438,11 @@ function enableEmployeePreview() {
   const banner = document.createElement("div");
   banner.className = "customer-preview-banner";
   banner.innerHTML = `
-    <strong>Mitarbeiter-Vorschau</strong>
-    <span>So sieht der aktuelle Vorgangsstand für den Kunden aus. Änderungen in dieser Ansicht werden nicht gespeichert.</span>
+    <a class="customer-preview-back" href="case.html?id=${encodeURIComponent(previewId)}" aria-label="Zurück zum Auftrag">← Zurück</a>
+    <div class="customer-preview-banner__copy">
+      <strong>Mitarbeiter-Vorschau</strong>
+      <span>So sieht der aktuelle Vorgangsstand für den Kunden aus. Änderungen in dieser Ansicht werden nicht gespeichert.</span>
+    </div>
   `;
 
   document.body.prepend(banner);
@@ -430,6 +455,26 @@ function byId(id) {
 function setText(id, value) {
   const element = byId(id);
   if (element) element.textContent = value;
+}
+
+function renderTagList(id, values, emptyLabel = "–") {
+  const element = byId(id);
+  if (!element) return;
+
+  const items = Array.isArray(values)
+    ? values.map(value => String(value || "").trim()).filter(Boolean)
+    : [];
+
+  element.classList.add("customer-tag-list");
+  element.replaceChildren();
+
+  const labels = items.length ? items : [emptyLabel];
+  for (const label of labels) {
+    const tag = document.createElement("span");
+    tag.className = `customer-summary-tag${items.length ? "" : " customer-summary-tag--muted"}`;
+    tag.textContent = label;
+    element.append(tag);
+  }
 }
 
 const CUSTOMER_CASE_TYPES = Object.freeze({
@@ -534,16 +579,34 @@ function selectedService() {
   return form.querySelector('input[name="service_choice"]:checked')?.value || "";
 }
 
+function knownServicePrice(item = current) {
+  if (item?.service_price_mode !== "known") return "";
+  const cents = Number(item?.service_price_amount_cents);
+  if (!Number.isFinite(cents) || cents < 0) return "";
+  return new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR" }).format(cents / 100);
+}
+
+function servicePriceLabel(item = current, { material = false } = {}) {
+  const price = knownServicePrice(item);
+  if (!price) return material ? "Preis nach Absprache + Material" : "Preis nach Absprache";
+  return material ? `${price} + Material` : price;
+}
+
+function syncCustomerPriceLabels(item = current) {
+  setText("service-inspection-price", servicePriceLabel(item));
+  setText("service-inspection-wear-price", servicePriceLabel(item, { material: true }));
+}
+
 function serviceText(value, item = current) {
   const meta = customerCaseType(item);
   if (!meta.service) return meta.label;
 
   if (value === "inspection") {
-    return "Inspektion · 96 €";
+    return `Inspektion · ${servicePriceLabel(item)}`;
   }
 
   if (value === "inspection_wear") {
-    return "Inspektion + Verschleißteile · 96 € + Material";
+    return `Inspektion + Verschleißteile · ${servicePriceLabel(item, { material: true })}`;
   }
 
   if (value === "none") {
@@ -589,7 +652,9 @@ function confirmationInput(key) {
 function currentConfirmationRequirements() {
   return confirmationRequirements({
     case_type: caseTypeValue(current),
-    service_choice: selectedService() || "none"
+    service_choice: selectedService() || "none",
+    service_price_mode: current?.service_price_mode || "hidden",
+    service_price_amount_cents: current?.service_price_amount_cents ?? null
   });
 }
 
@@ -662,9 +727,11 @@ function renderSummary() {
 
   const data = collect();
 
-  setText("summary-ref", current.shopify_ref);
+  const reference = customerReference(current);
+  setText("summary-ref-label", reference.label);
+  setText("summary-ref", reference.value);
   setText("summary-item", current.item_type === "battery" ? "Akku" : "Komplettes Fahrrad");
-  setText("summary-accessories", accessoryList(current).join(", "));
+  renderTagList("summary-accessories", accessoryList(current));
   setText("summary-service", serviceText(data.service_choice, current));
 }
 
@@ -737,7 +804,12 @@ function updateFlowState() {
         : "Angaben bestätigen",
       detail: confirmation.remaining === 1
         ? "Ein letzter inhaltlich eigenständiger Punkt ist noch offen."
-        : confirmationActionLabel({ case_type: caseTypeValue(current), service_choice: selectedService() || "none" }),
+        : confirmationActionLabel({
+          case_type: caseTypeValue(current),
+          service_choice: selectedService() || "none",
+          service_price_mode: current?.service_price_mode || "hidden",
+          service_price_amount_cents: current?.service_price_amount_cents ?? null
+        }),
       progress: confirmation.checked > 0 ? 82 : 68,
       state: confirmation.checked > 0 ? "Fast geschafft" : "Prüfung offen"
     });
@@ -747,7 +819,12 @@ function updateFlowState() {
     const nextRule = confirmation.rules.find(rule => !confirmationInput(rule.key)?.checked);
     stickySubtitle.textContent = confirmation.remaining === 1
       ? (nextRule?.title || "Vorgang bestätigen")
-      : confirmationActionLabel({ case_type: caseTypeValue(current), service_choice: selectedService() || "none" });
+      : confirmationActionLabel({
+          case_type: caseTypeValue(current),
+          service_choice: selectedService() || "none",
+          service_price_mode: current?.service_price_mode || "hidden",
+          service_price_amount_cents: current?.service_price_amount_cents ?? null
+        });
     stickyButton.textContent = "Bestätigen";
     stickyButton.dataset.action = "confirm";
     stickyButton.disabled = false;
@@ -784,10 +861,10 @@ function frozenServiceDisplay(value, item) {
 
   return {
     none: [meta.noneTitle || "Keine Zusatzleistung", meta.noneCopy || "Keine zusätzliche kostenpflichtige Arbeit"],
-    inspection: ["Inspektion · 96 €", "Zusätzlich von dir beauftragt"],
+    inspection: [`Inspektion · ${servicePriceLabel(item)}`, "Zusätzlich von dir beauftragt"],
     inspection_wear: [
       "Inspektion + Verschleißteile",
-      "96 € + tatsächlich benötigtes Material"
+      servicePriceLabel(item, { material: true })
     ]
   }[value] || ["Keine zusätzliche Arbeit", "–"];
 }
@@ -837,8 +914,7 @@ function renderCustomerFrozen(item) {
   showStickyAction(false);
   window.scrollTo({ top: 0, left: 0, behavior: "auto" });
 
-  setText("frozen-customer-order", snapshot.shopify_ref || "–");
-  setText("frozen-customer-case", snapshot.public_id || item.public_id || "–");
+  renderCustomerReference(snapshot, { frozen: true });
   setText("frozen-customer-subject", snapshot.case_subject || meta.label);
   const frozenServiceCard = byId("frozen-customer-service-card");
   frozenServiceCard?.classList.toggle("hidden", !meta.service);
@@ -852,7 +928,7 @@ function renderCustomerFrozen(item) {
   ].filter(Boolean).join(" · ");
 
   setText("frozen-customer-bike", bike || "–");
-  setText("frozen-customer-delivery", frozenDeliveryDisplay(snapshot));
+  renderTagList("frozen-customer-delivery", accessoryList(snapshot), "Keine zusätzlichen Teile");
   setText("frozen-customer-service", service);
   setText("frozen-customer-service-note", serviceNote);
   setText("frozen-customer-note", snapshot.customer_note || "Kein Hinweis hinterlegt.");
@@ -885,6 +961,7 @@ function renderCustomerFrozen(item) {
     customerPdfUrl(token)
       .then(url => {
         pdf.href = url;
+        pdf.download = casePdfFilename(snapshot, "confirmation");
         pdf.classList.remove("hidden");
       })
       .catch(error => {
@@ -916,9 +993,9 @@ function fill(item) {
 
   renderCustomerEditable();
   applyCustomerCaseType(item);
+  syncCustomerPriceLabels(item);
 
-  setText("public-id", item.public_id);
-  setText("shopify-ref", item.shopify_ref);
+  renderCustomerReference(item);
   setText("item-type", item.item_type === "battery" ? "Akku" : "Komplettes Fahrrad");
 
   const cleanName = (item.customer_name || "").trim();
@@ -1053,6 +1130,8 @@ form.addEventListener("submit", async event => {
     };
 
     const result = await confirmCustomer(token, payload);
+    setButtonLoading(stickyButton, false);
+    showStickyAction(false);
     fill(result.case);
 
     showSuccess("Vorgang verbindlich bestätigt.", {
@@ -1065,6 +1144,85 @@ form.addEventListener("submit", async event => {
     updateFlowState();
   }
 });
+
+function initPrivacyDisclosure() {
+  const note = document.getElementById("customer-privacy-note");
+  const toggle = document.getElementById("customer-privacy-toggle");
+  const content = document.getElementById("customer-privacy-content");
+
+  if (!note || !toggle || !content) return;
+
+  // The disclosure intentionally lives outside the confirmation card's flow.
+  // That keeps the parent card geometry completely stable while it is open.
+  document.body.appendChild(content);
+
+  const backdrop = document.createElement("button");
+  backdrop.type = "button";
+  backdrop.className = "customer-privacy-backdrop";
+  backdrop.setAttribute("aria-label", "Datenschutzinformationen schließen");
+  document.body.insertBefore(backdrop, content);
+
+  let open = false;
+
+  const place = () => {
+    if (!open || window.innerWidth < 980) return;
+
+    const rect = toggle.getBoundingClientRect();
+    const viewportGap = 16;
+    const anchorGap = 10;
+    const width = Math.min(420, window.innerWidth - viewportGap * 2);
+
+    content.style.setProperty("--privacy-left", `${Math.max(
+      viewportGap,
+      Math.min(rect.right - width, window.innerWidth - width - viewportGap)
+    )}px`);
+
+    // Measure while detached from flow. Visibility:hidden still provides size.
+    const panelHeight = content.getBoundingClientRect().height || 180;
+    const roomBelow = window.innerHeight - rect.bottom - anchorGap - viewportGap;
+    const roomAbove = rect.top - anchorGap - viewportGap;
+    const placeAbove = roomBelow < panelHeight && roomAbove > roomBelow;
+
+    content.dataset.placement = placeAbove ? "top" : "bottom";
+
+    const rawTop = placeAbove
+      ? rect.top - anchorGap - panelHeight
+      : rect.bottom + anchorGap;
+
+    const top = Math.max(
+      viewportGap,
+      Math.min(rawTop, window.innerHeight - panelHeight - viewportGap)
+    );
+
+    content.style.setProperty("--privacy-top", `${top}px`);
+  };
+
+  const setOpen = nextOpen => {
+    open = Boolean(nextOpen);
+    toggle.setAttribute("aria-expanded", String(open));
+    content.setAttribute("aria-hidden", String(!open));
+    note.classList.toggle("is-open", open);
+    content.classList.toggle("is-visible", open);
+    backdrop.classList.toggle("is-visible", open);
+
+    if (open) {
+      requestAnimationFrame(place);
+    }
+  };
+
+  toggle.addEventListener("click", () => setOpen(!open));
+  backdrop.addEventListener("click", () => setOpen(false));
+
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape" && open) {
+      setOpen(false);
+      toggle.focus();
+    }
+  });
+
+  window.addEventListener("resize", place, { passive: true });
+  window.addEventListener("scroll", place, { passive: true });
+}
 
 async function load() {
   if (!previewMode) {
@@ -1109,4 +1267,5 @@ async function load() {
   await loadVerifiedCustomer();
 }
 
+initPrivacyDisclosure();
 load();

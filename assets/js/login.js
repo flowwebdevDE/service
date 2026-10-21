@@ -1,9 +1,9 @@
 import { setButtonLoading, beginGlobalBusy, endGlobalBusy } from "./motion.js?v=7.11.0";
-import { showError } from "./banner.js?v=7.10.6";
+import { showError } from "./banner.js?v=7.15.1";
 import {
   getPortalSession,
   loginWithCompanyKey
-} from "./api.js?v=7.14.1";
+} from "./api.js?v=7.15.1";
 
 const form = document.querySelector("#login-form");
 const reason = new URLSearchParams(location.search).get("reason");

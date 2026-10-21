@@ -1,16 +1,20 @@
-const STACK_ID = "flow-banner-stack";
 let bannerCounter = 0;
 
+function activeHost() {
+  const openDialogs = Array.from(document.querySelectorAll("dialog[open]"));
+  return openDialogs.at(-1) || document.body;
+}
+
 function stack() {
-  let element = document.getElementById(STACK_ID);
+  const host = activeHost();
+  let element = host.querySelector?.(":scope > .flow-banner-stack") || null;
 
   if (!element) {
     element = document.createElement("div");
-    element.id = STACK_ID;
     element.className = "flow-banner-stack";
     element.setAttribute("aria-live", "polite");
     element.setAttribute("aria-relevant", "additions");
-    document.body.appendChild(element);
+    host.appendChild(element);
   }
 
   return element;
@@ -19,6 +23,7 @@ function stack() {
 function typeLabel(type) {
   if (type === "success") return "Erledigt";
   if (type === "error") return "Hinweis";
+  if (type === "warning") return "Achtung";
   return "Info";
 }
 
@@ -29,17 +34,21 @@ export function dismissBanner(id) {
   banner.classList.add("is-leaving");
 
   window.setTimeout(() => {
+    const container = banner.parentElement;
     banner.remove();
-    const container = document.getElementById(STACK_ID);
-    if (container && !container.children.length) container.remove();
-  }, 220);
+    if (container?.classList.contains("flow-banner-stack") && !container.children.length) {
+      container.remove();
+    }
+  }, 180);
 }
 
 export function showBanner(message, {
   type = "info",
   title = "",
-  duration = 3400,
-  id = ""
+  duration = 3600,
+  id = "",
+  actionLabel = "",
+  onAction = null
 } = {}) {
   const text = String(message || "").trim();
   if (!text) return null;
@@ -47,10 +56,9 @@ export function showBanner(message, {
   const bannerId = id || `flow-banner-${++bannerCounter}`;
 
   if (id) {
-    const existing = document.querySelector(
+    document.querySelector(
       `[data-flow-banner-id="${CSS.escape(String(id))}"]`
-    );
-    existing?.remove();
+    )?.remove();
   }
 
   const banner = document.createElement("div");
@@ -73,6 +81,20 @@ export function showBanner(message, {
   body.className = "flow-banner__message";
   body.textContent = text;
 
+  content.append(heading, body);
+
+  if (actionLabel && typeof onAction === "function") {
+    const action = document.createElement("button");
+    action.className = "flow-banner__action";
+    action.type = "button";
+    action.textContent = actionLabel;
+    action.addEventListener("click", () => {
+      dismissBanner(bannerId);
+      onAction();
+    });
+    content.append(action);
+  }
+
   const close = document.createElement("button");
   close.className = "flow-banner__close";
   close.type = "button";
@@ -80,7 +102,6 @@ export function showBanner(message, {
   close.textContent = "×";
   close.addEventListener("click", () => dismissBanner(bannerId));
 
-  content.append(heading, body);
   banner.append(marker, content, close);
   stack().appendChild(banner);
 
@@ -99,9 +120,17 @@ export function showSuccess(message, options = {}) {
 
 export function showError(message, options = {}) {
   return showBanner(message, {
-    duration: 5200,
+    duration: 5600,
     ...options,
     type: "error"
+  });
+}
+
+export function showWarning(message, options = {}) {
+  return showBanner(message, {
+    duration: 5200,
+    ...options,
+    type: "warning"
   });
 }
 

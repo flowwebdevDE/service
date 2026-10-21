@@ -1,6 +1,6 @@
-import { renderWarrantyFlowPdf } from "./pdf/warranty-flowpdf.js?v=7.14.1";
-import { confirmationRequirements } from "./case-confirmations.js?v=7.14.1";
-import { CONFIG, hasBackendConfig } from "./config.js?v=7.14.1";
+import { renderWarrantyFlowPdf } from "./pdf/warranty-flowpdf.js?v=7.15.4";
+import { confirmationRequirements } from "./case-confirmations.js?v=7.15.1";
+import { CONFIG, hasBackendConfig } from "./config.js?v=7.15.1";
 import {
   confirmDemoCase,
   createDemoCase,
@@ -10,7 +10,7 @@ import {
   updateDemoCaseById,
   updateDemoCaseByToken,
   updateDemoCaseStatus
-} from "./demo-store.js?v=7.14.1";
+} from "./demo-store.js?v=7.15.4";
 
 let backendAvailable;
 let brandLogoPromise;
@@ -50,7 +50,7 @@ export function buildCustomerUrl(token) {
 
 function commonHeaders() {
   return {
-    "x-portal-client-version": "7.14.1-eu"
+    "x-portal-client-version": "7.15.4-eu"
   };
 }
 
@@ -365,6 +365,29 @@ export async function updateAdminCaseStatus(id, serviceStatus) {
   return readJson(response, "Status konnte nicht gespeichert werden.");
 }
 
+export async function updateAdminCaseStage(id, internalStage) {
+  if (!(await hasBackend())) {
+    const item = updateDemoCaseStatus(
+      id,
+      internalStage === "completed" ? "completed" : internalStage === "received" ? "arrived" : "in_progress",
+      internalStage
+    );
+    if (!item) throw new Error("Vorgang nicht gefunden.");
+    return item;
+  }
+
+  const response = await fetch(
+    apiUrl(`admin/cases/${encodeURIComponent(id)}/stage`),
+    {
+      method: "PUT",
+      headers: await adminHeaders(true),
+      body: JSON.stringify({ internal_stage: internalStage })
+    }
+  );
+
+  return readJson(response, "Bearbeitungsstufe konnte nicht gespeichert werden.");
+}
+
 export async function deleteAdminCase(id) {
   if (!(await hasBackend())) {
     throw new Error("Löschen ist im Demo-Modus nicht verfügbar.");
@@ -516,6 +539,28 @@ export async function confirmCustomer(token, data) {
 
 function frozenPdfData(item) {
   return item?.pdf_snapshot || item;
+}
+
+function safeFilenamePart(value, fallback = "Vorgang") {
+  const clean = String(value || fallback)
+    .trim()
+    .replace(/[\\/:*?"<>|]+/g, "-")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+  return clean || fallback;
+}
+
+export function casePdfFilename(item, mode = "confirmation") {
+  const type = {
+    warranty: "Garantiefall",
+    repair: "Reparatur",
+    return: "Rueckgabe",
+    exchange: "Tausch"
+  }[item?.case_type] || "Service";
+  const state = mode === "draft" ? "Entwurf" : "Bestaetigung";
+  const id = safeFilenamePart(item?.shopify_ref || item?.public_id || "Vorgang");
+  return `MYVELO-${type}-${state}-${id}.pdf`;
 }
 
 export async function customerPdfUrl(token) {

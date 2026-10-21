@@ -22,14 +22,34 @@ function publicIdPrefix(caseType) {
   }[normalizeCaseType(caseType)];
 }
 
+function referenceSlug(value) {
+  return String(value || "")
+    .toUpperCase()
+    .replace(/^#+/, "")
+    .replace(/[^A-Z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 18) || "DEMO";
+}
+
+function uniquePublicId(state, caseType, shopifyRef) {
+  const base = `${publicIdPrefix(caseType)}-${referenceSlug(shopifyRef)}`;
+  let candidate = base;
+  let suffix = 2;
+  while (state.cases.some(item => item.public_id === candidate)) {
+    candidate = `${base}-${suffix++}`;
+  }
+  return candidate;
+}
+
 function initialState() {
   return {
     cases: [
       {
-        public_id: "GAR-2026-DEMO01",
+        public_id: "GAR-4832",
         shopify_ref: "#4832",
         status: "draft",
         service_status: "waiting_customer",
+        internal_stage: "awaiting_customer",
         customer_name: "Max Mustermann",
         customer_email: "max@example.com",
         bike_model: "Modell Platzhalter",
@@ -43,6 +63,9 @@ function initialState() {
         staff_note: "",
         customer_note: "",
         service_choice: "",
+        service_price_mode: "hidden",
+        service_price_amount_cents: null,
+        service_price_note: "",
         confirmed_at: null,
         read_only: false,
         token: CONFIG.demoToken,
@@ -75,14 +98,14 @@ export function listDemoCases() {
 export function createDemoCase(data) {
   const state = getState();
   const token = crypto.randomUUID().replaceAll("-", "");
-  const suffix = crypto.randomUUID().split("-")[0].toUpperCase();
-
   const caseType = normalizeCaseType(data.case_type);
 
   const item = {
-    public_id: `${publicIdPrefix(caseType)}-${new Date().getFullYear()}-${suffix}`,
-    shopify_ref: data.shopify_ref,
+    public_id: uniquePublicId(state, caseType, data.shopify_ref),
+    shopify_ref: String(data.shopify_ref || "").trim(),
     status: "draft",
+    service_status: "waiting_customer",
+    internal_stage: "awaiting_customer",
     customer_name: data.customer_name || "",
     customer_email: data.customer_email || "",
     bike_model: data.bike_model || "",
@@ -96,6 +119,9 @@ export function createDemoCase(data) {
     staff_note: data.staff_note || "",
     customer_note: data.customer_note || "",
     service_choice: serviceChoiceForCaseType(caseType, data.service_choice),
+    service_price_mode: data.service_price_mode === "known" ? "known" : "hidden",
+    service_price_amount_cents: Number.isFinite(Number(data.service_price_amount_cents)) ? Math.round(Number(data.service_price_amount_cents)) : null,
+    service_price_note: String(data.service_price_note || ""),
     confirmed_at: null,
     read_only: false,
     token,
@@ -137,7 +163,16 @@ export function updateDemoCaseById(publicId, patch) {
     service_choice: serviceChoiceForCaseType(
       caseType,
       patch.service_choice === undefined ? current.service_choice : patch.service_choice
-    )
+    ),
+    service_price_mode: patch.service_price_mode === undefined
+      ? (current.service_price_mode || "hidden")
+      : (patch.service_price_mode === "known" ? "known" : "hidden"),
+    service_price_amount_cents: patch.service_price_amount_cents === undefined
+      ? (current.service_price_amount_cents ?? null)
+      : (Number.isFinite(Number(patch.service_price_amount_cents)) ? Math.round(Number(patch.service_price_amount_cents)) : null),
+    service_price_note: patch.service_price_note === undefined
+      ? (current.service_price_note || "")
+      : String(patch.service_price_note || "")
   };
 
   setState(state);
@@ -161,7 +196,16 @@ export function updateDemoCaseByToken(token, patch) {
     service_choice: serviceChoiceForCaseType(
       caseType,
       patch.service_choice === undefined ? current.service_choice : patch.service_choice
-    )
+    ),
+    service_price_mode: patch.service_price_mode === undefined
+      ? (current.service_price_mode || "hidden")
+      : (patch.service_price_mode === "known" ? "known" : "hidden"),
+    service_price_amount_cents: patch.service_price_amount_cents === undefined
+      ? (current.service_price_amount_cents ?? null)
+      : (Number.isFinite(Number(patch.service_price_amount_cents)) ? Math.round(Number(patch.service_price_amount_cents)) : null),
+    service_price_note: patch.service_price_note === undefined
+      ? (current.service_price_note || "")
+      : String(patch.service_price_note || "")
   };
 
   setState(state);
@@ -187,6 +231,7 @@ export function confirmDemoCase(token, patch) {
     ),
     status: "confirmed",
     service_status: "customer_confirmed",
+    internal_stage: "customer_confirmed",
     confirmed_at: new Date().toISOString(),
     read_only: true
   };
@@ -196,7 +241,7 @@ export function confirmDemoCase(token, patch) {
 }
 
 
-export function updateDemoCaseStatus(publicId, serviceStatus) {
+export function updateDemoCaseStatus(publicId, serviceStatus, internalStage = "") {
   const state = getState();
   const index = state.cases.findIndex(item => item.public_id === publicId);
 
@@ -205,6 +250,13 @@ export function updateDemoCaseStatus(publicId, serviceStatus) {
   state.cases[index] = {
     ...state.cases[index],
     service_status: serviceStatus,
+    internal_stage: internalStage || (serviceStatus === "completed"
+      ? "completed"
+      : serviceStatus === "arrived"
+        ? "received"
+        : serviceStatus === "customer_confirmed"
+          ? "customer_confirmed"
+          : "work_in_progress"),
     updated_at: new Date().toISOString()
   };
 

@@ -6,13 +6,13 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://myvelo-service.red-dawn-bec6.workers.dev https://*.myvelo.de; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'none'; worker-src 'self' blob:; upgrade-insecure-requests">
   <meta name="referrer" content="no-referrer">
 <title>Vorgang · MYVELO Service</title>
-  <link rel="stylesheet" href="assets/css/app.css?v=7.10.11">
-  <link rel="stylesheet" href="assets/css/employee-apple.css?v=7.14.2">
-  <script src="assets/js/auth-guard.js?v=7.11.0.2"></script>
+  <link rel="stylesheet" href="assets/css/app.css?v=7.15.4">
+  <link rel="stylesheet" href="assets/css/employee-apple.css?v=7.15.4">
+  <script src="assets/js/auth-guard.js?v=7.15.1"></script>
   <script src="assets/js/security-bootstrap.js?v=7.10.6"></script>
 
 
-  <script src="portal-config.js?v=7.14.2"></script>
+  <script src="portal-config.js?v=7.15.1"></script>
 </head>
 <body class="flow-employee">
 
@@ -43,6 +43,10 @@
         </a>
       </nav>
       <div class="flow-sidebar-spacer"></div>
+      <a class="flow-nav-item" href="profile.html">
+        <span class="flow-nav-person" aria-hidden="true">MA</span>
+        <span>Mitarbeiter</span>
+      </a>
       <button class="flow-nav-item" id="logout-button" type="button">
         <span class="flow-nav-dot flow-nav-dot--muted"></span>
         <span>Abmelden</span>
@@ -55,9 +59,10 @@
           <button class="flow-burger" id="mobileMenuButton" type="button" aria-label="Menü">
             <span></span><span></span><span></span>
           </button>
+          <a class="flow-back-button" href="index.html" aria-label="Zurück zu den Vorgängen">←</a>
           <div>
             <strong id="case-title">Servicevorgang</strong>
-            <span><b id="case-type-label">Servicevorgang</b> · Shopify <b id="shopify-ref">–</b></span>
+            <span><b id="case-type-label">Servicevorgang</b> · <span id="case-reference-label">Shopify</span> <b id="shopify-ref">–</b></span>
           </div>
         </div>
       </header>
@@ -88,19 +93,18 @@
               <span class="flow-status-trigger-arrow">⌄</span>
             </button>
             <div class="flow-status-menu hidden" id="service-status-menu" role="listbox">
-              <button type="button" role="option" data-service-status="arrived">
-                <span class="flow-status-menu-dot"></span>
-                <span><strong>Angekommen</strong><small>Fahrrad oder Akku ist bei MYVELO eingetroffen</small></span>
-              </button>
-              <button type="button" role="option" data-service-status="in_progress">
-                <span class="flow-status-menu-dot"></span>
-                <span><strong>In Bearbeitung</strong><small>Der Servicefall wird aktuell bearbeitet</small></span>
-              </button>
-              <button type="button" role="option" data-service-status="completed">
-                <span class="flow-status-menu-dot"></span>
-                <span><strong>Abgeschlossen</strong><small>Der Servicevorgang ist abgeschlossen</small></span>
-              </button>
+              <button type="button" role="option" data-internal-stage="received"><span class="flow-status-menu-dot"></span><span><strong>Eingegangen</strong><small>Fahrrad oder Akku wurde übernommen</small></span></button>
+              <button type="button" role="option" data-internal-stage="diagnosis"><span class="flow-status-menu-dot"></span><span><strong>Prüfung / Diagnose</strong><small>Fehlerbild und Umfang werden geprüft</small></span></button>
+              <button type="button" role="option" data-internal-stage="waiting_parts"><span class="flow-status-menu-dot"></span><span><strong>Wartet auf Teile</strong><small>Bearbeitung pausiert bis Material verfügbar ist</small></span></button>
+              <button type="button" role="option" data-internal-stage="work_in_progress"><span class="flow-status-menu-dot"></span><span><strong>In Bearbeitung</strong><small>Arbeiten werden aktuell ausgeführt</small></span></button>
+              <button type="button" role="option" data-internal-stage="quality_check"><span class="flow-status-menu-dot"></span><span><strong>Qualitätsprüfung</strong><small>Abschlusskontrolle vor Freigabe</small></span></button>
+              <button type="button" role="option" data-internal-stage="ready_for_handover"><span class="flow-status-menu-dot"></span><span><strong>Abholbereit / Versandbereit</strong><small>Intern fertig und bereit zur Übergabe</small></span></button>
+              <button type="button" role="option" data-internal-stage="completed"><span class="flow-status-menu-dot"></span><span><strong>Abgeschlossen</strong><small>Vorgang vollständig beendet</small></span></button>
             </div>
+          </div>
+          <div class="flow-stage-progress" id="internal-stage-progress" aria-label="Interner Fortschritt">
+            <span class="flow-stage-progress__bar"><span id="internal-stage-progress-bar"></span></span>
+            <small id="internal-stage-progress-copy">Kundenbestätigung ausstehend</small>
           </div>
         </section>
 
@@ -110,7 +114,7 @@
           </div>
           <div class="flow-case-toolbar__secondary">
             <button id="customer-link-button" class="flow-action secondary" type="button">Kundenlink</button>
-            <a id="customer-preview" class="flow-action secondary" target="_blank" rel="noopener">Kundenansicht</a>
+            <a id="customer-preview" class="flow-action secondary">Kundenansicht</a>
             <a id="internal-print" class="flow-action secondary" href="#">PDF exportieren</a>
             <div class="flow-more-menu">
               <button id="case-more-trigger" class="flow-action secondary flow-more-trigger" type="button" aria-expanded="false">
@@ -248,9 +252,22 @@
                 <select name="service_choice">
                   <option value="">Keine Vorauswahl</option>
                   <option value="none">Keine Zusatzleistung</option>
-                  <option value="inspection">Inspektion · 96 €</option>
+                  <option value="inspection">Inspektion</option>
                   <option value="inspection_wear">Inspektion + Verschleißteile</option>
                 </select>
+              </label>
+            </div>
+            <div class="flow-price-settings" id="case-price-settings">
+              <label>
+                <span>Preis im Kundenportal</span>
+                <select name="service_price_mode" id="case-service-price-mode">
+                  <option value="hidden">Keinen Preis anzeigen</option>
+                  <option value="known">Bekannten Preis anzeigen</option>
+                </select>
+              </label>
+              <label class="hidden" id="case-service-price-amount-field">
+                <span>Bekannter Preis in €</span>
+                <input name="service_price_eur" inputmode="decimal" pattern="[0-9]+([,.][0-9]{1,2})?" placeholder="0,00">
               </label>
             </div>
           </section>
@@ -310,7 +327,7 @@
     <div class="flow-delete-copy">
       <p>Der Servicefall und seine Ereignisse werden dauerhaft gelöscht. Ein Kundenlink zu diesem Fall funktioniert danach nicht mehr.</p>
       <label>
-        <span>Zur Bestätigung Vorgangs-ID eingeben</span>
+        <span id="delete-reference-label">Zur Bestätigung Auftragsnummer eingeben</span>
         <input id="delete-confirm-id" autocomplete="off" spellcheck="false">
       </label>
     </div>
@@ -320,7 +337,7 @@
     </div>
   </dialog>
 
-  <script type="module" src="assets/js/case-detail.js?v=7.14.2"></script>
+  <script type="module" src="assets/js/case-detail.js?v=7.15.4"></script>
   <script type="module" src="assets/js/internal-mobile.js?v=7.0"></script>
 </body>
 </html>

@@ -3,54 +3,105 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://myvelo-service.red-dawn-bec6.workers.dev https://*.myvelo.de; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'none'; worker-src 'self' blob:; upgrade-insecure-requests">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://myvelo-service.red-dawn-bec6.workers.dev https://*.myvelo.de; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'none'; worker-src 'self' blob:; upgrade-insecure-requests">
   <meta name="referrer" content="no-referrer">
-<meta name="robots" content="noindex,nofollow">
+  <meta name="robots" content="noindex,nofollow">
   <title>Anmelden · MYVELO Service</title>
-  <link rel="stylesheet" href="assets/css/app.css?v=7.10.6">
-  <link rel="stylesheet" href="assets/css/login.css?v=7.4">
-  <link rel="stylesheet" href="assets/css/employee-apple.css?v=7.11.0.1">
+  <link rel="stylesheet" href="assets/css/app.css?v=7.15.1">
+  <link rel="stylesheet" href="assets/css/employee-apple.css?v=7.15.1">
+  <link rel="stylesheet" href="assets/css/login.css?v=7.15.22">
   <script src="assets/js/security-bootstrap.js?v=7.10.6"></script>
-  <script src="portal-config.js?v=7.14.2"></script>
+  <script src="portal-config.js?v=7.15.1"></script>
 </head>
 <body class="employee-login-page">
   <main class="employee-login-shell">
-    <section class="employee-login-card">
-      <div class="employee-login-brand">
-        <img class="brand-logo-image" src="assets/brand/myvelo-logo.png?v=7.4" width="132" height="25" alt="MYVELO" data-hide-on-error>
-        <span></span>
-        <strong>SERVICE</strong>
+    <section class="employee-login-panel" aria-label="Mitarbeiteranmeldung">
+      <header class="employee-login-header">
+        <div class="employee-login-brand">
+          <img class="brand-logo-image" src="assets/brand/myvelo-logo.png?v=7.4" width="132" height="25" alt="MYVELO" data-hide-on-error>
+          <span aria-hidden="true"></span>
+          <strong>SERVICE</strong>
+        </div>
+        <span class="employee-login-scope">Interner Bereich</span>
+      </header>
+
+      <div class="employee-login-body">
+        <section class="employee-login-primary">
+          <div class="employee-login-copy">
+            <span class="employee-login-kicker">Mitarbeiterzugang</span>
+            <h1>Anmelden</h1>
+            <p>Bitte mit dem für den internen Servicebereich vergebenen Firmen-Login-Key anmelden.</p>
+          </div>
+
+          <form id="login-form" class="employee-login-form">
+            <label>
+              <span>Firmen-Login-Key</span>
+              <input
+                name="company_key"
+                type="password"
+                autocomplete="current-password"
+                autocapitalize="none"
+                spellcheck="false"
+                maxlength="256"
+                autofocus
+                required
+                placeholder="Login-Key eingeben"
+              >
+            </label>
+
+            <button class="flow-action primary employee-login-submit" type="submit">
+              Anmelden
+            </button>
+          </form>
+
+          <div class="employee-login-access-note">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 3.5 5.5 6v5.2c0 4.4 2.6 7.6 6.5 9.3 3.9-1.7 6.5-4.9 6.5-9.3V6L12 3.5Z"/>
+              <path d="m9.6 12 1.55 1.55 3.45-3.45"/>
+            </svg>
+            <div>
+              <strong>Geschützter Mitarbeiterbereich</strong>
+              <p>Der Zugang ist ausschließlich für autorisierte Mitarbeitende vorgesehen. Bitte persönliche Zugangsdaten nicht weitergeben.</p>
+            </div>
+          </div>
+        </section>
+
+        <aside class="employee-login-meta" aria-label="Hinweise zur Anmeldung">
+          <div class="employee-login-meta-head">
+            <span class="employee-login-meta-title">Hinweise zur Anmeldung</span>
+            <span class="employee-login-status-dot" aria-hidden="true"></span>
+          </div>
+
+          <dl class="employee-login-facts">
+            <div>
+              <dt>Bereich</dt>
+              <dd>Nur für Mitarbeitende</dd>
+            </div>
+            <div>
+              <dt>Anmeldung</dt>
+              <dd>Firmen-Login-Key</dd>
+            </div>
+            <div>
+              <dt>Nutzung</dt>
+              <dd>Nicht öffentlich</dd>
+            </div>
+            <div>
+              <dt>Bei Problemen</dt>
+              <dd>Interne Ansprechperson</dd>
+            </div>
+          </dl>
+
+          <div class="employee-login-help">
+            <strong>Kein Login-Key?</strong>
+            <p>Bitte an die intern zuständige Person für das Serviceportal wenden.</p>
+          </div>
+        </aside>
       </div>
 
-      <div class="employee-login-copy">
-        <span class="employee-login-kicker">Mitarbeiterbereich</span>
-        <h1>Anmelden</h1>
-        <p>Firmen-Login-Key eingeben.</p>
-      </div>
-
-      <form id="login-form" class="employee-login-form">
-        <label>
-          <span>Login-Key</span>
-          <input
-            name="company_key"
-            type="password"
-            autocomplete="current-password"
-            autocapitalize="none"
-            spellcheck="false"
-            maxlength="256"
-            autofocus
-            required
-          >
-        </label>
-
-        <button class="flow-action primary employee-login-submit" type="submit">
-          Anmelden
-        </button>
-      </form>
-
-      <small class="employee-login-foot">
-        Sitzung endet automatisch und wird beim Schließen des Browsers verworfen.
-      </small>
+      <footer class="employee-login-footer">
+        <span>MYVELO Serviceportal</span>
+        <span>Interne Anwendung</span>
+      </footer>
     </section>
   </main>
 

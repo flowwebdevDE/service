@@ -8111,3 +8111,83 @@ body:not(.customer-locked):not(.customer-frozen-mode) #customer-legal-global {
     padding-bottom: 22px;
   }
 }
+
+/* =========================================================
+   V7.15.0 · Notification hierarchy & customer preview
+   ========================================================= */
+.flow-banner-stack {
+  top: max(14px, env(safe-area-inset-top));
+  right: 18px;
+  left: auto;
+  width: min(410px, calc(100vw - 28px));
+  transform: none;
+}
+
+dialog[open] > .flow-banner-stack {
+  top: 12px;
+  right: 12px;
+  width: min(380px, calc(100% - 24px));
+}
+
+.flow-banner--warning .flow-banner__marker {
+  background: repeating-linear-gradient(135deg, #111 0 4px, #cfcfca 4px 8px);
+}
+
+.flow-banner__action {
+  justify-self: start;
+  margin-top: 5px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #111;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 780;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.customer-preview-banner {
+  justify-content: flex-start;
+  align-items: center;
+  gap: 12px;
+}
+
+.customer-preview-banner__copy {
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.customer-preview-back {
+  flex: 0 0 auto;
+  min-height: 30px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 10px;
+  border: 1px solid #d4d4cf;
+  border-radius: 9px;
+  background: #fff;
+  color: #111;
+  font-weight: 760;
+  text-decoration: none;
+}
+
+@media (max-width: 680px) {
+  .flow-banner-stack {
+    right: 10px;
+    width: calc(100vw - 20px);
+  }
+
+  .customer-preview-banner {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .customer-preview-banner__copy {
+    display: grid;
+    gap: 2px;
+  }
+}

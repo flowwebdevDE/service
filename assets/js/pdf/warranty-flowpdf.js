@@ -1,7 +1,7 @@
 import { renderFlowPdfSpec } from "./flowpdf-spec.js?v=7.5";
 import { EMBEDDED_MYVELO_LOGO_BYTES } from "./brand-logo-data.js?v=7.5";
 import { decodePng } from "./flowpdf.js?v=7.5";
-import { confirmationRequirements } from "../case-confirmations.js?v=7.14.1";
+import { confirmationRequirements } from "../case-confirmations.js?v=7.15.1";
 
 function formatDate(value) {
   if (!value) return "-";
@@ -79,16 +79,27 @@ function caseTypeMeta(value) {
   };
 }
 
-function serviceText(value, caseType = "warranty") {
+function knownPrice(snapshot) {
+  if (snapshot?.service_price_mode !== "known") return "";
+  const cents = Number(snapshot?.service_price_amount_cents);
+  if (!Number.isFinite(cents) || cents < 0) return "";
+  return new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR" }).format(cents / 100);
+}
+
+function serviceText(value, snapshot = {}) {
+  const caseType = snapshot.case_type || "warranty";
   if (caseType === "return") return "Rückgabe";
   if (caseType === "exchange") return "Tausch";
 
+  const price = knownPrice(snapshot);
+  const priceText = price ? ` · ${price}` : " · Preis nach Absprache";
+
   if (value === "inspection") {
-    return "Inspektion, 96,00 EUR";
+    return `Inspektion${priceText}`;
   }
 
   if (value === "inspection_wear") {
-    return "Inspektion einschließlich erforderlicher Verschleißteile, 96,00 EUR zuzüglich Material nach tatsächlichem Aufwand";
+    return `Inspektion einschließlich erforderlicher Verschleißteile${priceText} · Material nach tatsächlichem Aufwand`;
   }
 
   if (caseType === "repair") return "Nur Reparatur";
@@ -112,7 +123,9 @@ function deliveryItems(snapshot) {
 }
 
 export function buildWarrantyFlowSpec(snapshot, options = {}) {
-  const documentId = snapshot.public_id || "-";
+  const shopifyRef = String(snapshot.shopify_ref || "").trim();
+  const documentId = shopifyRef || snapshot.public_id || "-";
+  const documentLabel = shopifyRef ? "Shopify-Auftrag" : "Service-Referenz";
   const draft = options.mode === "draft";
   const confirmedAt = draft
     ? "Noch nicht bestätigt"
@@ -123,7 +136,7 @@ export function buildWarrantyFlowSpec(snapshot, options = {}) {
   const data = {
     case: {
       documentId,
-      shopifyRef: snapshot.shopify_ref || "-",
+      documentLabel,
       confirmedAt,
       customer: snapshot.customer_name || "-",
       item: itemText(snapshot),
@@ -131,7 +144,7 @@ export function buildWarrantyFlowSpec(snapshot, options = {}) {
       color: snapshot.bike_color || "-",
       subject: snapshot.case_subject || meta.label,
       delivery: deliveryItems(snapshot),
-      service: serviceText(snapshot.service_choice, snapshot.case_type),
+      service: serviceText(snapshot.service_choice, snapshot),
       note: snapshot.customer_note || "Kein zusätzlicher Hinweis",
       confirmations: confirmationRequirements(snapshot).map(rule => ({
         text: rule.pdfText || rule.copy,
@@ -176,27 +189,27 @@ export function buildWarrantyFlowSpec(snapshot, options = {}) {
         type: "heading",
         level: 1,
         text: draft ? `${meta.label} - Entwurf` : meta.title,
-        size: 17.0,
+        size: 18.2,
         color: [17, 18, 17],
-        gapAfter: 4
+        gapAfter: 3
       },
       {
         type: "paragraph",
         text: draft ? "Interner Vorgangsstand - noch nicht vom Kunden bestätigt" : "Kundenseitige Bestätigung des vereinbarten Vorgangsstands",
-        size: 7.7,
+        size: 7.5,
         color: [92, 96, 92],
-        lineHeight: 9.2,
-        gapAfter: 7
+        lineHeight: 9.0,
+        gapAfter: 9
       },
 
       {
-        type: "twoColumn",
-        items: [
-          { label: "Vorgang", field: "case.documentId", size: 8.0 },
-          { label: "Shopify-Auftrag", field: "case.shopifyRef", size: 8.0 }
-        ],
-        gap: 18,
-        labelColor: [18, 18, 18]
+        type: "field",
+        label: documentLabel,
+        field: "case.documentId",
+        size: 8.0,
+        labelWidth: 105,
+        labelColor: [18, 18, 18],
+        gapAfter: 4
       },
       {
         type: "twoColumn",
@@ -249,11 +262,13 @@ export function buildWarrantyFlowSpec(snapshot, options = {}) {
         gapAfter: 4
       },
       {
-        type: "paragraph",
+        type: "note",
+        title: meta.subjectHeading.replace(/^\d+\.\s*/, ""),
         field: "case.subject",
         size: 8.15,
-        lineHeight: 10.0,
-        gapAfter: 6
+        titleSize: 7.4,
+        fill: [249, 249, 247],
+        stroke: [224, 224, 219]
       },
 
       {
@@ -294,11 +309,13 @@ export function buildWarrantyFlowSpec(snapshot, options = {}) {
         gapAfter: 4
       },
       {
-        type: "paragraph",
+        type: "note",
+        title: "Kundenhinweis",
         field: "case.note",
-        size: 8.15,
-        lineHeight: 10.0,
-        gapAfter: 5
+        size: 8.0,
+        titleSize: 7.4,
+        fill: [249, 249, 247],
+        stroke: [224, 224, 219]
       },
 
       {
@@ -373,14 +390,14 @@ export function buildWarrantyFlowSpec(snapshot, options = {}) {
 
   return {
     options: {
-      marginTop: 22,
+      marginTop: 24,
       marginRight: 14,
       marginBottom: 14,
       marginLeft: 14,
       textColor: [17, 18, 17],
       mutedColor: [104, 104, 100],
       lineColor: [218, 218, 214],
-      surfaceColor: [247, 247, 245],
+      surfaceColor: [249, 249, 247],
       accentColor: [18, 18, 18]
     },
     meta: {
@@ -404,10 +421,10 @@ export function buildWarrantyFlowSpec(snapshot, options = {}) {
       lineOffsetTop: 18.2,
       logoWidth: 34.0,
       logoHeight: 6.35,
-      bandHeight: 2.2,
+      bandHeight: 1.4,
       bandColor: [17, 18, 17],
-      lineColor: [18, 18, 18],
-      labelColor: [17, 18, 17],
+      lineColor: [218, 218, 214],
+      labelColor: [78, 80, 78],
       rightColor: [18, 18, 18]
     },
     footer: {

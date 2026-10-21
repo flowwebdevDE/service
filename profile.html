@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="de" class="auth-pending">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://myvelo-service.red-dawn-bec6.workers.dev https://*.myvelo.de; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'none'; worker-src 'self' blob:; upgrade-insecure-requests">
+  <meta name="referrer" content="no-referrer">
+  <title>Mitarbeiter · MYVELO Service</title>
+  <link rel="stylesheet" href="assets/css/app.css?v=7.15.1">
+  <link rel="stylesheet" href="assets/css/employee-apple.css?v=7.15.1">
+  <script src="assets/js/auth-guard.js?v=7.15.1"></script>
+  <script src="assets/js/security-bootstrap.js?v=7.10.6"></script>
+  <script src="portal-config.js?v=7.15.1"></script>
+</head>
+<body class="flow-employee">
+  <div class="flow-shell">
+    <aside class="flow-sidebar" id="flowSidebar">
+      <div class="flow-brand">
+        <img class="brand-logo-image brand-logo-image--sidebar" src="assets/brand/myvelo-logo.png?v=7.0" width="118" height="22" alt="MYVELO" data-hide-on-error>
+        <span class="flow-brand-sub">SERVICE</span>
+      </div>
+      <nav class="flow-nav">
+        <a class="flow-nav-item" href="index.html">
+          <span class="flow-nav-dot"></span>
+          <span>Vorgänge</span>
+        </a>
+      </nav>
+      <div class="flow-sidebar-spacer"></div>
+      <a class="flow-nav-item is-active" href="profile.html">
+        <span class="flow-nav-person" aria-hidden="true">MA</span>
+        <span>Mitarbeiter</span>
+      </a>
+      <button class="flow-nav-item" id="logout-button" type="button">
+        <span class="flow-nav-dot flow-nav-dot--muted"></span>
+        <span>Abmelden</span>
+      </button>
+    </aside>
+
+    <div class="flow-main">
+      <header class="flow-topbar">
+        <div class="flow-topbar-left">
+          <button class="flow-burger" id="mobileMenuButton" type="button" aria-label="Menü"><span></span><span></span><span></span></button>
+          <a class="flow-back-button" href="index.html" aria-label="Zurück zu den Vorgängen">←</a>
+          <div><strong>Mitarbeiter</strong><span>Profil und Anmeldung</span></div>
+        </div>
+      </header>
+
+      <main class="flow-workspace flow-workspace--detail">
+        <section class="flow-page-intro" aria-labelledby="profile-title">
+          <div class="flow-page-intro__copy">
+            <span class="flow-page-intro__eyebrow">MYVELO Service</span>
+            <h1 id="profile-title">Mitarbeiterbereich</h1>
+            <p>Aktuelle Anmeldung, Sitzungsstatus und die Basis für spätere personenbezogene Mitarbeiterkonten.</p>
+          </div>
+        </section>
+
+        <section class="flow-profile-grid">
+          <article class="flow-panel flow-profile-card">
+            <div class="flow-panel-head"><div><strong>Aktuelle Anmeldung</strong><span>Diese Browser-Sitzung</span></div></div>
+            <div class="flow-profile-identity">
+              <span class="flow-profile-avatar" aria-hidden="true">MA</span>
+              <div><strong>Mitarbeiter</strong><span>Firmenzugang</span></div>
+            </div>
+            <dl class="flow-profile-list">
+              <div><dt>Anmeldeart</dt><dd>Firmen-Key</dd></div>
+              <div><dt>Sitzung gültig bis</dt><dd id="profile-session-expiry">–</dd></div>
+              <div><dt>Status</dt><dd><span class="flow-profile-state">Aktiv</span></dd></div>
+            </dl>
+          </article>
+
+          <article class="flow-panel flow-profile-card">
+            <div class="flow-panel-head"><div><strong>Google Workspace</strong><span>Vorbereitet, noch nicht aktiviert</span></div></div>
+            <div class="flow-profile-note">
+              <strong>OAuth kommt bewusst später.</strong>
+              <p>Die Oberfläche ist dafür vorbereitet. Bis Navigation, Statuslogik und Kundenflow stabil sind, bleibt die produktive Anmeldung beim bestehenden Firmen-Key.</p>
+            </div>
+            <div class="flow-profile-disabled-action" aria-disabled="true">Mit Firmen-Google-Account anmelden · später</div>
+          </article>
+        </section>
+      </main>
+    </div>
+  </div>
+  <div class="flow-backdrop" id="flowBackdrop"></div>
+  <script type="module" src="assets/js/profile.js?v=7.15.1"></script>
+  <script type="module" src="assets/js/internal-mobile.js?v=7.15.1"></script>
+</body>
+</html>

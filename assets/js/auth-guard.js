@@ -27,36 +27,37 @@
     document.documentElement.classList.remove("auth-ready");
   }
 
-  function redirectToLogin(reason = "expired") {
+  function redirectToLogin(reason = "login") {
     if (redirecting) return;
     redirecting = true;
 
-    // Hide first, redirect second. This prevents even a single stale frame
-    // when a background tab is brought back after the session expired.
     hideEmployeeUi();
     sessionStorage.removeItem(STORAGE_KEY);
 
     const next = encodeURIComponent(currentTarget());
-    const reasonParam = encodeURIComponent(reason);
-    location.replace(`login.html?next=${next}&reason=${reasonParam}`);
+    const reasonQuery = reason === "expired"
+      ? "&reason=expired"
+      : "";
+    location.replace(`login.html?next=${next}${reasonQuery}`);
   }
 
   function sessionState() {
     const token = sessionStorage.getItem(STORAGE_KEY) || "";
     const payload = decodePayload(token);
+    const expiresAt = typeof payload?.exp === "number" ? payload.exp * 1000 : 0;
 
     const valid = Boolean(
       token &&
       payload?.typ === "company-session" &&
-      typeof payload?.exp === "number" &&
-      payload.exp * 1000 > Date.now()
+      expiresAt > Date.now()
     );
 
     return {
       token,
       payload,
+      hadToken: Boolean(token),
       valid,
-      expiresAt: valid ? payload.exp * 1000 : 0
+      expiresAt: valid ? expiresAt : 0
     };
   }
 
@@ -72,11 +73,10 @@
       const state = sessionState();
 
       if (!state.valid) {
-        redirectToLogin("expired");
+        redirectToLogin(state.hadToken ? "expired" : "login");
         return;
       }
 
-      // Browser timers can be heavily throttled in background tabs.
       scheduleExpiry(state.expiresAt);
     }, remaining);
   }
@@ -85,7 +85,7 @@
     const state = sessionState();
 
     if (!state.valid) {
-      redirectToLogin("expired");
+      redirectToLogin(state.hadToken ? "expired" : "login");
       return false;
     }
 
@@ -99,11 +99,8 @@
     return true;
   }
 
-  // Initial synchronous gate. Employee UI stays hidden until this passes.
   if (!checkSession({ reveal: true })) return;
 
-  // Background-tab protection. These checks run synchronously when the tab
-  // becomes visible/focused, before the next normal interaction.
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible") {
       hideEmployeeUi();
@@ -124,7 +121,6 @@
     }
   });
 
-  // Covers browser back/forward cache restores.
   window.addEventListener("pageshow", () => {
     hideEmployeeUi();
 
