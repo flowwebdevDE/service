@@ -1,4 +1,4 @@
-import { FlowPDF, mm } from "./flowpdf.js?v=7.2.2";
+import { FlowPDF, mm } from "./flowpdf.js?v=7.15.29";
 
 const DEFAULT_OPTIONS = {
   marginTop: 15,
@@ -38,9 +38,17 @@ export function renderFlowPdfSpec(spec) {
     const bandColor = header.bandColor ?? doc.theme.accent;
     const pageTop = doc.pageSize.height;
 
-    doc.rect(0, pageTop - bandHeight, doc.pageSize.width, bandHeight, {
-      fill: bandColor
-    });
+    if (header.pageBackground) {
+      doc.rect(0, 0, doc.pageSize.width, doc.pageSize.height, {
+        fill: header.pageBackground
+      });
+    }
+
+    if (bandHeight > 0.01) {
+      doc.rect(0, pageTop - bandHeight, doc.pageSize.width, bandHeight, {
+        fill: bandColor
+      });
+    }
 
     const contentTop = pageTop - mm(header.offsetTop ?? 7.0);
     const logoBoxWidth = mm(header.logoWidth ?? 37);
@@ -72,44 +80,68 @@ export function renderFlowPdfSpec(spec) {
     });
 
     const rightText = page === 1
-      ? (header.documentId || "")
-      : `FORTSETZUNG · ${header.documentId || ""}`;
+      ? (header.rightText ?? header.documentId ?? "")
+      : (header.continuationText ?? (header.rightText ? `FORTSETZUNG · ${header.rightText}` : "FORTSETZUNG"));
 
     if (rightText) {
-      const approxWidth = rightText.length * (header.rightSize ?? 7.2) * 0.52;
-      doc.text(
-        rightText,
-        doc.pageSize.width - doc.margin.right - approxWidth,
-        contentTop - mm(3.2),
-        {
-          size: header.rightSize ?? 7.2,
+      const rightSize = header.rightSize ?? 7.2;
+      const approxWidth = rightText.length * rightSize * 0.54;
+      if (header.rightPill) {
+        const pillH = mm(header.rightPillHeight ?? 7.2);
+        const pillPadX = mm(header.rightPillPadX ?? 3.2);
+        const pillW = approxWidth + pillPadX * 2;
+        const pillX = doc.pageSize.width - doc.margin.right - pillW;
+        const pillY = contentTop - pillH + mm(1.0);
+        doc.rect(pillX, pillY, pillW, pillH, {
+          fill: header.rightPillFill ?? [18, 18, 18],
+          stroke: header.rightPillStroke,
+          strokeWidth: 0.45,
+          radius: pillH / 2
+        });
+        doc.text(rightText, pillX + pillPadX, pillY + mm(2.15), {
+          size: rightSize,
           bold: true,
-          color: header.rightColor ?? doc.theme.accent
-        }
-      );
+          color: header.rightPillText ?? [255, 255, 255]
+        });
+      } else {
+        doc.text(
+          rightText,
+          doc.pageSize.width - doc.margin.right - approxWidth,
+          contentTop - mm(3.2),
+          {
+            size: rightSize,
+            bold: true,
+            color: header.rightColor ?? doc.theme.accent
+          }
+        );
+      }
     }
 
-    const lineY = pageTop - mm(header.lineOffsetTop ?? 18.2);
-    doc.line(
-      doc.margin.left,
-      lineY,
-      doc.pageSize.width - doc.margin.right,
-      lineY,
-      { color: header.lineColor ?? doc.theme.accent, width: 0.75 }
-    );
+    if (header.showLine !== false) {
+      const lineY = pageTop - mm(header.lineOffsetTop ?? 18.2);
+      doc.line(
+        doc.margin.left,
+        lineY,
+        doc.pageSize.width - doc.margin.right,
+        lineY,
+        { color: header.lineColor ?? doc.theme.accent, width: header.lineWidth ?? 0.75 }
+      );
+    }
   });
 
   const footer = spec.footer || {};
   pdf.setFooter((doc, page, total) => {
     const y = mm(7.5);
 
-    doc.line(
-      doc.margin.left,
-      y + mm(4),
-      doc.pageSize.width - doc.margin.right,
-      y + mm(4),
-      { color: doc.theme.line, width: 0.45 }
-    );
+    if (footer.showLine !== false) {
+      doc.line(
+        doc.margin.left,
+        y + mm(4),
+        doc.pageSize.width - doc.margin.right,
+        y + mm(4),
+        { color: doc.theme.line, width: 0.45 }
+      );
+    }
 
     doc.text(footer.left || "MYVELO Service", doc.margin.left, y, {
       size: 6.7,

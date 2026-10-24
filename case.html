@@ -6,8 +6,8 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://myvelo-service.red-dawn-bec6.workers.dev https://*.myvelo.de; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'none'; worker-src 'self' blob:; upgrade-insecure-requests">
   <meta name="referrer" content="no-referrer">
 <title>Vorgang · MYVELO Service</title>
-  <link rel="stylesheet" href="assets/css/app.css?v=7.15.4">
-  <link rel="stylesheet" href="assets/css/employee-apple.css?v=7.15.4">
+  <link rel="stylesheet" href="assets/css/app.css?v=7.15.24">
+  <link rel="stylesheet" href="assets/css/employee-apple.css?v=7.15.24">
   <script src="assets/js/auth-guard.js?v=7.15.1"></script>
   <script src="assets/js/security-bootstrap.js?v=7.10.6"></script>
 
@@ -59,10 +59,12 @@
           <button class="flow-burger" id="mobileMenuButton" type="button" aria-label="Menü">
             <span></span><span></span><span></span>
           </button>
-          <a class="flow-back-button" href="index.html" aria-label="Zurück zu den Vorgängen">←</a>
+          <a class="flow-back-button" href="index.html" aria-label="Zurück zu den Vorgängen">
+            <svg class="flow-ui-icon" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M11.75 4.75 6.5 10l5.25 5.25"/></svg>
+          </a>
           <div>
-            <strong id="case-title">Servicevorgang</strong>
-            <span><b id="case-type-label">Servicevorgang</b> · <span id="case-reference-label">Shopify</span> <b id="shopify-ref">–</b></span>
+            <strong id="case-title">–</strong>
+            <span id="case-type-label">Servicevorgang</span>
           </div>
         </div>
       </header>
@@ -90,7 +92,7 @@
             <button id="service-status-trigger" class="flow-status-trigger" type="button"
               aria-haspopup="listbox" aria-expanded="false" disabled>
               <span id="service-status-trigger-text">Erst nach Kundenbestätigung</span>
-              <span class="flow-status-trigger-arrow">⌄</span>
+              <svg class="flow-ui-icon flow-status-trigger-arrow" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="m5.25 7.5 4.75 4.75 4.75-4.75"/></svg>
             </button>
             <div class="flow-status-menu hidden" id="service-status-menu" role="listbox">
               <button type="button" role="option" data-internal-stage="received"><span class="flow-status-menu-dot"></span><span><strong>Eingegangen</strong><small>Fahrrad oder Akku wurde übernommen</small></span></button>
@@ -110,15 +112,15 @@
 
         <section class="flow-case-toolbar" aria-label="Vorgangsaktionen">
           <div class="flow-case-toolbar__primary">
-            <button id="save" class="flow-action primary" type="submit" form="case-form">Speichern</button>
+            <button id="save" class="flow-action primary" type="submit" form="case-form"><svg class="flow-ui-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="m4.75 10.25 3.15 3.15 7.35-7.35"/></svg><span>Speichern</span></button>
           </div>
           <div class="flow-case-toolbar__secondary">
-            <button id="customer-link-button" class="flow-action secondary" type="button">Kundenlink</button>
-            <a id="customer-preview" class="flow-action secondary">Kundenansicht</a>
-            <a id="internal-print" class="flow-action secondary" href="#">PDF exportieren</a>
+            <button id="customer-link-button" class="flow-action secondary" type="button"><svg class="flow-ui-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M8.1 11.9 11.9 8.1M7.1 6.2l1.4-1.4a3.1 3.1 0 0 1 4.4 4.4l-1.35 1.35M12.9 13.8l-1.4 1.4a3.1 3.1 0 0 1-4.4-4.4l1.35-1.35"/></svg><span>Kundenlink</span></button>
+            <a id="customer-preview" class="flow-action secondary"><svg class="flow-ui-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M2.75 10s2.6-4.4 7.25-4.4S17.25 10 17.25 10 14.65 14.4 10 14.4 2.75 10 2.75 10Z"/><circle cx="10" cy="10" r="2.1"/></svg><span>Kundenansicht</span></a>
+            <a id="internal-print" class="flow-action secondary" href="#"><svg class="flow-ui-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M5 2.75h6l4 4v10.5H5zM11 2.75v4h4M7.5 11h5M7.5 13.75h5"/></svg><span>PDF exportieren</span></a>
             <div class="flow-more-menu">
               <button id="case-more-trigger" class="flow-action secondary flow-more-trigger" type="button" aria-expanded="false">
-                Mehr <span>⌄</span>
+                <span>Mehr</span><svg class="flow-ui-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="m5.25 7.5 4.75 4.75 4.75-4.75"/></svg>
               </button>
               <div id="case-more-menu" class="flow-more-popover hidden">
                 <button id="delete-case" class="flow-more-danger" type="button">Vorgang löschen</button>
@@ -135,7 +137,7 @@
               <p>Das ist der verbindlich bestätigte Stand. Die Inhalte können nicht mehr verändert werden.</p>
             </div>
             <div class="flow-frozen-seal" aria-hidden="true">
-              <span>✓</span>
+              <svg class="flow-ui-icon" viewBox="0 0 20 20" focusable="false"><path d="m4.75 10.25 3.15 3.15 7.35-7.35"/></svg>
             </div>
           </div>
 
@@ -200,7 +202,7 @@
                 <input type="hidden" name="bike_model">
                 <button id="case-model-trigger" class="flow-model-trigger" type="button">
                   <span class="flow-model-trigger__value">Modell auswählen</span>
-                  <span class="flow-model-trigger__arrow">›</span>
+                  <svg class="flow-ui-icon flow-model-trigger__arrow" viewBox="0 0 20 20" aria-hidden="true"><path d="M7.25 4.75 12.5 10l-5.25 5.25"/></svg>
                 </button>
               </label>
               <label><span>Farbe</span><input name="bike_color"></label>
@@ -295,7 +297,7 @@
         <span>Kundenlink</span>
         <strong>Link zum Servicefall</strong>
       </div>
-      <button class="flow-close" id="closeCustomerLinkDialog" type="button">×</button>
+      <button class="flow-close" id="closeCustomerLinkDialog" type="button" aria-label="Dialog schließen"><svg class="flow-ui-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M5.25 5.25 14.75 14.75M14.75 5.25 5.25 14.75"/></svg></button>
     </div>
     <div class="flow-delete-copy">
       <p id="customer-link-note">Dieser Link kann erneut kopiert oder geöffnet werden.</p>
@@ -322,7 +324,7 @@
         <span>Vorgang löschen</span>
         <strong>Unwiderrufliche Aktion</strong>
       </div>
-      <button class="flow-close" id="closeDeleteCaseDialog" type="button">×</button>
+      <button class="flow-close" id="closeDeleteCaseDialog" type="button" aria-label="Dialog schließen"><svg class="flow-ui-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M5.25 5.25 14.75 14.75M14.75 5.25 5.25 14.75"/></svg></button>
     </div>
     <div class="flow-delete-copy">
       <p>Der Servicefall und seine Ereignisse werden dauerhaft gelöscht. Ein Kundenlink zu diesem Fall funktioniert danach nicht mehr.</p>
@@ -337,7 +339,7 @@
     </div>
   </dialog>
 
-  <script type="module" src="assets/js/case-detail.js?v=7.15.4"></script>
+  <script type="module" src="assets/js/case-detail.js?v=7.15.29"></script>
   <script type="module" src="assets/js/internal-mobile.js?v=7.0"></script>
 </body>
 </html>

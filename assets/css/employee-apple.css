@@ -3883,3 +3883,127 @@ body.flow-employee .flow-dashboard-sentinel {
     transition-delay: 0ms !important;
   }
 }
+
+
+/* =========================================================
+   V7.15.24 · Case detail finishing pass
+   ========================================================= */
+body.flow-employee .flow-workspace--detail {
+  width: min(100%, 1120px);
+  padding: 38px 34px 64px;
+}
+
+body.flow-employee .flow-topbar-left > div {
+  display: grid;
+  gap: 4px;
+}
+
+body.flow-employee .flow-topbar-left > div > span {
+  margin: 0;
+  font-size: 10px;
+  font-weight: 680;
+  letter-spacing: .03em;
+}
+
+body.flow-employee .flow-back-button {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 36px;
+  border: 1px solid rgba(17,17,17,.09);
+  border-radius: 11px;
+  background: rgba(255,255,255,.72);
+  color: #111;
+  text-decoration: none;
+  transition: background .18s ease, border-color .18s ease, transform .18s ease;
+}
+body.flow-employee .flow-back-button:hover { background:#fff; border-color:rgba(17,17,17,.17); transform:translateX(-1px); }
+body.flow-employee .flow-back-button .flow-ui-icon { width:16px; height:16px; }
+
+body.flow-employee .flow-status-panel {
+  min-height: 94px;
+  gap: 16px 22px;
+  margin-bottom: 18px;
+  padding: 18px 20px;
+  border-radius: 20px;
+  background: #f8f8f5 !important;
+}
+body.flow-employee .flow-status-panel__copy strong { margin-top:6px; font-size:15px; }
+body.flow-employee .flow-stage-progress { gap:10px 16px; padding-top:5px; }
+body.flow-employee .flow-stage-progress__bar { height:7px; }
+body.flow-employee #internal-stage-progress-copy { color:#7d7d77; font-size:9px; white-space:nowrap; }
+
+body.flow-employee .flow-case-toolbar {
+  top: 76px;
+  min-height: 58px;
+  margin-bottom: 22px;
+  padding: 9px;
+  border-radius: 18px;
+}
+body.flow-employee .flow-case-toolbar__primary,
+body.flow-employee .flow-case-toolbar__secondary { gap:8px; }
+body.flow-employee .flow-case-toolbar .flow-action { min-height:40px; border-radius:11px; }
+body.flow-employee .flow-case-toolbar .flow-ui-icon { width:15px; height:15px; }
+
+body.flow-employee .flow-detail-grid { gap:18px; }
+body.flow-employee .flow-detail-grid > .flow-panel { border-radius:20px; }
+body.flow-employee .flow-detail-grid .flow-panel-head {
+  min-height:64px;
+  padding:0 22px;
+}
+body.flow-employee .flow-detail-grid .flow-field-list label {
+  min-height:62px;
+  padding:11px 18px;
+}
+body.flow-employee .flow-detail-grid .flow-block-field {
+  gap:9px;
+  padding:18px 20px 20px;
+}
+body.flow-employee .flow-detail-grid .flow-create-grid { padding:18px 20px 8px; }
+body.flow-employee .flow-detail-grid .flow-price-settings { margin:10px 20px 20px; padding:16px; border-radius:14px; }
+body.flow-employee #case-note-panel textarea { min-height:112px; }
+
+body.flow-employee .flow-status-trigger-arrow,
+body.flow-employee .flow-model-trigger__arrow { width:15px; height:15px; }
+body.flow-employee .flow-frozen-seal .flow-ui-icon { width:22px; height:22px; stroke-width:2; }
+body.flow-employee .flow-close { display:grid; place-items:center; }
+body.flow-employee .flow-close .flow-ui-icon { width:17px; height:17px; }
+
+/* Generic/duplicated case subjects are intentionally secondary in the dashboard. */
+body.flow-employee .flow-case-tag--subject { color:#62625e; background:#f4f4f1; }
+
+@media (max-width: 860px) {
+  body.flow-employee .flow-workspace--detail { padding:22px 14px 42px; }
+  body.flow-employee .flow-status-panel { padding:16px; margin-bottom:14px; }
+  body.flow-employee .flow-case-toolbar { margin-bottom:16px; }
+  body.flow-employee .flow-detail-grid { gap:12px; }
+}
+
+
+/* V7.15.26 · compact dashboard entry */
+@media (min-width: 981px) {
+  body.flow-employee .flow-workspace:not(.flow-workspace--detail) {
+    padding-top: 24px;
+  }
+}
+
+@media (max-width: 980px) {
+  body.flow-employee .flow-workspace:not(.flow-workspace--detail) {
+    padding-top: 16px;
+  }
+}
+
+
+/* =========================================================
+   V7.15.27 · Stable sticky-filter trigger after hero removal
+   ========================================================= */
+@media (min-width: 861px) {
+  body.flow-employee .flow-dashboard-section {
+    overflow-anchor: none;
+  }
+
+  body.flow-employee .flow-dashboard-sentinel {
+    overflow-anchor: none;
+  }
+}

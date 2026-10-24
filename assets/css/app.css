@@ -8191,3 +8191,82 @@ dialog[open] > .flow-banner-stack {
     gap: 2px;
   }
 }
+
+
+/* V7.15.23 · Legal pages aligned with MYVELO */
+.legal-workspace{padding-bottom:48px}
+.legal-panel{overflow:hidden}
+.legal-panel-head{padding-bottom:20px}
+.legal-subtitle{margin:7px 0 0;color:#74746f;font-size:13px;line-height:1.5}
+.legal-copy{display:grid;gap:26px;max-width:900px}
+.legal-lead{max-width:72ch;font-size:15px}
+.legal-section{padding-top:2px}
+.legal-section strong{color:#242421}
+.legal-source-card{display:flex;align-items:center;justify-content:space-between;gap:22px;padding:18px 20px;border:1px solid #deddd6;border-radius:18px;background:#f7f6f1}
+.legal-source-card>div{display:grid;gap:5px;min-width:0}
+.legal-source-label{color:#777770;font-size:10px;font-weight:850;letter-spacing:.08em;text-transform:uppercase}
+.legal-source-card strong{font-size:13px;line-height:1.45}
+.legal-source-link{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:0 14px;border-radius:999px;background:#111;color:#fff!important;font-size:12px;font-weight:800;text-decoration:none;white-space:nowrap}
+.legal-imprint-hero{display:grid;gap:8px;padding:24px;border:1px solid #deddd6;border-radius:22px;background:#f7f6f1}
+.legal-imprint-hero h3{margin:0;font-size:24px;letter-spacing:-.03em}
+.legal-imprint-hero p{margin:0;color:#555550;font-size:14px;line-height:1.65}
+.legal-imprint-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.legal-info-card{display:grid;align-content:start;gap:5px;min-height:116px;padding:19px 20px;border:1px solid #e1e0d9;border-radius:18px;background:#fff}
+.legal-info-card>span{margin-bottom:5px;color:#777770;font-size:10px;font-weight:850;letter-spacing:.08em;text-transform:uppercase}
+.legal-info-card strong{font-size:14px;color:#242421}
+.legal-info-card p,.legal-info-card a{margin:0;color:#5d5d58;font-size:13px;line-height:1.55;text-decoration:none}
+.legal-info-card a:hover{text-decoration:underline;text-underline-offset:2px}
+@media(max-width:720px){.legal-imprint-grid{grid-template-columns:1fr}.legal-source-card{align-items:flex-start;flex-direction:column}.legal-source-link{width:100%;box-sizing:border-box}.legal-imprint-hero{padding:20px;border-radius:18px}}
+
+
+/* =========================================================
+   V7.15.24 · Global top-layer notices + SVG icon language
+   ========================================================= */
+.flow-ui-icon {
+  width: 18px;
+  height: 18px;
+  display: block;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.flow-banner-stack[popover] {
+  position: fixed;
+  inset: max(14px, env(safe-area-inset-top)) 18px auto auto;
+  width: min(410px, calc(100vw - 28px));
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  overflow: visible;
+  color: inherit;
+}
+
+.flow-banner-stack[popover]::backdrop { background: transparent; }
+
+.flow-banner__close svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+}
+
+/* Notifications never inherit dialog/card positioning. */
+dialog[open] > .flow-banner-stack { display: none !important; }
+
+@media (max-width: 680px) {
+  .flow-banner-stack[popover] {
+    inset: max(10px, env(safe-area-inset-top)) 10px auto auto;
+    width: calc(100vw - 20px);
+  }
+}
+
+.model-popup__close .flow-ui-icon { width:17px; height:17px; }
+.delivery-check .flow-ui-icon { width:15px; height:15px; stroke-width:2; }

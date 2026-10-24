@@ -6,8 +6,8 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://myvelo-service.red-dawn-bec6.workers.dev https://*.myvelo.de; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'none'; worker-src 'self' blob:; upgrade-insecure-requests">
   <meta name="referrer" content="no-referrer">
 <title>MYVELO Service · Servicevorgänge</title>
-  <link rel="stylesheet" href="assets/css/app.css?v=7.15.4">
-  <link rel="stylesheet" href="assets/css/employee-apple.css?v=7.15.15">
+  <link rel="stylesheet" href="assets/css/app.css?v=7.15.24">
+  <link rel="stylesheet" href="assets/css/employee-apple.css?v=7.15.26">
   <script src="assets/js/auth-guard.js?v=7.15.1"></script>
   <script src="assets/js/security-bootstrap.js?v=7.10.6"></script>
   <script src="portal-config.js?v=7.15.1"></script>
@@ -63,7 +63,7 @@
             <span></span><span></span><span></span>
           </button>
           <div>
-            <strong>Servicevorgänge</strong>
+            <strong>Übersicht</strong>
           </div>
         </div>
 
@@ -74,14 +74,6 @@
       </header>
 
       <main class="flow-workspace">
-        <section class="flow-page-intro" aria-labelledby="employee-overview-title">
-          <div class="flow-page-intro__copy">
-            <span class="flow-page-intro__eyebrow">MYVELO Service</span>
-            <h1 id="employee-overview-title">Servicevorgänge</h1>
-            <p>Offene Fälle, Kundenfreigaben und Bearbeitungsstände ohne unnötige Ebenen.</p>
-          </div>
-        </section>
-
         <section class="flow-data-surface is-loading" id="employee-data-surface" aria-label="Servicevorgänge">
           <div class="employee-dashboard-loader" id="employee-dashboard-loader" role="status" aria-live="polite">
             <div class="employee-dashboard-loader__inner">
@@ -184,7 +176,7 @@
           <span>Neuer Servicevorgang</span>
           <strong>Art auswählen und anlegen</strong>
         </div>
-        <button class="flow-close" id="closeDialogButton" type="button">×</button>
+        <button class="flow-close" id="closeDialogButton" type="button" aria-label="Dialog schließen"><svg class="flow-ui-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M5.25 5.25 14.75 14.75M14.75 5.25 5.25 14.75"/></svg></button>
       </div>
 
       <div class="flow-create-layout">
@@ -246,7 +238,7 @@
             <input type="hidden" name="bike_model">
             <button id="create-model-trigger" class="flow-model-trigger" type="button">
               <span class="flow-model-trigger__value">Modell auswählen</span>
-              <span class="flow-model-trigger__arrow">›</span>
+              <svg class="flow-ui-icon flow-model-trigger__arrow" viewBox="0 0 20 20" aria-hidden="true"><path d="M7.25 4.75 12.5 10l-5.25 5.25"/></svg>
             </button>
           </label>
         </div>
@@ -337,7 +329,7 @@
         <span>Fertig</span>
         <strong>Kundenzugang erstellt</strong>
       </div>
-      <button class="flow-close" id="closeCreatedLinkDialog" type="button" aria-label="Dialog schließen">×</button>
+      <button class="flow-close" id="closeCreatedLinkDialog" type="button" aria-label="Dialog schließen"><svg class="flow-ui-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M5.25 5.25 14.75 14.75M14.75 5.25 5.25 14.75"/></svg></button>
     </div>
     <div class="flow-access-dialog-body">
       <label>
@@ -358,6 +350,6 @@
     </div>
   </dialog>
 
-  <script type="module" src="assets/js/admin.js?v=7.15.15"></script>
+  <script type="module" src="assets/js/admin.js?v=7.15.27"></script>
 </body>
 </html>

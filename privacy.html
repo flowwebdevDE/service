@@ -3,10 +3,11 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://myvelo-service.red-dawn-bec6.workers.dev https://*.myvelo.de; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'none'; worker-src 'self' blob:; upgrade-insecure-requests">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://myvelo-service.red-dawn-bec6.workers.dev https://*.myvelo.de; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'none'; worker-src 'self' blob:; upgrade-insecure-requests">
   <meta name="referrer" content="no-referrer">
-<title>Datenschutz · MYVELO Service</title>
-  <link rel="stylesheet" href="assets/css/app.css?v=7.9.3">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Datenschutz · MYVELO Service</title>
+  <link rel="stylesheet" href="assets/css/app.css?v=7.15.24">
   <script src="assets/js/security-bootstrap.js?v=7.10.6"></script>
   <script src="portal-config.js?v=7.14.2"></script>
 </head>
@@ -19,83 +20,87 @@
     </a>
   </header>
 
-  <main class="detail-workspace">
-    <section class="panel">
-      <div class="panel-head">
+  <main class="detail-workspace legal-workspace">
+    <section class="panel legal-panel">
+      <div class="panel-head legal-panel-head">
         <div>
           <p class="eyebrow">Rechtliches</p>
           <h2>Datenschutz</h2>
+          <p class="legal-subtitle">Datenschutzinformationen für das MYVELO Serviceportal.</p>
         </div>
       </div>
-      <div class="detail-body privacy-copy">
-        <p class="privacy-intro">
-          Dieses Serviceportal verarbeitet personenbezogene Daten ausschließlich,
-          soweit sie für die Bearbeitung und Dokumentation des jeweiligen Servicevorgangs erforderlich sind. Dazu gehören Garantiefälle, Reparaturen, Rückgaben und Tauschvorgänge.
+
+      <div class="detail-body privacy-copy legal-copy">
+        <p class="privacy-intro legal-lead">
+          Das MYVELO Serviceportal ist ein Angebot der myvélo GmbH. Die nachstehenden Hinweise ergänzen die allgemeine Datenschutzerklärung von MYVELO um die Verarbeitung, die speziell bei der Nutzung dieses Serviceportals stattfindet.
         </p>
 
-        <section class="privacy-section">
-          <h3>Verarbeitung im Serviceportal</h3>
+        <section class="privacy-section legal-section">
+          <h3>1. Verantwortlicher</h3>
           <p>
-            Verarbeitet werden insbesondere die im Vorgang hinterlegten Kontakt-
-            und Auftragsdaten, Angaben zum Fahrrad oder Akku, Informationen zum
-            Servicefall sowie die vom Kunden bestätigten Angaben.
+            Verantwortlich für die Verarbeitung personenbezogener Daten im Serviceportal ist die
+            <strong>myvélo GmbH</strong>, Im Schwaderloch 2, 77749 Hohberg, Deutschland.
           </p>
           <p>
-            Die Verarbeitung erfolgt zur Durchführung und Dokumentation des
-            Servicevorgangs. Verantwortlicher ist das im
-            <a href="imprint.html">Impressum</a> genannte Unternehmen.
+            Kontakt: <a href="mailto:info@myvelo.de">info@myvelo.de</a> ·
+            <a href="tel:+4978024745">+49 7802 4745</a>
           </p>
         </section>
 
-        <section class="privacy-section privacy-location">
-          <span class="privacy-location__badge">Datenstandort Europäische Union</span>
-          <h3>Cloudflare D1 mit EU-Jurisdiction</h3>
+        <section class="privacy-section legal-section">
+          <h3>2. Welche Daten im Serviceportal verarbeitet werden</h3>
           <p>
-            Die Datenbank dieses Serviceportals wird mit Cloudflare D1 betrieben
-            und bei der Anlage auf die Jurisdiction <code>eu</code> beschränkt.
-            Die in D1 gespeicherten Service- und Vorgangsdaten werden damit nur
-            innerhalb der Europäischen Union gespeichert und von D1 dort
-            ausgeführt.
+            Für die Anlage, Bearbeitung und Dokumentation eines Servicevorgangs können insbesondere Name, Auftragsreferenz, Angaben zum Fahrrad oder Akku, Vorgangsart und -beschreibung, Lieferumfang, Kundenhinweise, ausgewählte Serviceleistungen, Bearbeitungsstatus sowie Bestätigungs- und Zeitangaben verarbeitet werden.
           </p>
           <p>
-            Der Browser greift nicht direkt auf die Datenbank zu. Sämtliche
-            Zugriffe laufen über die geschützte MYVELO-API in einem Cloudflare
-            Worker.
+            Zusätzlich fallen beim technischen Betrieb die für Bereitstellung, Zugriffsschutz und Fehleranalyse erforderlichen Verbindungs- und Sicherheitsdaten an.
           </p>
         </section>
 
-        <section class="privacy-section">
-          <h3>Backend und technische Verarbeitung</h3>
+        <section class="privacy-section legal-section">
+          <h3>3. Zweck und Rechtsgrundlagen</h3>
           <p>
-            Für Backend und Datenbank wird Cloudflare eingesetzt. Die D1-Datenbank
-            ist auf die Europäische Union beschränkt. Die API wird aktuell über
-            eine <code>workers.dev</code>-Adresse bereitgestellt. Cloudflare Worker
-            werden dabei grundsätzlich über Cloudflares Edge-Netz ausgeführt; die
-            EU-Jurisdiction der D1-Datenbank allein beschränkt nicht automatisch
-            den Ausführungsort des Workers.
+            Die Verarbeitung dient der Durchführung, Abstimmung und Dokumentation von Garantie-, Reparatur-, Rückgabe- und Tauschvorgängen sowie der Kommunikation und Freigabe innerhalb des jeweiligen Servicefalls.
           </p>
           <p>
-            Sobald eine eigene API-Domain verwendet wird, kann die Verarbeitung
-            bei Bedarf zusätzlich mit Cloudflare Regional Services auf die
-            Europäische Union regionalisiert werden. Technische Metadaten und
-            weitere Cloudflare-Dienste können eigenen Standort- und
-            Aufbewahrungsregeln unterliegen.
+            Soweit die Verarbeitung zur Durchführung eines Vertrags oder vorvertraglicher Maßnahmen erforderlich ist, erfolgt sie auf Grundlage von Art. 6 Abs. 1 lit. b DSGVO. Gesetzlich erforderliche Verarbeitungen erfolgen auf Grundlage von Art. 6 Abs. 1 lit. c DSGVO. Technisch notwendige Verarbeitungen zur sicheren und zuverlässigen Bereitstellung des Portals können auf Art. 6 Abs. 1 lit. f DSGVO gestützt werden.
           </p>
         </section>
 
-        <section class="privacy-section">
-          <h3>Speicherdauer und Rechte</h3>
+        <section class="privacy-section legal-section">
+          <h3>4. Technischer Betrieb und Dienstleister</h3>
           <p>
-            Personenbezogene Daten werden nur so lange gespeichert, wie dies für
-            die Bearbeitung des Vorgangs und aufgrund gesetzlicher
-            Aufbewahrungspflichten erforderlich ist. Betroffene Personen haben
-            im Rahmen der gesetzlichen Voraussetzungen insbesondere Rechte auf
-            Auskunft, Berichtigung, Löschung, Einschränkung der Verarbeitung und
-            Widerspruch.
+            Für den technischen Betrieb des Serviceportals werden Cloud-Dienste von Cloudflare eingesetzt. Dabei können personenbezogene und technische Daten im Rahmen der Bereitstellung von Anwendung, API, Datenbank sowie Sicherheits- und Netzwerkfunktionen verarbeitet werden. Die Service-Datenbank ist für die EU-Jurisdiction konfiguriert.
+          </p>
+          <p>
+            Dienstleister werden nur im Rahmen der geltenden datenschutzrechtlichen Anforderungen eingesetzt. Technische Verbindungs- und Sicherheitsdaten können den jeweiligen Infrastruktur- und Aufbewahrungsregeln des Dienstleisters unterliegen.
           </p>
         </section>
 
+        <section class="privacy-section legal-section">
+          <h3>5. Speicherdauer</h3>
+          <p>
+            Personenbezogene Daten werden nur so lange gespeichert, wie sie für die Bearbeitung und Dokumentation des Servicevorgangs benötigt werden oder gesetzliche Aufbewahrungspflichten bestehen. Entfällt der Verarbeitungszweck und besteht keine gesetzliche Pflicht zur weiteren Speicherung, werden die betreffenden Daten gelöscht.
+          </p>
+        </section>
 
+        <section class="privacy-section legal-section">
+          <h3>6. Rechte betroffener Personen</h3>
+          <p>
+            Betroffene Personen haben nach Maßgabe der gesetzlichen Voraussetzungen insbesondere das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung der Verarbeitung, Datenübertragbarkeit und Widerspruch. Außerdem besteht das Recht, sich bei einer Datenschutzaufsichtsbehörde zu beschweren.
+          </p>
+          <p>
+            Datenschutzanfragen können an <a href="mailto:info@myvelo.de">info@myvelo.de</a> gerichtet werden.
+          </p>
+        </section>
+
+        <aside class="legal-source-card">
+          <div>
+            <span class="legal-source-label">Allgemeine MYVELO-Datenschutzerklärung</span>
+            <strong>Die allgemeine Datenschutzerklärung der myvélo GmbH bleibt ergänzend maßgeblich.</strong>
+          </div>
+          <a class="legal-source-link" href="https://myvelo.de/policies/privacy-policy" target="_blank" rel="noreferrer">Auf myvelo.de öffnen</a>
+        </aside>
       </div>
     </section>
   </main>

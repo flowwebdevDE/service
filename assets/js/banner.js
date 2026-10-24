@@ -1,20 +1,25 @@
 let bannerCounter = 0;
 
-function activeHost() {
-  const openDialogs = Array.from(document.querySelectorAll("dialog[open]"));
-  return openDialogs.at(-1) || document.body;
-}
-
 function stack() {
-  const host = activeHost();
-  let element = host.querySelector?.(":scope > .flow-banner-stack") || null;
+  let element = document.querySelector("body > .flow-banner-stack") || null;
 
   if (!element) {
     element = document.createElement("div");
     element.className = "flow-banner-stack";
     element.setAttribute("aria-live", "polite");
     element.setAttribute("aria-relevant", "additions");
-    host.appendChild(element);
+    element.setAttribute("popover", "manual");
+    document.body.appendChild(element);
+  }
+
+  // A popover participates in the browser top layer. Re-opening it after a
+  // modal/dialog was shown guarantees notifications remain above the UI and
+  // at one viewport-fixed position instead of becoming part of a card/dialog.
+  if (typeof element.showPopover === "function") {
+    try {
+      if (element.matches(":popover-open")) element.hidePopover();
+      element.showPopover();
+    } catch {}
   }
 
   return element;
@@ -37,6 +42,7 @@ export function dismissBanner(id) {
     const container = banner.parentElement;
     banner.remove();
     if (container?.classList.contains("flow-banner-stack") && !container.children.length) {
+      try { container.hidePopover?.(); } catch {}
       container.remove();
     }
   }, 180);
@@ -99,7 +105,7 @@ export function showBanner(message, {
   close.className = "flow-banner__close";
   close.type = "button";
   close.setAttribute("aria-label", "Meldung schließen");
-  close.textContent = "×";
+  close.innerHTML = '<svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M5.25 5.25 14.75 14.75M14.75 5.25 5.25 14.75"/></svg>';
   close.addEventListener("click", () => dismissBanner(bannerId));
 
   banner.append(marker, content, close);

@@ -49,7 +49,7 @@ function createPopup() {
           <span class="model-popup__kicker">MYVELO Modell</span>
           <strong id="model-popup-title">Modell auswählen</strong>
         </div>
-        <button class="model-popup__close" type="button" aria-label="Schließen">×</button>
+        <button class="model-popup__close" type="button" aria-label="Schließen"><svg class="flow-ui-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M5.25 5.25 14.75 14.75M14.75 5.25 5.25 14.75"/></svg></button>
       </div>
 
       <div class="model-popup__search-wrap">

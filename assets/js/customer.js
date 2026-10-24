@@ -1,5 +1,5 @@
 import { setButtonLoading } from "./motion.js?v=7.9";
-import { showError, showInfo, showSuccess } from "./banner.js?v=7.15.1";
+import { showError, showInfo, showSuccess } from "./banner.js?v=7.15.24";
 import {
   casePdfFilename,
   confirmCustomer,
@@ -9,7 +9,7 @@ import {
   getCustomerSession,
   getPortalSession,
   verifyCustomerAccess
-} from "./api.js?v=7.15.4";
+} from "./api.js?v=7.15.29";
 import {
   confirmationActionLabel,
   confirmationRequirements
@@ -1048,7 +1048,7 @@ function fill(item) {
     accessoryList(item)
       .map(text => `
         <div class="delivery-item">
-          <span class="delivery-check">✓</span>
+          <span class="delivery-check"><svg class="flow-ui-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="m4.75 10.25 3.15 3.15 7.35-7.35"/></svg></span>
           <strong>${text}</strong>
         </div>
       `)

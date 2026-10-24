@@ -3,10 +3,11 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://myvelo-service.red-dawn-bec6.workers.dev https://*.myvelo.de; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'none'; worker-src 'self' blob:; upgrade-insecure-requests">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://myvelo-service.red-dawn-bec6.workers.dev https://*.myvelo.de; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'none'; worker-src 'self' blob:; upgrade-insecure-requests">
   <meta name="referrer" content="no-referrer">
-<title>Impressum · MYVELO Service</title>
-  <link rel="stylesheet" href="assets/css/app.css?v=7.9.3">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Impressum · MYVELO Service</title>
+  <link rel="stylesheet" href="assets/css/app.css?v=7.15.24">
   <script src="assets/js/security-bootstrap.js?v=7.10.6"></script>
   <script src="portal-config.js?v=7.14.2"></script>
 </head>
@@ -19,15 +20,63 @@
     </a>
   </header>
 
-  <main class="detail-workspace">
-    <section class="panel">
-      <div class="panel-head">
+  <main class="detail-workspace legal-workspace">
+    <section class="panel legal-panel">
+      <div class="panel-head legal-panel-head">
         <div>
           <p class="eyebrow">Rechtliches</p>
           <h2>Impressum</h2>
+          <p class="legal-subtitle">Anbieterkennzeichnung für das MYVELO Serviceportal.</p>
         </div>
       </div>
-      <div class="detail-body">
+
+      <div class="detail-body legal-copy">
+        <section class="legal-imprint-hero">
+          <span class="legal-source-label">Diensteanbieter</span>
+          <h3>myvélo GmbH</h3>
+          <p>Im Schwaderloch 2<br>77749 Hohberg<br>Deutschland</p>
+        </section>
+
+        <div class="legal-imprint-grid">
+          <section class="legal-info-card">
+            <span>Kontakt</span>
+            <strong><a href="tel:+4978024745">+49 7802 4745</a></strong>
+            <a href="mailto:info@myvelo.de">info@myvelo.de</a>
+          </section>
+
+          <section class="legal-info-card">
+            <span>Geschäftsführung</span>
+            <strong>Fabian Huber</strong>
+            <strong>Vincent Augustin</strong>
+          </section>
+
+          <section class="legal-info-card">
+            <span>Handelsregister</span>
+            <strong>Amtsgericht Freiburg</strong>
+            <p>HRB 718279</p>
+          </section>
+
+          <section class="legal-info-card">
+            <span>Umsatzsteuer</span>
+            <strong>USt-IdNr.</strong>
+            <p>DE319112575</p>
+          </section>
+        </div>
+
+        <section class="privacy-section legal-section">
+          <h3>Serviceportal</h3>
+          <p>
+            Dieses Serviceportal wird von der myvélo GmbH für die Bearbeitung und Dokumentation von Servicevorgängen bereitgestellt. Für die Verarbeitung personenbezogener Daten gilt die <a href="privacy.html">Datenschutzinformation des Serviceportals</a>.
+          </p>
+        </section>
+
+        <aside class="legal-source-card">
+          <div>
+            <span class="legal-source-label">Offizielles MYVELO-Impressum</span>
+            <strong>Die jeweils aktuelle Anbieterkennzeichnung ist zusätzlich auf myvelo.de veröffentlicht.</strong>
+          </div>
+          <a class="legal-source-link" href="https://myvelo.de/policies/legal-notice" target="_blank" rel="noreferrer">Auf myvelo.de öffnen</a>
+        </aside>
       </div>
     </section>
   </main>

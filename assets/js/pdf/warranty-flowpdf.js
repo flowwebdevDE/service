@@ -1,6 +1,6 @@
-import { renderFlowPdfSpec } from "./flowpdf-spec.js?v=7.5";
+import { renderFlowPdfSpec } from "./flowpdf-spec.js?v=7.15.29";
 import { EMBEDDED_MYVELO_LOGO_BYTES } from "./brand-logo-data.js?v=7.5";
-import { decodePng } from "./flowpdf.js?v=7.5";
+import { decodePng, mm } from "./flowpdf.js?v=7.15.29";
 import { confirmationRequirements } from "../case-confirmations.js?v=7.15.1";
 
 function formatDate(value) {
@@ -132,6 +132,8 @@ export function buildWarrantyFlowSpec(snapshot, options = {}) {
     : formatDate(snapshot.confirmed_at);
 
   const meta = caseTypeMeta(snapshot.case_type);
+  const delivery = deliveryItems(snapshot);
+  const subjectTitle = meta.subjectHeading.replace(/^\d+\.\s*/, "");
 
   const data = {
     case: {
@@ -143,7 +145,8 @@ export function buildWarrantyFlowSpec(snapshot, options = {}) {
       model: snapshot.bike_model || "-",
       color: snapshot.bike_color || "-",
       subject: snapshot.case_subject || meta.label,
-      delivery: deliveryItems(snapshot),
+      delivery,
+      deliveryTags: delivery.map(item => item.text),
       service: serviceText(snapshot.service_choice, snapshot),
       note: snapshot.customer_note || "Kein zusätzlicher Hinweis",
       confirmations: confirmationRequirements(snapshot).map(rule => ({
@@ -156,233 +159,93 @@ export function buildWarrantyFlowSpec(snapshot, options = {}) {
     }
   };
 
-  const serviceBlocks = meta.service
-    ? [
-        {
-          type: "heading",
-          level: 2,
-          text: meta.serviceHeading,
-          size: 9.8,
-          color: [17, 18, 17],
-          accentBar: true,
-          accentBarColor: [18, 18, 18],
-          gapBefore: 1,
-          gapAfter: 4
-        },
-        {
-          type: "field",
-          label: meta.serviceLabel,
-          field: "case.service",
-          size: 8.15,
-          labelWidth: 105,
-          labelColor: [18, 18, 18],
-          gapAfter: 5
-        }
-      ]
-    : [];
-
-  const noteNumber = meta.service ? 5 : 4;
-
   const schema = {
     blocks: [
       {
-        type: "heading",
-        level: 1,
-        text: draft ? `${meta.label} - Entwurf` : meta.title,
-        size: 18.2,
-        color: [17, 18, 17],
-        gapAfter: 3
+        type: "premiumHero",
+        eyebrow: draft ? "Interner Vorgangsstand" : "Kundenbestätigung",
+        title: meta.label,
+        subtitle: draft
+          ? "Aktueller interner Stand - noch nicht vom Kunden bestätigt."
+          : "Verbindlich dokumentierter, vom Kunden bestätigter Vorgangsstand.",
+        status: draft ? "Nicht bestätigt" : "Bestätigt",
+        height: mm(25.5),
+        radius: mm(4.0),
+        padX: mm(5.2),
+        padY: mm(4.6),
+        gapAfter: mm(4.0)
       },
       {
-        type: "paragraph",
-        text: draft ? "Interner Vorgangsstand - noch nicht vom Kunden bestätigt" : "Kundenseitige Bestätigung des vereinbarten Vorgangsstands",
-        size: 7.5,
-        color: [92, 96, 92],
-        lineHeight: 9.0,
-        gapAfter: 9
-      },
-
-      {
-        type: "field",
-        label: documentLabel,
-        field: "case.documentId",
-        size: 8.0,
-        labelWidth: 105,
-        labelColor: [18, 18, 18],
-        gapAfter: 4
-      },
-      {
-        type: "twoColumn",
+        type: "metaPanel",
         items: [
-          { label: "Kunde", field: "case.customer", size: 8.0 },
-          { label: "Bestätigt am", field: "case.confirmedAt", size: 8.0 }
+          { label: documentLabel, field: "case.documentId" },
+          { label: "Kunde", field: "case.customer" },
+          { label: draft ? "Status" : "Bestätigt am", field: "case.confirmedAt" }
         ],
-        gap: 18,
-        labelColor: [18, 18, 18]
-      },
-      { type: "divider", gap: 4 },
-
-      {
-        type: "heading",
-        level: 2,
-        text: "1. Gegenstand des Vorgangs",
-        size: 9.8,
-        color: [17, 18, 17],
-        accentBar: true,
-        accentBarColor: [18, 18, 18],
-        gapBefore: 2,
-        gapAfter: 4
+        height: mm(18.5),
+        radius: mm(4.0),
+        padX: mm(5.2),
+        padY: mm(4.0),
+        gapAfter: mm(4.0)
       },
       {
-        type: "twoColumn",
-        items: [
-          { label: "Gegenstand", field: "case.item", size: 8.0 },
-          { label: snapshot.item_type === "battery" ? "Akku von Modell" : "Modell", field: "case.model", size: 8.0 }
+        type: "contentCard",
+        number: "1",
+        title: "Gegenstand",
+        columns: 3,
+        fields: [
+          { label: "Gegenstand", field: "case.item", bold: true },
+          { label: snapshot.item_type === "battery" ? "Akku von Modell" : "Modell", field: "case.model", bold: true },
+          { label: "Farbe", field: "case.color" }
         ],
-        gap: 18,
-        labelColor: [18, 18, 18]
+        gapAfter: mm(4.0)
       },
       {
-        type: "field",
-        label: "Farbe",
-        field: "case.color",
-        size: 8.0,
-        gapAfter: 2
-      },
-
-      {
-        type: "heading",
-        level: 2,
-        text: meta.subjectHeading,
-        size: 9.8,
-        color: [17, 18, 17],
-        accentBar: true,
-        accentBarColor: [18, 18, 18],
-        gapBefore: 2,
-        gapAfter: 4
+        type: "contentCard",
+        number: "2",
+        title: subjectTitle,
+        bodyLabel: subjectTitle,
+        bodyField: "case.subject",
+        gapAfter: mm(4.0)
       },
       {
-        type: "note",
-        title: meta.subjectHeading.replace(/^\d+\.\s*/, ""),
-        field: "case.subject",
-        size: 8.15,
-        titleSize: 7.4,
-        fill: [249, 249, 247],
-        stroke: [224, 224, 219]
+        type: "contentCard",
+        number: "3",
+        title: "Vereinbarter Lieferumfang",
+        tagsField: "case.deliveryTags",
+        gapAfter: mm(4.0)
       },
-
+      ...(meta.service
+        ? [{
+            type: "contentCard",
+            number: "4",
+            title: "Service & Kundenhinweis",
+            columns: 2,
+            fields: [
+              { label: meta.serviceLabel, field: "case.service", bold: true },
+              { label: "Kundenhinweis", field: "case.note" }
+            ],
+            gapAfter: mm(4.0)
+          }]
+        : [{
+            type: "contentCard",
+            number: "4",
+            title: "Hinweis des Kunden",
+            bodyLabel: "Kundenhinweis",
+            bodyField: "case.note",
+            gapAfter: mm(4.0)
+          }]),
       {
-        type: "heading",
-        level: 2,
-        text: "3. Vereinbarter Lieferumfang",
-        size: 9.8,
-        color: [17, 18, 17],
-        accentBar: true,
-        accentBarColor: [18, 18, 18],
-        gapBefore: 1,
-        gapAfter: 4
-      },
-      {
-        type: "checklist",
-        field: "case.delivery",
-        size: 8.0,
-        lineHeight: 9.4,
-        markerSize: 9.5,
-        gapAfter: 5,
-        bold: false,
-        checkedFill: [255, 255, 255],
-        markerStroke: [142, 142, 136],
-        checkColor: [18, 18, 18]
-      },
-
-      ...serviceBlocks,
-
-      {
-        type: "heading",
-        level: 2,
-        text: `${noteNumber}. Hinweis des Kunden`,
-        size: 9.8,
-        color: [17, 18, 17],
-        accentBar: true,
-        accentBarColor: [18, 18, 18],
-        gapBefore: 1,
-        gapAfter: 4
-      },
-      {
-        type: "note",
-        title: "Kundenhinweis",
-        field: "case.note",
-        size: 8.0,
-        titleSize: 7.4,
-        fill: [249, 249, 247],
-        stroke: [224, 224, 219]
-      },
-
-      {
-        type: "anchor",
-        mm: 91,
-        firstPageOnly: true
-      },
-      {
-        type: "divider",
-        gap: 3,
-        color: [18, 18, 18],
-        width: 0.9
-      },
-      {
-        type: "heading",
-        level: 2,
-        text: draft ? "Kundenbestätigung ausstehend" : "Bestätigung des Kunden",
-        size: 10.2,
-        color: [17, 18, 17],
-        accentBar: true,
-        accentBarColor: [18, 18, 18],
-        gapBefore: 2,
-        gapAfter: 4
-      },
-      {
-        type: "paragraph",
-        text: draft ? "Die folgenden Punkte sind noch nicht vom Kunden bestätigt:" : "Mit der Bestätigung wurde der nachstehende Vorgangsstand verbindlich festgehalten:",
-        size: 7.4,
-        color: [82, 82, 79],
-        lineHeight: 8.8,
-        gapAfter: 4
-      },
-      {
-        type: "checklist",
-        field: "case.confirmations",
-        size: 7.2,
-        lineHeight: 8.5,
-        gapAfter: 5,
-        bold: false,
-        checkedFill: [255, 255, 255],
-        markerStroke: [142, 142, 136],
-        checkColor: [18, 18, 18]
-      },
-      {
-        type: "twoColumn",
-        items: [
-          { label: "Kunde", field: "case.customer", size: 7.5 },
-          { label: "Bestätigt am", field: "case.confirmedAt", size: 7.5 }
-        ],
-        gap: 18,
-        labelColor: [18, 18, 18]
-      },
-      {
-        type: "field",
-        label: "Dokument-ID",
-        field: "case.documentId",
-        size: 7.5,
-        labelWidth: 105,
-        labelColor: [18, 18, 18],
-        gapAfter: 3
-      },
-      {
-        type: "paragraph",
-        field: "case.legal",
-        size: 6.25,
-        color: [104, 104, 100],
-        lineHeight: 7.6,
+        type: "confirmationCard",
+        draft,
+        title: draft ? "Kundenbestätigung ausstehend" : "Bestätigung des Kunden",
+        subtitle: draft
+          ? "Die aufgeführten Punkte wurden noch nicht vom Kunden bestätigt."
+          : "Der nachstehende Vorgangsstand wurde verbindlich bestätigt.",
+        itemsField: "case.confirmations",
+        customerField: "case.customer",
+        confirmedAtField: "case.confirmedAt",
+        legalField: "case.legal",
         gapAfter: 0
       }
     ]
@@ -391,14 +254,14 @@ export function buildWarrantyFlowSpec(snapshot, options = {}) {
   return {
     options: {
       marginTop: 24,
-      marginRight: 14,
+      marginRight: 16,
       marginBottom: 14,
-      marginLeft: 14,
+      marginLeft: 16,
       textColor: [17, 18, 17],
-      mutedColor: [104, 104, 100],
-      lineColor: [218, 218, 214],
-      surfaceColor: [249, 249, 247],
-      accentColor: [18, 18, 18]
+      mutedColor: [98, 98, 94],
+      lineColor: [218, 218, 213],
+      surfaceColor: [250, 250, 248],
+      accentColor: [36, 36, 34]
     },
     meta: {
       title: draft
@@ -411,26 +274,31 @@ export function buildWarrantyFlowSpec(snapshot, options = {}) {
     },
     header: {
       brand: "",
-      label: draft ? "SERVICE · ENTWURF" : "SERVICE · BESTÄTIGUNG",
+      label: "SERVICE",
       logoImage: "brandLogo",
-      documentId,
+      rightText: draft ? "ENTWURF" : "BESTÄTIGUNG",
       brandSize: 15.2,
       labelSize: 6.6,
-      rightSize: 7.0,
-      offsetTop: 7.0,
-      lineOffsetTop: 18.2,
+      rightSize: 6.4,
+      offsetTop: 7.2,
+      lineOffsetTop: 18.4,
       logoWidth: 34.0,
       logoHeight: 6.35,
-      bandHeight: 1.4,
-      bandColor: [17, 18, 17],
-      lineColor: [218, 218, 214],
-      labelColor: [78, 80, 78],
-      rightColor: [18, 18, 18]
+      bandHeight: 0,
+      pageBackground: [255, 255, 255],
+      showLine: false,
+      rightPill: true,
+      rightPillHeight: 7.0,
+      rightPillFill: [244, 244, 241],
+      rightPillStroke: [202, 202, 196],
+      rightPillText: [42, 42, 39],
+      labelColor: [78, 80, 78]
     },
     footer: {
       left: "MYVELO · SERVICE",
-      center: documentId,
-      leftColor: [17, 18, 17]
+      center: meta.label,
+      leftColor: [17, 18, 17],
+      showLine: false
     },
     schema,
     data

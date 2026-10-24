@@ -1,5 +1,5 @@
 import { setButtonLoading, beginGlobalBusy, endGlobalBusy } from "./motion.js?v=7.11.0";
-import { showError } from "./banner.js?v=7.15.1";
+import { showError } from "./banner.js?v=7.15.24";
 import {
   getPortalSession,
   loginWithCompanyKey

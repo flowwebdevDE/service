@@ -1,4 +1,4 @@
-import { renderWarrantyFlowPdf } from "./pdf/warranty-flowpdf.js?v=7.15.4";
+import { renderWarrantyFlowPdf } from "./pdf/warranty-flowpdf.js?v=7.15.29";
 import { confirmationRequirements } from "./case-confirmations.js?v=7.15.1";
 import { CONFIG, hasBackendConfig } from "./config.js?v=7.15.1";
 import {

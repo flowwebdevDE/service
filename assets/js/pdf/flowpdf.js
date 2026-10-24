@@ -484,14 +484,35 @@ export class FlowPDF {
   }
 
   rect(x, y, w, h, options = {}) {
-    const radius = options.radius ?? 0; // PDF path remains square; retained for API compatibility.
+    const radius = Math.max(0, Math.min(options.radius ?? 0, w / 2, h / 2));
     const fill = options.fill;
     const stroke = options.stroke;
     const sw = options.strokeWidth ?? 0.6;
     let cmd = "";
     if (fill) cmd += `${this.rgb(fill)} rg `;
     if (stroke) cmd += `${this.rgb(stroke)} RG ${sw.toFixed(2)} w `;
-    cmd += `${x.toFixed(2)} ${y.toFixed(2)} ${w.toFixed(2)} ${h.toFixed(2)} re `;
+
+    if (radius > 0.01) {
+      // Cubic Bézier approximation for a quarter circle.
+      const k = 0.552284749831;
+      const r = radius;
+      const x0 = x;
+      const y0 = y;
+      const x1 = x + w;
+      const y1 = y + h;
+      cmd += `${(x0 + r).toFixed(2)} ${y0.toFixed(2)} m `;
+      cmd += `${(x1 - r).toFixed(2)} ${y0.toFixed(2)} l `;
+      cmd += `${(x1 - r + k*r).toFixed(2)} ${y0.toFixed(2)} ${(x1).toFixed(2)} ${(y0 + r - k*r).toFixed(2)} ${x1.toFixed(2)} ${(y0 + r).toFixed(2)} c `;
+      cmd += `${x1.toFixed(2)} ${(y1 - r).toFixed(2)} l `;
+      cmd += `${x1.toFixed(2)} ${(y1 - r + k*r).toFixed(2)} ${(x1 - r + k*r).toFixed(2)} ${y1.toFixed(2)} ${(x1 - r).toFixed(2)} ${y1.toFixed(2)} c `;
+      cmd += `${(x0 + r).toFixed(2)} ${y1.toFixed(2)} l `;
+      cmd += `${(x0 + r - k*r).toFixed(2)} ${y1.toFixed(2)} ${x0.toFixed(2)} ${(y1 - r + k*r).toFixed(2)} ${x0.toFixed(2)} ${(y1 - r).toFixed(2)} c `;
+      cmd += `${x0.toFixed(2)} ${(y0 + r).toFixed(2)} l `;
+      cmd += `${x0.toFixed(2)} ${(y0 + r - k*r).toFixed(2)} ${(x0 + r - k*r).toFixed(2)} ${y0.toFixed(2)} ${(x0 + r).toFixed(2)} ${y0.toFixed(2)} c h `;
+    } else {
+      cmd += `${x.toFixed(2)} ${y.toFixed(2)} ${w.toFixed(2)} ${h.toFixed(2)} re `;
+    }
+
     cmd += fill && stroke ? "B" : fill ? "f" : "S";
     this.op(cmd);
     return this;
@@ -717,6 +738,504 @@ export class FlowPDF {
     return this;
   }
 
+  summaryBand(items, options = {}) {
+    const normalized = (items || []).slice(0, 3);
+    if (!normalized.length) return this;
+
+    const width = options.width ?? this.availableWidth();
+    const x = options.x ?? this.margin.left;
+    const gap = options.gap ?? mm(3.2);
+    const padX = options.padX ?? mm(4);
+    const padY = options.padY ?? mm(3.6);
+    const labelSize = options.labelSize ?? 6.4;
+    const valueSize = options.valueSize ?? 9.0;
+    const cellWidth = (width - gap * (normalized.length - 1)) / normalized.length;
+    const lineHeight = valueSize * 1.25;
+
+    const cells = normalized.map(item => ({
+      ...item,
+      lines: wrapText(item.value ?? "–", cellWidth - padX * 2, valueSize, true)
+    }));
+    const maxLines = Math.max(...cells.map(cell => cell.lines.length), 1);
+    const height = padY * 2 + labelSize * 1.2 + mm(1.8) + maxLines * lineHeight;
+
+    this.ensureSpace(height + mm(4));
+
+    cells.forEach((cell, index) => {
+      const cellX = x + index * (cellWidth + gap);
+      this.rect(cellX, this.y - height, cellWidth, height, {
+        fill: options.fill ?? [247, 247, 244],
+        stroke: options.stroke ?? [224, 224, 219],
+        strokeWidth: 0.55
+      });
+      this.text(String(cell.label || "").toUpperCase(), cellX + padX, this.y - padY - labelSize, {
+        size: labelSize,
+        bold: true,
+        color: options.labelColor ?? this.theme.muted
+      });
+      let ty = this.y - padY - labelSize * 1.2 - mm(2) - valueSize;
+      for (const line of cell.lines) {
+        this.text(line, cellX + padX, ty, {
+          size: valueSize,
+          bold: true,
+          color: options.valueColor ?? this.theme.text
+        });
+        ty -= lineHeight;
+      }
+    });
+
+    this.y -= height + (options.gapAfter ?? mm(5));
+    return this;
+  }
+
+  premiumHero(options = {}) {
+    const x = options.x ?? this.margin.left;
+    const width = options.width ?? this.availableWidth();
+    const height = options.height ?? mm(34);
+    const padX = options.padX ?? mm(6);
+    const padY = options.padY ?? mm(5.5);
+    const radius = options.radius ?? mm(4.6);
+    const eyebrow = String(options.eyebrow || "");
+    const title = String(options.title || "");
+    const subtitle = String(options.subtitle || "");
+    const status = String(options.status || "");
+
+    this.ensureSpace(height + mm(4));
+    const bottom = this.y - height;
+
+    this.rect(x, bottom, width, height, {
+      fill: options.fill ?? [250, 250, 248],
+      stroke: options.stroke ?? [218, 218, 213],
+      strokeWidth: 0.55,
+      radius
+    });
+
+    if (status) {
+      const statusSize = options.statusSize ?? 6.4;
+      const pillPadX = mm(3.4);
+      const pillH = mm(7.4);
+      const pillW = Math.max(mm(23), measureText(status.toUpperCase(), statusSize, true) + pillPadX * 2);
+      const pillX = x + width - padX - pillW;
+      const pillY = this.y - padY - pillH;
+      this.rect(pillX, pillY, pillW, pillH, {
+        fill: options.statusFill ?? [242, 242, 239],
+        stroke: options.statusStroke ?? [205, 205, 199],
+        strokeWidth: 0.5,
+        radius: pillH / 2
+      });
+      this.text(status.toUpperCase(), pillX + pillPadX, pillY + mm(2.15), {
+        size: statusSize,
+        bold: true,
+        color: options.statusColor ?? [38, 38, 36]
+      });
+    }
+
+    let ty = this.y - padY - (options.eyebrowSize ?? 6.4);
+    if (eyebrow) {
+      this.text(eyebrow.toUpperCase(), x + padX, ty, {
+        size: options.eyebrowSize ?? 6.4,
+        bold: true,
+        color: options.eyebrowColor ?? [111, 111, 105]
+      });
+      ty -= mm(5.2);
+    }
+
+    this.text(title, x + padX, ty - (options.titleSize ?? 20.5), {
+      size: options.titleSize ?? 20.5,
+      bold: true,
+      color: options.titleColor ?? this.theme.text
+    });
+
+    if (subtitle) {
+      const subSize = options.subtitleSize ?? 7.7;
+      const subWidth = Math.max(mm(70), width * 0.68);
+      const lines = wrapText(subtitle, subWidth, subSize, false).slice(0, 2);
+      let sy = ty - (options.titleSize ?? 20.5) - mm(4.7);
+      for (const line of lines) {
+        this.text(line, x + padX, sy, {
+          size: subSize,
+          color: options.subtitleColor ?? [91, 91, 86]
+        });
+        sy -= subSize * 1.35;
+      }
+    }
+
+    this.y = bottom - (options.gapAfter ?? mm(5));
+    return this;
+  }
+
+  metaPanel(items, options = {}) {
+    const normalized = (items || []).slice(0, 4);
+    if (!normalized.length) return this;
+
+    const x = options.x ?? this.margin.left;
+    const width = options.width ?? this.availableWidth();
+    const height = options.height ?? mm(21.5);
+    const padX = options.padX ?? mm(5);
+    const padY = options.padY ?? mm(4.3);
+    const radius = options.radius ?? mm(4.2);
+    const cellWidth = width / normalized.length;
+
+    this.ensureSpace(height + mm(4));
+    const bottom = this.y - height;
+    this.rect(x, bottom, width, height, {
+      fill: options.fill ?? [255, 255, 255],
+      stroke: options.stroke ?? [218, 218, 213],
+      strokeWidth: 0.55,
+      radius
+    });
+
+    normalized.forEach((item, index) => {
+      const cellX = x + index * cellWidth;
+      if (index > 0) {
+        this.line(cellX, bottom + mm(4.2), cellX, bottom + height - mm(4.2), {
+          color: options.dividerColor ?? [232, 232, 227],
+          width: 0.5
+        });
+      }
+      this.text(String(item.label || "").toUpperCase(), cellX + padX, this.y - padY - (options.labelSize ?? 6.1), {
+        size: options.labelSize ?? 6.1,
+        bold: true,
+        color: options.labelColor ?? [120, 120, 114]
+      });
+      const valueSize = options.valueSize ?? 9.0;
+      const lines = wrapText(item.value ?? "-", cellWidth - padX * 2, valueSize, true).slice(0, 2);
+      let vy = this.y - padY - mm(7.3) - valueSize;
+      for (const line of lines) {
+        this.text(line, cellX + padX, vy, {
+          size: valueSize,
+          bold: true,
+          color: options.valueColor ?? this.theme.text
+        });
+        vy -= valueSize * 1.22;
+      }
+    });
+
+    this.y = bottom - (options.gapAfter ?? mm(5));
+    return this;
+  }
+
+  contentCard(options = {}) {
+    const x = options.x ?? this.margin.left;
+    const width = options.width ?? this.availableWidth();
+    const radius = options.radius ?? mm(4.4);
+    const padX = options.padX ?? mm(5.2);
+    const padY = options.padY ?? mm(3.9);
+    const number = String(options.number ?? "");
+    const title = String(options.title || "");
+    const fields = Array.isArray(options.fields) ? options.fields : [];
+    const tags = Array.isArray(options.tags) ? options.tags.filter(Boolean) : [];
+    const body = options.body == null ? "" : String(options.body);
+    const bodyLabel = options.bodyLabel ? String(options.bodyLabel) : "";
+    const columns = Math.max(1, Math.min(3, options.columns ?? 2));
+    const headerH = mm(7.6);
+    const fieldGapX = mm(6);
+    const fieldWidth = (width - padX * 2 - fieldGapX * (columns - 1)) / columns;
+    const fieldSize = options.fieldSize ?? 7.9;
+    const labelSize = options.labelSize ?? 6.0;
+    const valueLH = fieldSize * 1.3;
+    const fieldRows = [];
+
+    for (let i = 0; i < fields.length; i += columns) {
+      const row = fields.slice(i, i + columns).map(field => ({
+        ...field,
+        lines: wrapText(field.value ?? "-", fieldWidth, fieldSize, !!field.bold).slice(0, 3)
+      }));
+      const maxLines = Math.max(...row.map(field => field.lines.length), 1);
+      fieldRows.push({ row, height: labelSize * 1.15 + mm(1.9) + maxLines * valueLH + mm(1.8) });
+    }
+
+    let tagsHeight = 0;
+    let tagRows = [];
+    if (tags.length) {
+      const maxW = width - padX * 2;
+      const tagSize = options.tagSize ?? 7.0;
+      const tagPadX = mm(3.0);
+      const tagH = mm(7.2);
+      let row = [];
+      let used = 0;
+      for (const tag of tags) {
+        const tw = Math.min(maxW, measureText(tag, tagSize, true) + tagPadX * 2);
+        const needed = (row.length ? mm(2) : 0) + tw;
+        if (row.length && used + needed > maxW) {
+          tagRows.push(row);
+          row = [];
+          used = 0;
+        }
+        row.push({ text: tag, width: tw });
+        used += (row.length > 1 ? mm(2) : 0) + tw;
+      }
+      if (row.length) tagRows.push(row);
+      tagsHeight = tagRows.length * tagH + Math.max(0, tagRows.length - 1) * mm(1.8);
+    }
+
+    let bodyLines = [];
+    let bodyHeight = 0;
+    if (body) {
+      const bodySize = options.bodySize ?? 7.7;
+      bodyLines = wrapText(body, width - padX * 2 - mm(6), bodySize, false);
+      bodyHeight = mm(7.0) + Math.max(1, bodyLines.length) * bodySize * 1.30 + mm(3.2);
+    }
+
+    const fieldsHeight = fieldRows.reduce((sum, r) => sum + r.height, 0);
+    const contentGap = (fieldsHeight && (tagsHeight || bodyHeight)) ? mm(2) : 0;
+    const betweenExtra = tagsHeight && bodyHeight ? mm(2.3) : 0;
+    const height = padY * 2 + headerH + fieldsHeight + tagsHeight + bodyHeight + contentGap + betweenExtra;
+
+    this.ensureSpace(height + mm(4));
+    const top = this.y;
+    const bottom = top - height;
+
+    this.rect(x, bottom, width, height, {
+      fill: options.fill ?? [255, 255, 255],
+      stroke: options.stroke ?? [218, 218, 213],
+      strokeWidth: 0.55,
+      radius
+    });
+
+    const badgeSize = mm(7.2);
+    const badgeX = x + padX;
+    const badgeY = top - padY - badgeSize;
+    if (number) {
+      this.rect(badgeX, badgeY, badgeSize, badgeSize, {
+        fill: options.badgeFill ?? [245, 245, 242],
+        stroke: options.badgeStroke ?? [196, 196, 190],
+        strokeWidth: 0.5,
+        radius: badgeSize / 2
+      });
+      const numSize = options.numberSize ?? 7.0;
+      const numW = measureText(number, numSize, true);
+      this.text(number, badgeX + (badgeSize - numW) / 2, badgeY + mm(2.15), {
+        size: numSize,
+        bold: true,
+        color: [35, 35, 33]
+      });
+    }
+
+    this.text(title, badgeX + (number ? badgeSize + mm(3.2) : 0), top - padY - mm(5.15), {
+      size: options.titleSize ?? 10.4,
+      bold: true,
+      color: options.titleColor ?? this.theme.text
+    });
+
+    let cy = top - padY - headerH;
+    for (const fr of fieldRows) {
+      fr.row.forEach((field, colIndex) => {
+        const fx = x + padX + colIndex * (fieldWidth + fieldGapX);
+        this.text(String(field.label || "").toUpperCase(), fx, cy - labelSize, {
+          size: labelSize,
+          bold: true,
+          color: options.labelColor ?? [121, 121, 115]
+        });
+        let vy = cy - labelSize - mm(2.0) - fieldSize;
+        for (const line of field.lines) {
+          this.text(line, fx, vy, {
+            size: fieldSize,
+            bold: !!field.bold,
+            color: options.valueColor ?? this.theme.text
+          });
+          vy -= valueLH;
+        }
+      });
+      cy -= fr.height;
+    }
+
+    if (tagsHeight) {
+      const tagSize = options.tagSize ?? 7.0;
+      const tagH = mm(7.2);
+      let rowY = cy - (fieldsHeight ? mm(1.8) : 0) - tagH;
+      for (const row of tagRows) {
+        let tx = x + padX;
+        for (const tag of row) {
+          this.rect(tx, rowY, tag.width, tagH, {
+            fill: options.tagFill ?? [248, 248, 246],
+            stroke: options.tagStroke ?? [216, 216, 211],
+            strokeWidth: 0.45,
+            radius: tagH / 2
+          });
+          this.text(tag.text, tx + mm(3.0), rowY + mm(2.15), {
+            size: tagSize,
+            bold: true,
+            color: options.tagColor ?? [54, 54, 51]
+          });
+          tx += tag.width + mm(2);
+        }
+        rowY -= tagH + mm(1.8);
+      }
+      cy -= tagsHeight + (fieldsHeight ? mm(1.8) : 0);
+    }
+
+    if (bodyHeight) {
+      const innerX = x + padX;
+      const innerW = width - padX * 2;
+      const innerTop = cy - (tagsHeight ? mm(2.0) : (fieldsHeight ? mm(1.8) : 0));
+      const innerBottom = innerTop - bodyHeight;
+      this.rect(innerX, innerBottom, innerW, bodyHeight, {
+        fill: options.bodyFill ?? [249, 249, 247],
+        stroke: options.bodyStroke ?? [222, 222, 217],
+        strokeWidth: 0.45,
+        radius: options.bodyRadius ?? mm(3.4)
+      });
+      let by = innerTop - mm(4.1);
+      if (bodyLabel) {
+        this.text(bodyLabel.toUpperCase(), innerX + mm(3.2), by - labelSize, {
+          size: labelSize,
+          bold: true,
+          color: options.labelColor ?? [121, 121, 115]
+        });
+        by -= mm(6.3);
+      }
+      const bodySize = options.bodySize ?? 7.7;
+      for (const line of bodyLines) {
+        this.text(line, innerX + mm(3.2), by - bodySize, {
+          size: bodySize,
+          color: options.valueColor ?? this.theme.text
+        });
+        by -= bodySize * 1.35;
+      }
+    }
+
+    this.y = bottom - (options.gapAfter ?? mm(4.2));
+    return this;
+  }
+
+  confirmationCard(options = {}) {
+    const x = options.x ?? this.margin.left;
+    const width = options.width ?? this.availableWidth();
+    const padX = options.padX ?? mm(5.2);
+    const padY = options.padY ?? mm(4.2);
+    const radius = options.radius ?? mm(4.2);
+    const items = Array.isArray(options.items) ? options.items : [];
+    const title = String(options.title || "");
+    const subtitle = String(options.subtitle || "");
+    const customer = String(options.customer || "-");
+    const confirmedAt = String(options.confirmedAt || "-");
+    const legal = String(options.legal || "");
+    const draft = !!options.draft;
+    const titleSize = options.titleSize ?? 10.4;
+    const subSize = options.subtitleSize ?? 6.9;
+    const itemSize = options.itemSize ?? 7.0;
+    const legalSize = options.legalSize ?? 5.8;
+    const innerW = width - padX * 2;
+    const itemTextW = innerW - mm(11.5);
+    const itemLines = items.map(item => wrapText(item.text ?? "-", itemTextW, itemSize, false));
+    const rowGap = mm(1.8);
+    const itemsHeight = itemLines.reduce((sum, lines) => sum + Math.max(mm(8.4), lines.length * itemSize * 1.35 + mm(3.4)), 0) + Math.max(0, items.length - 1) * rowGap;
+    const legalLines = legal ? wrapText(legal, innerW, legalSize, false) : [];
+    const height = padY * 2 + mm(12.2) + itemsHeight + mm(3.8) + mm(13.0) + (legalLines.length ? legalLines.length * legalSize * 1.30 + mm(7.5) : 0);
+
+    this.ensureSpace(height + mm(4));
+    const top = this.y;
+    const bottom = top - height;
+
+    this.rect(x, bottom, width, height, {
+      fill: options.fill ?? [250, 250, 248],
+      stroke: options.stroke ?? [210, 210, 204],
+      strokeWidth: 0.6,
+      radius
+    });
+
+    const pillText = draft ? "BESTÄTIGUNG AUSSTEHEND" : "BESTÄTIGT";
+    const pillSize = 6.0;
+    const pillH = mm(6.4);
+    const pillW = measureText(pillText, pillSize, true) + mm(6.0);
+    this.rect(x + padX, top - padY - pillH, pillW, pillH, {
+      fill: [255, 255, 255],
+      stroke: [199, 199, 193],
+      strokeWidth: 0.5,
+      radius: pillH / 2
+    });
+    this.text(pillText, x + padX + mm(3.0), top - padY - mm(4.65), {
+      size: pillSize,
+      bold: true,
+      color: [47, 47, 44]
+    });
+
+    this.text(title, x + padX, top - padY - mm(10.5) - titleSize, {
+      size: titleSize,
+      bold: true,
+      color: this.theme.text
+    });
+    this.text(subtitle, x + padX, top - padY - mm(15.2) - subSize, {
+      size: subSize,
+      color: [101, 101, 96]
+    });
+
+    let cy = top - padY - mm(20.3);
+    items.forEach((item, index) => {
+      const lines = itemLines[index];
+      const rowH = Math.max(mm(8.4), lines.length * itemSize * 1.35 + mm(3.4));
+      const rowBottom = cy - rowH;
+      this.rect(x + padX, rowBottom, innerW, rowH, {
+        fill: [255, 255, 255],
+        stroke: [221, 221, 216],
+        strokeWidth: 0.45,
+        radius: mm(2.8)
+      });
+
+      const marker = mm(4.0);
+      const mx = x + padX + mm(3.1);
+      const my = rowBottom + (rowH - marker) / 2;
+      this.rect(mx, my, marker, marker, {
+        fill: item.checked ? [238, 238, 234] : [255, 255, 255],
+        stroke: [161, 161, 155],
+        strokeWidth: 0.55,
+        radius: mm(.9)
+      });
+      if (item.checked) {
+        this.line(mx + mm(.8), my + mm(1.9), mx + mm(1.55), my + mm(1.15), { width: 1.0, color: [40,40,37] });
+        this.line(mx + mm(1.55), my + mm(1.15), mx + mm(3.2), my + mm(3.0), { width: 1.0, color: [40,40,37] });
+      }
+
+      let ty = cy - mm(3.15) - itemSize;
+      for (const line of lines) {
+        this.text(line, mx + marker + mm(3.0), ty, {
+          size: itemSize,
+          color: [42, 42, 39]
+        });
+        ty -= itemSize * 1.35;
+      }
+      cy = rowBottom - rowGap;
+    });
+
+    cy -= mm(2.7);
+    const splitGap = mm(4.0);
+    const splitW = (innerW - splitGap) / 2;
+    const infoH = mm(11.0);
+    const infoY = cy - infoH;
+    [["KUNDE", customer], ["BESTÄTIGT AM", confirmedAt]].forEach(([label, value], index) => {
+      const ix = x + padX + index * (splitW + splitGap);
+      this.rect(ix, infoY, splitW, infoH, {
+        fill: [255, 255, 255],
+        stroke: [221, 221, 216],
+        strokeWidth: 0.45,
+        radius: mm(2.8)
+      });
+      this.text(label, ix + mm(3.0), cy - mm(3.2) - 5.9, {
+        size: 5.9,
+        bold: true,
+        color: [124, 124, 118]
+      });
+      this.text(value, ix + mm(3.0), cy - mm(7.8) - 7.4, {
+        size: 7.4,
+        bold: true,
+        color: this.theme.text
+      });
+    });
+    cy = infoY - mm(3.0);
+
+    for (const line of legalLines) {
+      this.text(line, x + padX, cy - legalSize, {
+        size: legalSize,
+        color: [113, 113, 107]
+      });
+      cy -= legalSize * 1.35;
+    }
+
+    this.y = bottom - (options.gapAfter ?? mm(2));
+    return this;
+  }
+
   checklist(items, options = {}) {
     const size = options.size ?? 8.8;
     const lineHeight = options.lineHeight ?? size * 1.3;
@@ -885,6 +1404,44 @@ export class FlowPDF {
           break;
         case "twoColumn":
           this.twoColumn(block.items.map(i => ({ ...i, value: i.value ?? resolve(i.field) })), block);
+          break;
+        case "summaryBand":
+          this.summaryBand(
+            block.items.map(i => ({ ...i, value: i.value ?? resolve(i.field) })),
+            block
+          );
+          break;
+        case "premiumHero":
+          this.premiumHero({
+            ...block,
+            eyebrow: block.eyebrow ?? resolve(block.eyebrowField),
+            title: block.title ?? resolve(block.titleField),
+            subtitle: block.subtitle ?? resolve(block.subtitleField),
+            status: block.status ?? resolve(block.statusField)
+          });
+          break;
+        case "metaPanel":
+          this.metaPanel(
+            block.items.map(i => ({ ...i, value: i.value ?? resolve(i.field) })),
+            block
+          );
+          break;
+        case "contentCard":
+          this.contentCard({
+            ...block,
+            fields: (block.fields || []).map(i => ({ ...i, value: i.value ?? resolve(i.field) })),
+            tags: block.tags ?? resolve(block.tagsField) ?? [],
+            body: block.body ?? resolve(block.bodyField) ?? ""
+          });
+          break;
+        case "confirmationCard":
+          this.confirmationCard({
+            ...block,
+            items: block.items ?? resolve(block.itemsField) ?? [],
+            customer: block.customer ?? resolve(block.customerField),
+            confirmedAt: block.confirmedAt ?? resolve(block.confirmedAtField),
+            legal: block.legal ?? resolve(block.legalField)
+          });
           break;
         case "checklist":
           this.checklist(

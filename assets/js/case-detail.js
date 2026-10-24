@@ -8,10 +8,10 @@ import {
   updateAdminCaseStage,
   logoutPortalSession,
   requirePortalSession
-} from "./api.js?v=7.15.4";
+} from "./api.js?v=7.15.29";
 import { initModelPopup } from "./model-picker.js?v=7.6.1";
 import { setButtonLoading, pulseElement, beginGlobalBusy, endGlobalBusy, transitionSurface } from "./motion.js?v=7.15.1";
-import { showError, showInfo, showSuccess } from "./banner.js?v=7.15.1";
+import { showError, showInfo, showSuccess } from "./banner.js?v=7.15.24";
 
 
 const bootLoader = document.querySelector("#app-boot-loader");
@@ -215,7 +215,7 @@ function renderServiceStatus(item) {
   if (stageProgressBar) stageProgressBar.style.width = `${meta.progress}%`;
   if (stageProgressCopy) {
     stageProgressCopy.textContent = confirmed
-      ? `${meta.progress}% interner Fortschritt · nur für Mitarbeiter sichtbar`
+      ? "Interner Bearbeitungsfortschritt · nur für Mitarbeiter sichtbar"
       : "Kundenbestätigung ausstehend";
   }
 
@@ -333,8 +333,6 @@ function fill(item) {
   document.querySelector("#case-title")?.replaceChildren(document.createTextNode(visibleRef.value));
   applyCaseTypeUi(item.case_type);
   document.querySelector("#sidebarCaseRef")?.replaceChildren(document.createTextNode(visibleRef.value));
-  document.querySelector("#case-reference-label")?.replaceChildren(document.createTextNode(visibleRef.label));
-  document.querySelector("#shopify-ref")?.replaceChildren(document.createTextNode(visibleRef.value));
   renderServiceStatus(item);
 
   for (const name of [
@@ -387,7 +385,7 @@ function fill(item) {
 
     if (saveButton) {
       saveButton.classList.remove("hidden");
-      saveButton.textContent = "Speichern";
+      saveButton.querySelector("span")?.replaceChildren(document.createTextNode("Speichern"));
     }
   }
 
@@ -401,10 +399,10 @@ function fill(item) {
 
   const pdfButton = document.querySelector("#internal-print");
   if (pdfButton) {
-    pdfButton.textContent =
-      item.status === "confirmed"
-        ? "Bestätigungs-PDF"
-        : "Vorgangs-PDF";
+    const pdfLabel = pdfButton.querySelector("span");
+    if (pdfLabel) {
+      pdfLabel.textContent = item.status === "confirmed" ? "Bestätigungs-PDF" : "Vorgangs-PDF";
+    }
   }
 
   transitionSurface(item.status === "confirmed" ? frozenView : form);

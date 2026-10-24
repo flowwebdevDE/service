@@ -6,7 +6,7 @@ import {
 } from "./api.js?v=7.15.4";
 import { initModelPopup } from "./model-picker.js?v=7.6.1";
 import { setButtonLoading, renderCaseSkeleton, pulseElement, beginGlobalBusy, endGlobalBusy, transitionSurface } from "./motion.js?v=7.15.1";
-import { showError, showInfo, showSuccess } from "./banner.js?v=7.15.1";
+import { showError, showInfo, showSuccess } from "./banner.js?v=7.15.24";
 
 const form = document.querySelector("#create-form");
 const createModelPopup = await initModelPopup({
@@ -89,6 +89,15 @@ function caseTypeMeta(value) {
 
 function caseTypeLabel(value) {
   return caseTypeMeta(value).label;
+}
+
+function dashboardSubject(item) {
+  const raw = String(item?.case_subject || "").trim();
+  if (!raw) return "";
+  const normalized = raw.toLocaleLowerCase("de-DE").replace(/[\s_-]+/g, "");
+  const typeNormalized = caseTypeLabel(item?.case_type).toLocaleLowerCase("de-DE").replace(/[\s_-]+/g, "");
+  if (["servicebericht", "servicereport", typeNormalized].includes(normalized)) return "";
+  return raw;
 }
 
 function parseEuroToCents(value) {
@@ -625,10 +634,10 @@ function renderCaseList(items) {
         </div>
 
         <div class="flow-case-kind">
-          <strong>Vorgang</strong>
+          <strong>Vorgangsart</strong>
           <div class="flow-case-tag-row">
             <span class="flow-case-tag">${caseTypeLabel(item.case_type)}</span>
-            <span class="flow-case-tag">${item.case_subject || "Kein Betreff"}</span>
+            ${dashboardSubject(item) ? `<span class="flow-case-tag flow-case-tag--subject">${dashboardSubject(item)}</span>` : ""}
           </div>
         </div>
 
@@ -688,6 +697,28 @@ const dashboardFilterSentinel = document.querySelector("#dashboard-filter-sentin
 const employeeTopbar = document.querySelector(".flow-topbar");
 let dashboardScrollFrame = 0;
 let dashboardCompactState = false;
+let dashboardCollapseAt = Number.POSITIVE_INFINITY;
+let dashboardExpandAt = 0;
+let dashboardThresholdsReady = false;
+
+function measureDashboardFilterThresholds() {
+  if (!dashboardFilterSection || !dashboardFilterSentinel || window.innerWidth <= 860) {
+    dashboardThresholdsReady = false;
+    return;
+  }
+
+  const stickyTop = Math.round((employeeTopbar?.getBoundingClientRect().height || 62) + 10);
+  const sentinelDocumentTop = window.scrollY + dashboardFilterSentinel.getBoundingClientRect().top;
+  const stickyStart = Math.max(0, sentinelDocumentTop - stickyTop);
+
+  // V7.15.27: the dashboard intro was removed, so the filter now reaches the
+  // sticky edge almost immediately. A fixed hysteresis window prevents tiny
+  // trackpad movements around that edge from toggling compact mode repeatedly.
+  dashboardCollapseAt = stickyStart + 44;
+  dashboardExpandAt = stickyStart + 12;
+  dashboardThresholdsReady = true;
+  dashboardFilterSection.style.setProperty("--dashboard-sticky-top", `${stickyTop}px`);
+}
 
 function syncDashboardFilterState() {
   dashboardScrollFrame = 0;
@@ -696,16 +727,16 @@ function syncDashboardFilterState() {
   if (window.innerWidth <= 860 || dashboardFilterSection.classList.contains("hidden")) {
     dashboardCompactState = false;
     dashboardFilterSection.classList.remove("is-compact");
+    dashboardThresholdsReady = false;
     return;
   }
 
-  const stickyTop = Math.round((employeeTopbar?.getBoundingClientRect().height || 62) + 10);
-  dashboardFilterSection.style.setProperty("--dashboard-sticky-top", `${stickyTop}px`);
+  if (!dashboardThresholdsReady) measureDashboardFilterThresholds();
 
-  // Important: use a separate sentinel. Measuring the shrinking sticky element
-  // itself creates feedback and visible jumping while its height animates.
-  const triggerTop = dashboardFilterSentinel?.getBoundingClientRect().top ?? Infinity;
-  const shouldCompact = triggerTop <= stickyTop;
+  const scrollY = Math.max(0, window.scrollY || 0);
+  const shouldCompact = dashboardCompactState
+    ? scrollY > dashboardExpandAt
+    : scrollY >= dashboardCollapseAt;
 
   if (shouldCompact !== dashboardCompactState) {
     dashboardCompactState = shouldCompact;
@@ -718,9 +749,15 @@ function requestDashboardFilterSync() {
   dashboardScrollFrame = requestAnimationFrame(syncDashboardFilterState);
 }
 
+function refreshDashboardFilterThresholds() {
+  dashboardThresholdsReady = false;
+  requestDashboardFilterSync();
+}
+
 window.addEventListener("scroll", requestDashboardFilterSync, { passive: true });
-window.addEventListener("resize", requestDashboardFilterSync);
-requestAnimationFrame(syncDashboardFilterState);
+window.addEventListener("resize", refreshDashboardFilterThresholds);
+window.addEventListener("pageshow", refreshDashboardFilterThresholds);
+requestAnimationFrame(() => requestAnimationFrame(refreshDashboardFilterThresholds));
 
 renderCases();
 
