@@ -20,6 +20,24 @@ const CP1252 = new Map([
 function mm(v) { return v * PT_PER_MM; }
 function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
 
+// Helvetica/Arial-like visual metrics. PDF text positions use the baseline,
+// while layout code usually thinks in visual top/center coordinates.
+// Keeping these conversions centralized prevents text from drifting toward
+// the bottom edge of cards when font sizes change.
+function visualCapHeight(size) { return size * 0.72; }
+function visualDescent(size) { return size * 0.20; }
+function baselineFromTop(topY, inset, size) {
+  return topY - inset - visualCapHeight(size);
+}
+function centeredBaseline(bottomY, height, size) {
+  return bottomY + height / 2 - size * 0.26;
+}
+function centeredTextBlockFirstBaseline(bottomY, height, size, lineHeight, lineCount) {
+  const count = Math.max(1, lineCount || 1);
+  const centerY = bottomY + height / 2;
+  return centerY + ((count - 1) * lineHeight) / 2 - size * 0.26;
+}
+
 function encodeWinAnsi(str) {
   const out = [];
   for (const ch of String(str ?? "")) {
@@ -823,25 +841,32 @@ export class FlowPDF {
         strokeWidth: 0.5,
         radius: pillH / 2
       });
-      this.text(status.toUpperCase(), pillX + pillPadX, pillY + mm(2.15), {
+      this.text(status.toUpperCase(), pillX + pillPadX, centeredBaseline(pillY, pillH, statusSize), {
         size: statusSize,
         bold: true,
         color: options.statusColor ?? [38, 38, 36]
       });
     }
 
-    let ty = this.y - padY - (options.eyebrowSize ?? 6.4);
+    const eyebrowSize = options.eyebrowSize ?? 6.4;
+    const titleSize = options.titleSize ?? 20.5;
+    let titleBaseline;
+
     if (eyebrow) {
-      this.text(eyebrow.toUpperCase(), x + padX, ty, {
-        size: options.eyebrowSize ?? 6.4,
+      const eyebrowBaseline = baselineFromTop(this.y, padY, eyebrowSize);
+      this.text(eyebrow.toUpperCase(), x + padX, eyebrowBaseline, {
+        size: eyebrowSize,
         bold: true,
         color: options.eyebrowColor ?? [111, 111, 105]
       });
-      ty -= mm(5.2);
+      const titleTopInset = padY + visualCapHeight(eyebrowSize) + visualDescent(eyebrowSize) + mm(2.4);
+      titleBaseline = baselineFromTop(this.y, titleTopInset, titleSize);
+    } else {
+      titleBaseline = baselineFromTop(this.y, padY, titleSize);
     }
 
-    this.text(title, x + padX, ty - (options.titleSize ?? 20.5), {
-      size: options.titleSize ?? 20.5,
+    this.text(title, x + padX, titleBaseline, {
+      size: titleSize,
       bold: true,
       color: options.titleColor ?? this.theme.text
     });
@@ -850,7 +875,7 @@ export class FlowPDF {
       const subSize = options.subtitleSize ?? 7.7;
       const subWidth = Math.max(mm(70), width * 0.68);
       const lines = wrapText(subtitle, subWidth, subSize, false).slice(0, 2);
-      let sy = ty - (options.titleSize ?? 20.5) - mm(4.7);
+      let sy = titleBaseline - visualDescent(titleSize) - mm(2.4) - visualCapHeight(subSize);
       for (const line of lines) {
         this.text(line, x + padX, sy, {
           size: subSize,
@@ -893,14 +918,17 @@ export class FlowPDF {
           width: 0.5
         });
       }
-      this.text(String(item.label || "").toUpperCase(), cellX + padX, this.y - padY - (options.labelSize ?? 6.1), {
-        size: options.labelSize ?? 6.1,
+      const labelSize = options.labelSize ?? 6.1;
+      const labelBaseline = baselineFromTop(this.y, padY, labelSize);
+      this.text(String(item.label || "").toUpperCase(), cellX + padX, labelBaseline, {
+        size: labelSize,
         bold: true,
         color: options.labelColor ?? [120, 120, 114]
       });
       const valueSize = options.valueSize ?? 9.0;
       const lines = wrapText(item.value ?? "-", cellWidth - padX * 2, valueSize, true).slice(0, 2);
-      let vy = this.y - padY - mm(7.3) - valueSize;
+      const valueTopInset = padY + visualCapHeight(labelSize) + visualDescent(labelSize) + mm(2.15);
+      let vy = baselineFromTop(this.y, valueTopInset, valueSize);
       for (const line of lines) {
         this.text(line, cellX + padX, vy, {
           size: valueSize,
@@ -1005,15 +1033,16 @@ export class FlowPDF {
       });
       const numSize = options.numberSize ?? 7.0;
       const numW = measureText(number, numSize, true);
-      this.text(number, badgeX + (badgeSize - numW) / 2, badgeY + mm(2.15), {
+      this.text(number, badgeX + (badgeSize - numW) / 2, centeredBaseline(badgeY, badgeSize, numSize), {
         size: numSize,
         bold: true,
         color: [35, 35, 33]
       });
     }
 
-    this.text(title, badgeX + (number ? badgeSize + mm(3.2) : 0), top - padY - mm(5.15), {
-      size: options.titleSize ?? 10.4,
+    const cardTitleSize = options.titleSize ?? 10.4;
+    this.text(title, badgeX + (number ? badgeSize + mm(3.2) : 0), baselineFromTop(top, padY + mm(.15), cardTitleSize), {
+      size: cardTitleSize,
       bold: true,
       color: options.titleColor ?? this.theme.text
     });
@@ -1022,12 +1051,14 @@ export class FlowPDF {
     for (const fr of fieldRows) {
       fr.row.forEach((field, colIndex) => {
         const fx = x + padX + colIndex * (fieldWidth + fieldGapX);
-        this.text(String(field.label || "").toUpperCase(), fx, cy - labelSize, {
+        const fieldLabelBaseline = baselineFromTop(cy, mm(.25), labelSize);
+        this.text(String(field.label || "").toUpperCase(), fx, fieldLabelBaseline, {
           size: labelSize,
           bold: true,
           color: options.labelColor ?? [121, 121, 115]
         });
-        let vy = cy - labelSize - mm(2.0) - fieldSize;
+        const fieldValueTopInset = mm(.25) + visualCapHeight(labelSize) + visualDescent(labelSize) + mm(1.75);
+        let vy = baselineFromTop(cy, fieldValueTopInset, fieldSize);
         for (const line of field.lines) {
           this.text(line, fx, vy, {
             size: fieldSize,
@@ -1053,7 +1084,7 @@ export class FlowPDF {
             strokeWidth: 0.45,
             radius: tagH / 2
           });
-          this.text(tag.text, tx + mm(3.0), rowY + mm(2.15), {
+          this.text(tag.text, tx + mm(3.0), centeredBaseline(rowY, tagH, tagSize), {
             size: tagSize,
             bold: true,
             color: options.tagColor ?? [54, 54, 51]
@@ -1076,18 +1107,23 @@ export class FlowPDF {
         strokeWidth: 0.45,
         radius: options.bodyRadius ?? mm(3.4)
       });
-      let by = innerTop - mm(4.1);
+      const innerPadTop = mm(3.2);
+      const bodySize = options.bodySize ?? 7.7;
+      let by;
       if (bodyLabel) {
-        this.text(bodyLabel.toUpperCase(), innerX + mm(3.2), by - labelSize, {
+        const bodyLabelBaseline = baselineFromTop(innerTop, innerPadTop, labelSize);
+        this.text(bodyLabel.toUpperCase(), innerX + mm(3.2), bodyLabelBaseline, {
           size: labelSize,
           bold: true,
           color: options.labelColor ?? [121, 121, 115]
         });
-        by -= mm(6.3);
+        const bodyValueTopInset = innerPadTop + visualCapHeight(labelSize) + visualDescent(labelSize) + mm(2.0);
+        by = baselineFromTop(innerTop, bodyValueTopInset, bodySize);
+      } else {
+        by = baselineFromTop(innerTop, mm(3.6), bodySize);
       }
-      const bodySize = options.bodySize ?? 7.7;
       for (const line of bodyLines) {
-        this.text(line, innerX + mm(3.2), by - bodySize, {
+        this.text(line, innerX + mm(3.2), by, {
           size: bodySize,
           color: options.valueColor ?? this.theme.text
         });
@@ -1145,23 +1181,26 @@ export class FlowPDF {
       strokeWidth: 0.5,
       radius: pillH / 2
     });
-    this.text(pillText, x + padX + mm(3.0), top - padY - mm(4.65), {
+    this.text(pillText, x + padX + mm(3.0), centeredBaseline(top - padY - pillH, pillH, pillSize), {
       size: pillSize,
       bold: true,
       color: [47, 47, 44]
     });
 
-    this.text(title, x + padX, top - padY - mm(10.5) - titleSize, {
+    const confirmationTitleTop = padY + pillH + mm(3.0);
+    const confirmationTitleBaseline = baselineFromTop(top, confirmationTitleTop, titleSize);
+    this.text(title, x + padX, confirmationTitleBaseline, {
       size: titleSize,
       bold: true,
       color: this.theme.text
     });
-    this.text(subtitle, x + padX, top - padY - mm(15.2) - subSize, {
+    const confirmationSubtitleTop = confirmationTitleTop + visualCapHeight(titleSize) + visualDescent(titleSize) + mm(1.9);
+    this.text(subtitle, x + padX, baselineFromTop(top, confirmationSubtitleTop, subSize), {
       size: subSize,
       color: [101, 101, 96]
     });
 
-    let cy = top - padY - mm(20.3);
+    let cy = top - padY - mm(19.5);
     items.forEach((item, index) => {
       const lines = itemLines[index];
       const rowH = Math.max(mm(8.4), lines.length * itemSize * 1.35 + mm(3.4));
@@ -1187,13 +1226,14 @@ export class FlowPDF {
         this.line(mx + mm(1.55), my + mm(1.15), mx + mm(3.2), my + mm(3.0), { width: 1.0, color: [40,40,37] });
       }
 
-      let ty = cy - mm(3.15) - itemSize;
+      const itemLineHeight = itemSize * 1.35;
+      let ty = centeredTextBlockFirstBaseline(rowBottom, rowH, itemSize, itemLineHeight, lines.length);
       for (const line of lines) {
         this.text(line, mx + marker + mm(3.0), ty, {
           size: itemSize,
           color: [42, 42, 39]
         });
-        ty -= itemSize * 1.35;
+        ty -= itemLineHeight;
       }
       cy = rowBottom - rowGap;
     });
@@ -1211,13 +1251,17 @@ export class FlowPDF {
         strokeWidth: 0.45,
         radius: mm(2.8)
       });
-      this.text(label, ix + mm(3.0), cy - mm(3.2) - 5.9, {
-        size: 5.9,
+      const infoLabelSize = 5.9;
+      const infoValueSize = 7.4;
+      const infoPadTop = mm(2.7);
+      this.text(label, ix + mm(3.0), baselineFromTop(cy, infoPadTop, infoLabelSize), {
+        size: infoLabelSize,
         bold: true,
         color: [124, 124, 118]
       });
-      this.text(value, ix + mm(3.0), cy - mm(7.8) - 7.4, {
-        size: 7.4,
+      const infoValueTopInset = infoPadTop + visualCapHeight(infoLabelSize) + visualDescent(infoLabelSize) + mm(1.65);
+      this.text(value, ix + mm(3.0), baselineFromTop(cy, infoValueTopInset, infoValueSize), {
+        size: infoValueSize,
         bold: true,
         color: this.theme.text
       });

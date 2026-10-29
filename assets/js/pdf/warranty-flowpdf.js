@@ -1,6 +1,6 @@
-import { renderFlowPdfSpec } from "./flowpdf-spec.js?v=7.15.29";
+import { renderFlowPdfSpec } from "./flowpdf-spec.js?v=7.15.30";
 import { EMBEDDED_MYVELO_LOGO_BYTES } from "./brand-logo-data.js?v=7.5";
-import { decodePng, mm } from "./flowpdf.js?v=7.15.29";
+import { decodePng, mm } from "./flowpdf.js?v=7.15.30";
 import { confirmationRequirements } from "../case-confirmations.js?v=7.15.1";
 
 function formatDate(value) {
