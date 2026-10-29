@@ -9,7 +9,7 @@ import {
   getCustomerSession,
   getPortalSession,
   verifyCustomerAccess
-} from "./api.js?v=7.15.30";
+} from "./api.js?v=7.15.31";
 import {
   confirmationActionLabel,
   confirmationRequirements

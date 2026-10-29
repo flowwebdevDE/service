@@ -1,4 +1,4 @@
-import { renderWarrantyFlowPdf } from "./pdf/warranty-flowpdf.js?v=7.15.30";
+import { renderWarrantyFlowPdf } from "./pdf/warranty-flowpdf.js?v=7.15.32";
 import { confirmationRequirements } from "./case-confirmations.js?v=7.15.1";
 import { CONFIG, hasBackendConfig } from "./config.js?v=7.15.1";
 import {
@@ -9,6 +9,7 @@ import {
   listDemoCases,
   updateDemoCaseById,
   updateDemoCaseByToken,
+  updateDemoCaseReport,
   updateDemoCaseStatus
 } from "./demo-store.js?v=7.15.4";
 
@@ -50,7 +51,7 @@ export function buildCustomerUrl(token) {
 
 function commonHeaders() {
   return {
-    "x-portal-client-version": "7.15.4-eu"
+    "x-portal-client-version": "7.15.32-eu"
   };
 }
 
@@ -346,6 +347,22 @@ export async function updateAdminCase(id, data) {
   return readJson(response, "Speichern fehlgeschlagen.");
 }
 
+export async function updateAdminCaseReport(id, data) {
+  if (!(await hasBackend())) {
+    const item = updateDemoCaseReport(id, data);
+    if (!item) throw new Error("Vorgang nicht gefunden.");
+    return item;
+  }
+
+  const response = await fetch(apiUrl(`admin/cases/${encodeURIComponent(id)}/report`), {
+    method: "PUT",
+    headers: await adminHeaders(true),
+    body: JSON.stringify(data)
+  });
+
+  return readJson(response, "Arbeitsdokumentation konnte nicht gespeichert werden.");
+}
+
 export async function updateAdminCaseStatus(id, serviceStatus) {
   if (!(await hasBackend())) {
     const item = updateDemoCaseStatus(id, serviceStatus);
@@ -586,7 +603,22 @@ export async function adminCasePdfUrl(id) {
   }
 
   const confirmed = item.status === "confirmed";
-  const source = confirmed ? frozenPdfData(item) : item;
+  const source = confirmed
+    ? {
+        ...frozenPdfData(item),
+        work_performed: item.work_performed || "",
+        work_result: item.work_result || "",
+        battery_test_enabled: Boolean(item.battery_test_enabled),
+        battery_test_nominal_wh: item.battery_test_nominal_wh ?? null,
+        battery_test_measured_wh: item.battery_test_measured_wh ?? null,
+        battery_test_soh_percent: item.battery_test_soh_percent ?? null,
+        battery_test_voltage_v: item.battery_test_voltage_v ?? null,
+        battery_test_cycles: item.battery_test_cycles ?? null,
+        battery_test_status: item.battery_test_status || "",
+        battery_test_note: item.battery_test_note || "",
+        service_report_updated_at: item.service_report_updated_at || null
+      }
+    : item;
 
   const bytes = await renderWarrantyFlowPdf(
     source,

@@ -1,6 +1,6 @@
-import { renderFlowPdfSpec } from "./flowpdf-spec.js?v=7.15.30";
+import { renderFlowPdfSpec } from "./flowpdf-spec.js?v=7.15.32";
 import { EMBEDDED_MYVELO_LOGO_BYTES } from "./brand-logo-data.js?v=7.5";
-import { decodePng, mm } from "./flowpdf.js?v=7.15.30";
+import { decodePng, mm } from "./flowpdf.js?v=7.15.32";
 import { confirmationRequirements } from "../case-confirmations.js?v=7.15.1";
 
 function formatDate(value) {
@@ -122,6 +122,55 @@ function deliveryItems(snapshot) {
   return items;
 }
 
+function formatMetric(value, digits = 1) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return "";
+  return new Intl.NumberFormat("de-DE", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: digits
+  }).format(number);
+}
+
+function batteryStatusLabel(value) {
+  return {
+    ok: "In Ordnung",
+    limited: "Eingeschränkt",
+    attention: "Auffällig / prüfen"
+  }[value] || "";
+}
+
+function batteryTestText(snapshot) {
+  if (!snapshot?.battery_test_enabled) return "";
+
+  const lines = [];
+  const add = (label, value, unit = "") => {
+    if (value === null || value === undefined || value === "") return;
+    const formatted = typeof value === "number" || Number.isFinite(Number(value))
+      ? formatMetric(value, unit === "V" ? 2 : 1)
+      : String(value);
+    if (!formatted) return;
+    lines.push(`${label}: ${formatted}${unit ? ` ${unit}` : ""}`);
+  };
+
+  add("Nennkapazität", snapshot.battery_test_nominal_wh, "Wh");
+  add("Gemessene Kapazität", snapshot.battery_test_measured_wh, "Wh");
+  add("SOH / Restkapazität", snapshot.battery_test_soh_percent, "%");
+  add("Spannung", snapshot.battery_test_voltage_v, "V");
+  add("Ladezyklen", snapshot.battery_test_cycles, "");
+
+  const status = batteryStatusLabel(snapshot.battery_test_status);
+  if (status) lines.push(`Bewertung: ${status}`);
+
+  const note = String(snapshot.battery_test_note || "").trim();
+  if (note) {
+    if (lines.length) lines.push("");
+    lines.push("Messhinweis:");
+    lines.push(note);
+  }
+
+  return lines.join("\n");
+}
+
 export function buildWarrantyFlowSpec(snapshot, options = {}) {
   const shopifyRef = String(snapshot.shopify_ref || "").trim();
   const documentId = shopifyRef || snapshot.public_id || "-";
@@ -149,6 +198,12 @@ export function buildWarrantyFlowSpec(snapshot, options = {}) {
       deliveryTags: delivery.map(item => item.text),
       service: serviceText(snapshot.service_choice, snapshot),
       note: snapshot.customer_note || "Kein zusätzlicher Hinweis",
+      workPerformed: String(snapshot.work_performed || "").trim(),
+      workResult: String(snapshot.work_result || "").trim(),
+      batteryTest: batteryTestText(snapshot),
+      hasWorkPerformed: Boolean(String(snapshot.work_performed || "").trim()),
+      hasWorkResult: Boolean(String(snapshot.work_result || "").trim()),
+      hasBatteryTest: Boolean(snapshot.battery_test_enabled && batteryTestText(snapshot)),
       confirmations: confirmationRequirements(snapshot).map(rule => ({
         text: rule.pdfText || rule.copy,
         checked: !draft
@@ -201,7 +256,7 @@ export function buildWarrantyFlowSpec(snapshot, options = {}) {
         gapAfter: mm(4.0)
       },
       {
-        type: "contentCard",
+        type: "longTextCard",
         number: "2",
         title: subjectTitle,
         bodyLabel: subjectTitle,
@@ -217,18 +272,17 @@ export function buildWarrantyFlowSpec(snapshot, options = {}) {
       },
       ...(meta.service
         ? [{
-            type: "contentCard",
+            type: "longTextCard",
             number: "4",
             title: "Service & Kundenhinweis",
-            columns: 2,
-            fields: [
-              { label: meta.serviceLabel, field: "case.service", bold: true },
-              { label: "Kundenhinweis", field: "case.note" }
-            ],
+            leadLabel: meta.serviceLabel,
+            leadField: "case.service",
+            bodyLabel: "Kundenhinweis",
+            bodyField: "case.note",
             gapAfter: mm(4.0)
           }]
         : [{
-            type: "contentCard",
+            type: "longTextCard",
             number: "4",
             title: "Hinweis des Kunden",
             bodyLabel: "Kundenhinweis",
@@ -246,8 +300,41 @@ export function buildWarrantyFlowSpec(snapshot, options = {}) {
         customerField: "case.customer",
         confirmedAtField: "case.confirmedAt",
         legalField: "case.legal",
-        gapAfter: 0
-      }
+        gapAfter: (!draft && (
+          String(snapshot.work_performed || "").trim() ||
+          String(snapshot.work_result || "").trim() ||
+          snapshot.battery_test_enabled
+        )) ? mm(4.0) : 0
+      },
+      ...(!draft ? [
+        {
+          type: "longTextCard",
+          when: "case.hasWorkPerformed",
+          number: "5",
+          title: "Durchgeführte Arbeiten",
+          bodyLabel: "Arbeitsdokumentation",
+          bodyField: "case.workPerformed",
+          gapAfter: mm(4.0)
+        },
+        {
+          type: "longTextCard",
+          when: "case.hasWorkResult",
+          number: "6",
+          title: "Ergebnis / Abschluss",
+          bodyLabel: "Ergebnis",
+          bodyField: "case.workResult",
+          gapAfter: mm(4.0)
+        },
+        {
+          type: "longTextCard",
+          when: "case.hasBatteryTest",
+          number: "7",
+          title: "Akkutest",
+          bodyLabel: "Messwerte & Ergebnis",
+          bodyField: "case.batteryTest",
+          gapAfter: 0
+        }
+      ] : [])
     ]
   };
 
@@ -276,7 +363,8 @@ export function buildWarrantyFlowSpec(snapshot, options = {}) {
       brand: "",
       label: "SERVICE",
       logoImage: "brandLogo",
-      rightText: draft ? "ENTWURF" : "BESTÄTIGUNG",
+      rightText: "",
+      continuationText: "",
       brandSize: 15.2,
       labelSize: 6.6,
       rightSize: 6.4,
@@ -287,7 +375,7 @@ export function buildWarrantyFlowSpec(snapshot, options = {}) {
       bandHeight: 0,
       pageBackground: [255, 255, 255],
       showLine: false,
-      rightPill: true,
+      rightPill: false,
       rightPillHeight: 7.0,
       rightPillFill: [244, 244, 241],
       rightPillStroke: [202, 202, 196],

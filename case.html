@@ -6,8 +6,8 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://myvelo-service.red-dawn-bec6.workers.dev https://*.myvelo.de; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'none'; worker-src 'self' blob:; upgrade-insecure-requests">
   <meta name="referrer" content="no-referrer">
 <title>Vorgang · MYVELO Service</title>
-  <link rel="stylesheet" href="assets/css/app.css?v=7.15.24">
-  <link rel="stylesheet" href="assets/css/employee-apple.css?v=7.15.24">
+  <link rel="stylesheet" href="assets/css/app.css?v=7.15.32">
+  <link rel="stylesheet" href="assets/css/employee-apple.css?v=7.15.32">
   <script src="assets/js/auth-guard.js?v=7.15.1"></script>
   <script src="assets/js/security-bootstrap.js?v=7.10.6"></script>
 
@@ -89,8 +89,7 @@
           </div>
 
           <div class="flow-status-dropdown" id="service-status-dropdown">
-         <!--Wieder sichtbar stellen-->
-            <button style="display: none;" id="service-status-trigger" class="flow-status-trigger" type="button"
+            <button id="service-status-trigger" class="flow-status-trigger" type="button"
               aria-haspopup="listbox" aria-expanded="false" disabled>
               <span id="service-status-trigger-text">Erst nach Kundenbestätigung</span>
               <svg class="flow-ui-icon flow-status-trigger-arrow" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="m5.25 7.5 4.75 4.75 4.75-4.75"/></svg>
@@ -105,8 +104,7 @@
               <button type="button" role="option" data-internal-stage="completed"><span class="flow-status-menu-dot"></span><span><strong>Abgeschlossen</strong><small>Vorgang vollständig beendet</small></span></button>
             </div>
           </div>
-          <!--Wieder sichtbar stellen-->
-          <div style="display: none;" class="flow-stage-progress" id="internal-stage-progress" aria-label="Interner Fortschritt">
+          <div class="flow-stage-progress" id="internal-stage-progress" aria-label="Interner Fortschritt">
             <span class="flow-stage-progress__bar"><span id="internal-stage-progress-bar"></span></span>
             <small id="internal-stage-progress-copy">Kundenbestätigung ausstehend</small>
           </div>
@@ -134,9 +132,9 @@
         <section id="employee-frozen-view" class="flow-frozen-view hidden" aria-labelledby="employee-frozen-title">
           <div class="flow-frozen-hero">
             <div>
-              <span class="flow-frozen-kicker">BESTÄTIGT · EINGEFROREN</span>
+              <span class="flow-frozen-kicker">BESTÄTIGT · KUNDENSTAND</span>
               <h2 id="employee-frozen-title">Bestätigter Vorgang</h2>
-              <p>Das ist der verbindlich bestätigte Stand. Die Inhalte können nicht mehr verändert werden.</p>
+              <p>Der vom Kunden bestätigte Stand ist gesperrt. Die Arbeitsdokumentation kann darunter weitergeführt werden.</p>
             </div>
             <div class="flow-frozen-seal" aria-hidden="true">
               <svg class="flow-ui-icon" viewBox="0 0 20 20" focusable="false"><path d="m4.75 10.25 3.15 3.15 7.35-7.35"/></svg>
@@ -182,6 +180,109 @@
             </article>
           </div>
         </section>
+
+        <form id="service-report-form" class="flow-detail-grid flow-service-report hidden" aria-labelledby="service-report-title">
+          <section class="flow-panel span-2 flow-report-panel flow-report-overview">
+            <div class="flow-report-hero">
+              <div class="flow-report-hero__lead">
+                <span class="flow-report-hero__icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24"><path d="M7.5 3.75h6.9l3.6 3.6v12.9H7.5z"/><path d="M14.25 3.75v4.1H18"/><path d="M10 12h5.5M10 15.5h5.5"/></svg>
+                </span>
+                <div>
+                  <strong id="service-report-title">Arbeitsdokumentation</strong>
+                  <span>Ergänzt den bestätigten Kundenstand um die tatsächliche Werkstattarbeit.</span>
+                </div>
+              </div>
+              <span class="flow-report-state" id="service-report-state">Noch nicht dokumentiert</span>
+            </div>
+
+            <div class="flow-report-copy-grid">
+              <label class="flow-report-editor-card">
+                <span class="flow-report-editor-card__head">
+                  <span class="flow-report-step">1</span>
+                  <span>
+                    <strong>Durchgeführte Arbeiten</strong>
+                    <small>Prüfung, Reparatur, Austausch oder Einstellung</small>
+                  </span>
+                </span>
+                <textarea name="work_performed" rows="6" placeholder="Beschreibe nachvollziehbar, was am Fahrzeug geprüft oder durchgeführt wurde …"></textarea>
+              </label>
+
+              <label class="flow-report-editor-card">
+                <span class="flow-report-editor-card__head">
+                  <span class="flow-report-step">2</span>
+                  <span>
+                    <strong>Ergebnis / Abschluss</strong>
+                    <small>Funktionsprüfung, Probefahrt und Übergabezustand</small>
+                  </span>
+                </span>
+                <textarea name="work_result" rows="6" placeholder="Dokumentiere das Ergebnis und den Zustand nach Abschluss der Arbeiten …"></textarea>
+              </label>
+            </div>
+          </section>
+
+          <section class="flow-panel span-2 flow-battery-report-panel">
+            <div class="flow-battery-report-head">
+              <div class="flow-battery-report-head__lead">
+                <span class="flow-battery-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24"><rect x="3.5" y="7" width="15.5" height="10" rx="2"/><path d="M19 10h1.5v4H19"/><path d="m11.8 9.5-2.5 3.15h2.05l-.95 2.85 3.15-3.8h-2.1z"/></svg>
+                </span>
+                <div>
+                  <strong>Akkutest</strong>
+                  <span>Optional · nur tatsächlich vorliegende Messwerte dokumentieren</span>
+                </div>
+              </div>
+
+              <label class="flow-battery-test-toggle" for="battery-test-enabled">
+                <span class="flow-battery-test-toggle__copy">
+                  <strong>Messung hinzufügen</strong>
+                  <small>Akkudaten im Arbeitsbericht ergänzen</small>
+                </span>
+                <span class="flow-switch">
+                  <input type="checkbox" name="battery_test_enabled" id="battery-test-enabled">
+                  <span class="flow-switch__track"><span class="flow-switch__thumb"></span></span>
+                </span>
+              </label>
+            </div>
+
+            <div class="flow-battery-test-fields hidden" id="battery-test-fields">
+              <div class="flow-battery-metric-grid">
+                <label class="flow-battery-metric-card"><span>Nennkapazität</span><span class="flow-battery-input-wrap"><input name="battery_test_nominal_wh" type="number" min="0" max="5000" step="0.1" inputmode="decimal" placeholder="625"><em>Wh</em></span></label>
+                <label class="flow-battery-metric-card"><span>Gemessene Kapazität</span><span class="flow-battery-input-wrap"><input name="battery_test_measured_wh" type="number" min="0" max="5000" step="0.1" inputmode="decimal" placeholder="548"><em>Wh</em></span></label>
+                <label class="flow-battery-metric-card"><span>SOH / Restkapazität</span><span class="flow-battery-input-wrap"><input name="battery_test_soh_percent" type="number" min="0" max="200" step="0.1" inputmode="decimal" placeholder="87,7"><em>%</em></span></label>
+                <label class="flow-battery-metric-card"><span>Spannung</span><span class="flow-battery-input-wrap"><input name="battery_test_voltage_v" type="number" min="0" max="200" step="0.01" inputmode="decimal" placeholder="41,6"><em>V</em></span></label>
+                <label class="flow-battery-metric-card"><span>Ladezyklen</span><span class="flow-battery-input-wrap"><input name="battery_test_cycles" type="number" min="0" max="1000000" step="1" inputmode="numeric" placeholder="132"><em>Zyklen</em></span></label>
+                <label class="flow-battery-metric-card flow-battery-status-card"><span>Bewertung</span>
+                  <select name="battery_test_status">
+                    <option value="">Keine Bewertung</option>
+                    <option value="ok">In Ordnung</option>
+                    <option value="limited">Eingeschränkt</option>
+                    <option value="attention">Auffällig / prüfen</option>
+                  </select>
+                </label>
+              </div>
+
+              <label class="flow-battery-note-card">
+                <span class="flow-battery-note-card__head">
+                  <strong>Messhinweis / Diagnose</strong>
+                  <small>Testbedingungen, Auffälligkeiten oder ergänzende Bewertung</small>
+                </span>
+                <textarea name="battery_test_note" rows="4" placeholder="Optionaler Hinweis zur Messung …"></textarea>
+              </label>
+            </div>
+          </section>
+
+          <div class="flow-report-actions span-2">
+            <div class="flow-report-actions__copy">
+              <strong>Arbeitsbericht</strong>
+              <span>Die Kundenbestätigung bleibt unverändert. Gespeichert wird nur die nachgelagerte Werkstattdokumentation.</span>
+            </div>
+            <button id="report-save" class="flow-action primary" type="submit">
+              <svg class="flow-ui-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="m4.75 10.25 3.15 3.15 7.35-7.35"/></svg>
+              <span>Dokumentation speichern</span>
+            </button>
+          </div>
+        </form>
 
         <form id="case-form" class="flow-detail-grid">
           <section class="flow-panel">
@@ -341,7 +442,7 @@
     </div>
   </dialog>
 
-  <script type="module" src="assets/js/case-detail.js?v=7.15.30"></script>
+  <script type="module" src="assets/js/case-detail.js?v=7.15.32"></script>
   <script type="module" src="assets/js/internal-mobile.js?v=7.0"></script>
 </body>
 </html>

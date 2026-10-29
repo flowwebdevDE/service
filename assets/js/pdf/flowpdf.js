@@ -967,7 +967,7 @@ export class FlowPDF {
     for (let i = 0; i < fields.length; i += columns) {
       const row = fields.slice(i, i + columns).map(field => ({
         ...field,
-        lines: wrapText(field.value ?? "-", fieldWidth, fieldSize, !!field.bold).slice(0, 3)
+        lines: wrapText(field.value ?? "-", fieldWidth, fieldSize, !!field.bold)
       }));
       const maxLines = Math.max(...row.map(field => field.lines.length), 1);
       fieldRows.push({ row, height: labelSize * 1.15 + mm(1.9) + maxLines * valueLH + mm(1.8) });
@@ -1132,6 +1132,158 @@ export class FlowPDF {
     }
 
     this.y = bottom - (options.gapAfter ?? mm(4.2));
+    return this;
+  }
+
+  longTextCard(options = {}) {
+    const x = options.x ?? this.margin.left;
+    const width = options.width ?? this.availableWidth();
+    const radius = options.radius ?? mm(4.4);
+    const padX = options.padX ?? mm(5.2);
+    const padY = options.padY ?? mm(3.9);
+    const number = String(options.number ?? "");
+    const title = String(options.title || "");
+    const body = options.body == null ? "" : String(options.body);
+    const bodyLabel = options.bodyLabel ? String(options.bodyLabel) : "";
+    const leadLabel = options.leadLabel ? String(options.leadLabel) : "";
+    const leadValue = options.leadValue == null ? "" : String(options.leadValue);
+    const titleSize = options.titleSize ?? 10.4;
+    const labelSize = options.labelSize ?? 6.0;
+    const bodySize = options.bodySize ?? 7.7;
+    const leadSize = options.leadSize ?? 7.9;
+    const bodyLineHeight = bodySize * 1.35;
+    const leadLineHeight = leadSize * 1.30;
+    const headerH = mm(7.6);
+    const innerW = width - padX * 2;
+    const bodyInnerPadX = mm(3.2);
+    const bodyTextW = innerW - bodyInnerPadX * 2;
+    const bodyLines = wrapText(body || "-", bodyTextW, bodySize, false);
+    const leadLines = leadValue ? wrapText(leadValue, innerW, leadSize, true) : [];
+    let index = 0;
+    let first = true;
+
+    while (index < bodyLines.length) {
+      const continuation = !first;
+      const currentLeadLines = first ? leadLines : [];
+      const leadHeight = currentLeadLines.length
+        ? labelSize * 1.15 + mm(1.8) + currentLeadLines.length * leadLineHeight + mm(2.0)
+        : 0;
+      const bodyLabelHeight = bodyLabel ? labelSize * 1.15 + mm(2.0) : 0;
+      const bodyTopPad = mm(3.2);
+      const bodyBottomPad = mm(3.2);
+      const fixedHeight = padY * 2 + headerH + leadHeight + bodyTopPad + bodyLabelHeight + bodyBottomPad;
+      let availableHeight = this.y - this.bottomY();
+      const minimumHeight = fixedHeight + bodyLineHeight;
+
+      if (availableHeight < minimumHeight) {
+        this.addPage();
+        availableHeight = this.y - this.bottomY();
+      }
+
+      const maxLines = Math.max(
+        1,
+        Math.floor((availableHeight - fixedHeight) / bodyLineHeight)
+      );
+      const chunk = bodyLines.slice(index, index + maxLines);
+      const bodyBoxHeight = bodyTopPad + bodyLabelHeight + chunk.length * bodyLineHeight + bodyBottomPad;
+      const height = padY * 2 + headerH + leadHeight + bodyBoxHeight;
+      const top = this.y;
+      const bottom = top - height;
+
+      this.rect(x, bottom, width, height, {
+        fill: options.fill ?? [255, 255, 255],
+        stroke: options.stroke ?? [218, 218, 213],
+        strokeWidth: 0.55,
+        radius
+      });
+
+      const badgeSize = mm(7.2);
+      const badgeX = x + padX;
+      const badgeY = top - padY - badgeSize;
+      if (number && first) {
+        this.rect(badgeX, badgeY, badgeSize, badgeSize, {
+          fill: options.badgeFill ?? [245, 245, 242],
+          stroke: options.badgeStroke ?? [196, 196, 190],
+          strokeWidth: 0.5,
+          radius: badgeSize / 2
+        });
+        const numSize = options.numberSize ?? 7.0;
+        const numW = measureText(number, numSize, true);
+        this.text(number, badgeX + (badgeSize - numW) / 2, centeredBaseline(badgeY, badgeSize, numSize), {
+          size: numSize,
+          bold: true,
+          color: [35, 35, 33]
+        });
+      }
+
+      const displayTitle = continuation ? `${title} · Fortsetzung` : title;
+      this.text(
+        displayTitle,
+        badgeX + (number && first ? badgeSize + mm(3.2) : 0),
+        baselineFromTop(top, padY + mm(.15), titleSize),
+        { size: titleSize, bold: true, color: options.titleColor ?? this.theme.text }
+      );
+
+      let cy = top - padY - headerH;
+      if (currentLeadLines.length) {
+        if (leadLabel) {
+          this.text(leadLabel.toUpperCase(), x + padX, baselineFromTop(cy, mm(.25), labelSize), {
+            size: labelSize,
+            bold: true,
+            color: options.labelColor ?? [121, 121, 115]
+          });
+        }
+        const leadTop = mm(.25) + (leadLabel ? visualCapHeight(labelSize) + visualDescent(labelSize) + mm(1.75) : 0);
+        let ly = baselineFromTop(cy, leadTop, leadSize);
+        for (const line of currentLeadLines) {
+          this.text(line, x + padX, ly, {
+            size: leadSize,
+            bold: true,
+            color: options.valueColor ?? this.theme.text
+          });
+          ly -= leadLineHeight;
+        }
+        cy -= leadHeight;
+      }
+
+      const innerX = x + padX;
+      const innerTop = cy;
+      const innerBottom = innerTop - bodyBoxHeight;
+      this.rect(innerX, innerBottom, innerW, bodyBoxHeight, {
+        fill: options.bodyFill ?? [249, 249, 247],
+        stroke: options.bodyStroke ?? [222, 222, 217],
+        strokeWidth: 0.45,
+        radius: options.bodyRadius ?? mm(3.4)
+      });
+
+      let by;
+      if (bodyLabel) {
+        this.text(bodyLabel.toUpperCase(), innerX + bodyInnerPadX, baselineFromTop(innerTop, bodyTopPad, labelSize), {
+          size: labelSize,
+          bold: true,
+          color: options.labelColor ?? [121, 121, 115]
+        });
+        const textTop = bodyTopPad + visualCapHeight(labelSize) + visualDescent(labelSize) + mm(2.0);
+        by = baselineFromTop(innerTop, textTop, bodySize);
+      } else {
+        by = baselineFromTop(innerTop, bodyTopPad, bodySize);
+      }
+
+      for (const line of chunk) {
+        this.text(line, innerX + bodyInnerPadX, by, {
+          size: bodySize,
+          color: options.valueColor ?? this.theme.text
+        });
+        by -= bodyLineHeight;
+      }
+
+      index += chunk.length;
+      first = false;
+      const hasMore = index < bodyLines.length;
+      this.y = bottom - (hasMore ? 0 : (options.gapAfter ?? mm(4.2)));
+      if (hasMore) this.addPage();
+    }
+
     return this;
   }
 
@@ -1469,6 +1621,13 @@ export class FlowPDF {
             block.items.map(i => ({ ...i, value: i.value ?? resolve(i.field) })),
             block
           );
+          break;
+        case "longTextCard":
+          this.longTextCard({
+            ...block,
+            body: block.body ?? resolve(block.bodyField) ?? "",
+            leadValue: block.leadValue ?? resolve(block.leadField) ?? ""
+          });
           break;
         case "contentCard":
           this.contentCard({

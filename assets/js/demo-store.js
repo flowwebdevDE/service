@@ -66,6 +66,17 @@ function initialState() {
         service_price_mode: "hidden",
         service_price_amount_cents: null,
         service_price_note: "",
+        work_performed: "",
+        work_result: "",
+        battery_test_enabled: false,
+        battery_test_nominal_wh: null,
+        battery_test_measured_wh: null,
+        battery_test_soh_percent: null,
+        battery_test_voltage_v: null,
+        battery_test_cycles: null,
+        battery_test_status: "",
+        battery_test_note: "",
+        service_report_updated_at: null,
         confirmed_at: null,
         read_only: false,
         token: CONFIG.demoToken,
@@ -122,6 +133,17 @@ export function createDemoCase(data) {
     service_price_mode: data.service_price_mode === "known" ? "known" : "hidden",
     service_price_amount_cents: Number.isFinite(Number(data.service_price_amount_cents)) ? Math.round(Number(data.service_price_amount_cents)) : null,
     service_price_note: String(data.service_price_note || ""),
+    work_performed: "",
+    work_result: "",
+    battery_test_enabled: false,
+    battery_test_nominal_wh: null,
+    battery_test_measured_wh: null,
+    battery_test_soh_percent: null,
+    battery_test_voltage_v: null,
+    battery_test_cycles: null,
+    battery_test_status: "",
+    battery_test_note: "",
+    service_report_updated_at: null,
     confirmed_at: null,
     read_only: false,
     token,
@@ -240,6 +262,37 @@ export function confirmDemoCase(token, patch) {
   return state.cases[index];
 }
 
+
+export function updateDemoCaseReport(publicId, patch) {
+  const state = getState();
+  const index = state.cases.findIndex(item => item.public_id === publicId);
+  if (index < 0) return null;
+  if (state.cases[index].status !== "confirmed") return state.cases[index];
+
+  const enabled = patch.battery_test_enabled === true;
+  const optionalNumber = value => value === "" || value === null || value === undefined || !Number.isFinite(Number(value))
+    ? null
+    : Number(value);
+
+  state.cases[index] = {
+    ...state.cases[index],
+    work_performed: String(patch.work_performed || ""),
+    work_result: String(patch.work_result || ""),
+    battery_test_enabled: enabled,
+    battery_test_nominal_wh: enabled ? optionalNumber(patch.battery_test_nominal_wh) : null,
+    battery_test_measured_wh: enabled ? optionalNumber(patch.battery_test_measured_wh) : null,
+    battery_test_soh_percent: enabled ? optionalNumber(patch.battery_test_soh_percent) : null,
+    battery_test_voltage_v: enabled ? optionalNumber(patch.battery_test_voltage_v) : null,
+    battery_test_cycles: enabled ? optionalNumber(patch.battery_test_cycles) : null,
+    battery_test_status: enabled ? String(patch.battery_test_status || "") : "",
+    battery_test_note: enabled ? String(patch.battery_test_note || "") : "",
+    service_report_updated_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  };
+
+  setState(state);
+  return state.cases[index];
+}
 
 export function updateDemoCaseStatus(publicId, serviceStatus, internalStage = "") {
   const state = getState();

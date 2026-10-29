@@ -5,10 +5,11 @@ import {
   getAdminCase,
   getAdminCustomerLink,
   updateAdminCase,
+  updateAdminCaseReport,
   updateAdminCaseStage,
   logoutPortalSession,
   requirePortalSession
-} from "./api.js?v=7.15.30";
+} from "./api.js?v=7.15.32";
 import { initModelPopup } from "./model-picker.js?v=7.6.1";
 import { setButtonLoading, pulseElement, beginGlobalBusy, endGlobalBusy, transitionSurface } from "./motion.js?v=7.15.1";
 import { showError, showInfo, showSuccess } from "./banner.js?v=7.15.24";
@@ -74,6 +75,11 @@ const stageProgressCopy = document.querySelector("#internal-stage-progress-copy"
 const priceSettings = document.querySelector("#case-price-settings");
 const priceMode = document.querySelector("#case-service-price-mode");
 const priceAmountField = document.querySelector("#case-service-price-amount-field");
+const reportForm = document.querySelector("#service-report-form");
+const reportSaveButton = document.querySelector("#report-save");
+const reportState = document.querySelector("#service-report-state");
+const batteryTestEnabled = reportForm?.elements.battery_test_enabled;
+const batteryTestFields = document.querySelector("#battery-test-fields");
 let currentItem = null;
 
 function visibleCaseReference(item) {
@@ -281,6 +287,76 @@ function confirmedSnapshot(item) {
     : item;
 }
 
+function optionalNumberInput(element) {
+  if (!element || element.value === "") return null;
+  const value = Number(element.value);
+  return Number.isFinite(value) ? value : null;
+}
+
+function hasServiceReport(item) {
+  return Boolean(
+    String(item?.work_performed || "").trim() ||
+    String(item?.work_result || "").trim() ||
+    item?.battery_test_enabled
+  );
+}
+
+function syncBatteryTestFields() {
+  const enabled = Boolean(batteryTestEnabled?.checked);
+  batteryTestFields?.classList.toggle("hidden", !enabled);
+  batteryTestFields?.querySelectorAll("input, select, textarea").forEach(element => {
+    element.disabled = !enabled;
+  });
+}
+
+function fillServiceReport(item) {
+  if (!reportForm) return;
+  const confirmed = item?.status === "confirmed";
+  reportForm.classList.toggle("hidden", !confirmed);
+  if (!confirmed) return;
+
+  reportForm.elements.work_performed.value = item.work_performed || "";
+  reportForm.elements.work_result.value = item.work_result || "";
+  reportForm.elements.battery_test_enabled.checked = Boolean(item.battery_test_enabled);
+  reportForm.elements.battery_test_nominal_wh.value = item.battery_test_nominal_wh ?? "";
+  reportForm.elements.battery_test_measured_wh.value = item.battery_test_measured_wh ?? "";
+  reportForm.elements.battery_test_soh_percent.value = item.battery_test_soh_percent ?? "";
+  reportForm.elements.battery_test_voltage_v.value = item.battery_test_voltage_v ?? "";
+  reportForm.elements.battery_test_cycles.value = item.battery_test_cycles ?? "";
+  reportForm.elements.battery_test_status.value = item.battery_test_status || "";
+  reportForm.elements.battery_test_note.value = item.battery_test_note || "";
+  syncBatteryTestFields();
+
+  if (reportState) {
+    if (item.service_report_updated_at) {
+      const stamp = new Intl.DateTimeFormat("de-DE", {
+        dateStyle: "short",
+        timeStyle: "short"
+      }).format(new Date(item.service_report_updated_at));
+      reportState.textContent = `Gespeichert · ${stamp}`;
+      reportState.classList.add("is-saved");
+    } else {
+      reportState.textContent = "Noch nicht dokumentiert";
+      reportState.classList.remove("is-saved");
+    }
+  }
+}
+
+function collectServiceReport() {
+  return {
+    work_performed: reportForm.elements.work_performed.value.trim(),
+    work_result: reportForm.elements.work_result.value.trim(),
+    battery_test_enabled: Boolean(reportForm.elements.battery_test_enabled.checked),
+    battery_test_nominal_wh: optionalNumberInput(reportForm.elements.battery_test_nominal_wh),
+    battery_test_measured_wh: optionalNumberInput(reportForm.elements.battery_test_measured_wh),
+    battery_test_soh_percent: optionalNumberInput(reportForm.elements.battery_test_soh_percent),
+    battery_test_voltage_v: optionalNumberInput(reportForm.elements.battery_test_voltage_v),
+    battery_test_cycles: optionalNumberInput(reportForm.elements.battery_test_cycles),
+    battery_test_status: reportForm.elements.battery_test_status.value || "",
+    battery_test_note: reportForm.elements.battery_test_note.value.trim()
+  };
+}
+
 function renderEmployeeFrozen(item) {
   const snapshot = confirmedSnapshot(item);
   const meta = caseTypeMeta(snapshot.case_type);
@@ -360,6 +436,7 @@ function fill(item) {
 
 
   currentItem = item;
+  fillServiceReport(item);
 
   const saveButton = document.querySelector("#save");
 
@@ -401,7 +478,9 @@ function fill(item) {
   if (pdfButton) {
     const pdfLabel = pdfButton.querySelector("span");
     if (pdfLabel) {
-      pdfLabel.textContent = item.status === "confirmed" ? "Bestätigungs-PDF" : "Vorgangs-PDF";
+      pdfLabel.textContent = item.status === "confirmed"
+        ? (hasServiceReport(item) ? "Service-PDF" : "Bestätigungs-PDF")
+        : "Vorgangs-PDF";
     }
   }
 
@@ -418,6 +497,27 @@ function fill(item) {
     confirmDeleteButton.disabled = true;
   }
 }
+
+batteryTestEnabled?.addEventListener("change", syncBatteryTestFields);
+
+reportForm?.addEventListener("submit", async event => {
+  event.preventDefault();
+  if (currentItem?.status !== "confirmed") return;
+
+  setButtonLoading(reportSaveButton, true, "Speichere …");
+  beginGlobalBusy();
+
+  try {
+    const updated = await updateAdminCaseReport(id, collectServiceReport());
+    fill(updated);
+    showSuccess("Arbeitsdokumentation gespeichert.", { title: "Gespeichert" });
+  } catch (error) {
+    showError(error.message, { title: "Dokumentation nicht gespeichert" });
+  } finally {
+    setButtonLoading(reportSaveButton, false);
+    endGlobalBusy();
+  }
+});
 
 form.elements.service_choice?.addEventListener("change", syncPriceControls);
 priceMode?.addEventListener("change", syncPriceControls);

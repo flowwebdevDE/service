@@ -1,4 +1,4 @@
-import { FlowPDF, mm } from "./flowpdf.js?v=7.15.30";
+import { FlowPDF, mm } from "./flowpdf.js?v=7.15.32";
 
 const DEFAULT_OPTIONS = {
   marginTop: 15,

@@ -4007,3 +4007,414 @@ body.flow-employee .flow-case-tag--subject { color:#62625e; background:#f4f4f1; 
     overflow-anchor: none;
   }
 }
+
+/* V7.15.33 · refined post-confirmation work report */
+.flow-service-report{
+  margin-top:26px;
+  gap:18px !important;
+}
+
+.flow-report-panel,
+.flow-battery-report-panel{
+  overflow:hidden;
+  border-color:#deded8 !important;
+  background:#f5f5f2 !important;
+  box-shadow:none !important;
+}
+
+.flow-report-overview{
+  padding:20px;
+}
+
+.flow-report-hero{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:24px;
+  margin-bottom:18px;
+}
+
+.flow-report-hero__lead,
+.flow-battery-report-head__lead{
+  min-width:0;
+  display:flex;
+  align-items:center;
+  gap:14px;
+}
+
+.flow-report-hero__lead > div,
+.flow-battery-report-head__lead > div{
+  min-width:0;
+}
+
+.flow-report-hero__lead strong,
+.flow-battery-report-head__lead strong{
+  display:block;
+  color:#111;
+  font-size:15px;
+  font-weight:760;
+  letter-spacing:-.018em;
+}
+
+.flow-report-hero__lead > div > span,
+.flow-battery-report-head__lead > div > span{
+  display:block;
+  margin-top:4px;
+  color:#777771;
+  font-size:10px;
+  line-height:1.45;
+}
+
+.flow-report-hero__icon,
+.flow-battery-icon{
+  flex:0 0 auto;
+  width:42px;
+  height:42px;
+  display:grid;
+  place-items:center;
+  border:1px solid #dcdcd6;
+  border-radius:14px;
+  background:#fff;
+  color:#222;
+}
+
+.flow-report-hero__icon svg,
+.flow-battery-icon svg{
+  width:20px;
+  height:20px;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1.7;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+
+.flow-report-state{
+  flex:0 0 auto;
+  display:inline-flex;
+  align-items:center;
+  min-height:32px;
+  padding:0 13px;
+  border:1px solid #d8d8d2;
+  border-radius:999px;
+  background:#fff;
+  color:#73736d;
+  font-size:10px;
+  font-weight:760;
+  white-space:nowrap;
+}
+
+.flow-report-state.is-saved{
+  color:#20201e;
+  border-color:#c8c8c2;
+  background:#efefeb;
+}
+
+.flow-report-copy-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:14px;
+}
+
+.flow-report-editor-card{
+  min-width:0;
+  display:grid;
+  gap:14px;
+  padding:18px;
+  border:1px solid #deded8;
+  border-radius:18px;
+  background:#fff;
+}
+
+.flow-report-editor-card__head{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.flow-report-editor-card__head > span:last-child{
+  min-width:0;
+}
+
+.flow-report-editor-card__head strong{
+  display:block;
+  color:#161615;
+  font-size:12px;
+  font-weight:760;
+}
+
+.flow-report-editor-card__head small{
+  display:block;
+  margin-top:3px;
+  color:#83837c;
+  font-size:9px;
+  line-height:1.35;
+}
+
+.flow-report-step{
+  flex:0 0 auto;
+  width:28px;
+  height:28px;
+  display:grid;
+  place-items:center;
+  border-radius:50%;
+  background:#111;
+  color:#fff;
+  font-size:10px;
+  font-weight:800;
+}
+
+.flow-report-editor-card textarea{
+  width:100%;
+  min-width:0;
+  min-height:178px;
+  box-sizing:border-box;
+  padding:14px 15px;
+  border:1px solid #deded8;
+  border-radius:14px;
+  background:#fafaf8;
+  color:#151514;
+  outline:none;
+  resize:vertical;
+  font:inherit;
+  font-size:12px;
+  line-height:1.55;
+  transition:border-color .18s ease, box-shadow .18s ease, background .18s ease;
+}
+
+.flow-report-editor-card textarea:focus,
+.flow-battery-note-card textarea:focus,
+.flow-battery-input-wrap:focus-within,
+.flow-battery-status-card select:focus{
+  border-color:#aaa9a2;
+  background:#fff;
+  box-shadow:0 0 0 3px rgba(17,17,17,.045);
+}
+
+.flow-battery-report-panel{
+  padding:20px;
+}
+
+.flow-battery-report-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:24px;
+}
+
+.flow-battery-test-toggle{
+  flex:0 0 auto;
+  min-width:270px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:18px;
+  padding:11px 12px 11px 15px;
+  border:1px solid #deded8;
+  border-radius:16px;
+  background:#fff;
+  cursor:pointer;
+}
+
+.flow-battery-test-toggle__copy{
+  min-width:0;
+}
+
+.flow-battery-test-toggle__copy strong{
+  display:block;
+  color:#1d1d1b;
+  font-size:10px;
+  font-weight:760;
+}
+
+.flow-battery-test-toggle__copy small{
+  display:block;
+  margin-top:3px;
+  color:#85857e;
+  font-size:8.5px;
+  line-height:1.35;
+}
+
+.flow-battery-test-fields{
+  display:grid;
+  gap:14px;
+  margin-top:18px;
+  padding-top:18px;
+  border-top:1px solid #deded8;
+}
+
+.flow-battery-metric-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:12px;
+}
+
+.flow-battery-metric-card{
+  min-width:0;
+  display:grid;
+  gap:9px;
+  padding:14px;
+  border:1px solid #deded8;
+  border-radius:16px;
+  background:#fff;
+}
+
+.flow-battery-metric-card > span:first-child{
+  color:#74746e;
+  font-size:9px;
+  font-weight:760;
+  letter-spacing:.01em;
+}
+
+.flow-battery-input-wrap{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  min-height:42px;
+  padding:0 11px;
+  border:1px solid #e0e0da;
+  border-radius:11px;
+  background:#fafaf8;
+  transition:border-color .18s ease, box-shadow .18s ease, background .18s ease;
+}
+
+.flow-battery-input-wrap input{
+  width:100%;
+  min-width:0;
+  padding:0 !important;
+  border:0 !important;
+  background:transparent !important;
+  box-shadow:none !important;
+  color:#111;
+  font-size:12px;
+  font-weight:700;
+  outline:none;
+}
+
+.flow-battery-input-wrap em{
+  flex:0 0 auto;
+  color:#8a8a83;
+  font-size:9px;
+  font-style:normal;
+  font-weight:700;
+}
+
+.flow-battery-status-card select{
+  width:100%;
+  min-width:0;
+  min-height:42px;
+  padding:0 11px;
+  border:1px solid #e0e0da;
+  border-radius:11px;
+  background:#fafaf8;
+  color:#111;
+  font:inherit;
+  font-size:11px;
+  font-weight:650;
+  outline:none;
+}
+
+.flow-battery-note-card{
+  display:grid;
+  grid-template-columns:minmax(190px,.36fr) minmax(0,1fr);
+  align-items:stretch;
+  gap:14px;
+  padding:14px;
+  border:1px solid #deded8;
+  border-radius:16px;
+  background:#fff;
+}
+
+.flow-battery-note-card__head{
+  align-self:center;
+  padding:2px 4px;
+}
+
+.flow-battery-note-card__head strong{
+  display:block;
+  color:#181817;
+  font-size:11px;
+  font-weight:760;
+}
+
+.flow-battery-note-card__head small{
+  display:block;
+  margin-top:5px;
+  color:#85857e;
+  font-size:9px;
+  line-height:1.45;
+}
+
+.flow-battery-note-card textarea{
+  width:100%;
+  min-width:0;
+  min-height:92px;
+  box-sizing:border-box;
+  padding:12px 13px;
+  border:1px solid #e0e0da;
+  border-radius:12px;
+  background:#fafaf8;
+  color:#111;
+  outline:none;
+  resize:vertical;
+  font:inherit;
+  font-size:11px;
+  line-height:1.5;
+  transition:border-color .18s ease, box-shadow .18s ease, background .18s ease;
+}
+
+.flow-report-actions{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:24px;
+  padding:14px 16px;
+  border:1px solid #deded8;
+  border-radius:18px;
+  background:#f5f5f2;
+}
+
+.flow-report-actions__copy{
+  min-width:0;
+  max-width:670px;
+}
+
+.flow-report-actions__copy strong{
+  display:block;
+  color:#1b1b19;
+  font-size:10px;
+  font-weight:760;
+}
+
+.flow-report-actions__copy span{
+  display:block;
+  margin-top:4px;
+  color:#7c7c75;
+  font-size:9px;
+  line-height:1.45;
+}
+
+.flow-report-actions .flow-action{
+  flex:0 0 auto;
+  min-width:230px;
+  min-height:44px;
+  justify-content:center;
+}
+
+@media(max-width:1000px){
+  .flow-report-copy-grid{grid-template-columns:1fr}
+  .flow-battery-report-head{align-items:flex-start;flex-direction:column}
+  .flow-battery-test-toggle{width:100%;min-width:0;box-sizing:border-box}
+  .flow-battery-metric-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+
+@media(max-width:760px){
+  .flow-service-report{margin-top:16px}
+  .flow-report-overview,.flow-battery-report-panel{padding:14px}
+  .flow-report-hero{align-items:flex-start;flex-direction:column;gap:14px}
+  .flow-report-state{white-space:normal}
+  .flow-battery-metric-grid{grid-template-columns:1fr}
+  .flow-battery-note-card{grid-template-columns:1fr}
+  .flow-report-actions{align-items:stretch;flex-direction:column}
+  .flow-report-actions .flow-action{width:100%;min-width:0}
+}
