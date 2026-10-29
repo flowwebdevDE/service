@@ -6,13 +6,15 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://myvelo-service.red-dawn-bec6.workers.dev https://*.myvelo.de; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'none'; worker-src 'self' blob:; upgrade-insecure-requests">
   <meta name="referrer" content="no-referrer">
   <title>Mitarbeiter · MYVELO Service</title>
+  <link rel="icon" href="assets/brand/favicon.png?v=7.15.34" type="image/png">
   <link rel="stylesheet" href="assets/css/app.css?v=7.15.24">
-  <link rel="stylesheet" href="assets/css/employee-apple.css?v=7.15.24">
+  <link rel="stylesheet" href="assets/css/employee-apple.css?v=7.15.39">
   <script src="assets/js/auth-guard.js?v=7.15.1"></script>
   <script src="assets/js/security-bootstrap.js?v=7.10.6"></script>
   <script src="portal-config.js?v=7.15.1"></script>
+  <script src="assets/js/employee-preferences.js?v=7.15.39"></script>
 </head>
-<body class="flow-employee">
+<body class="flow-employee flow-profile-page">
   <div class="flow-shell">
     <aside class="flow-sidebar" id="flowSidebar">
       <div class="flow-brand">
@@ -41,47 +43,152 @@
         <div class="flow-topbar-left">
           <button class="flow-burger" id="mobileMenuButton" type="button" aria-label="Menü"><span></span><span></span><span></span></button>
           <a class="flow-back-button" href="index.html" aria-label="Zurück zu den Vorgängen"><svg class="flow-ui-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M11.75 4.75 6.5 10l5.25 5.25"/></svg></a>
-          <div><strong>Mitarbeiter</strong><span>Profil und Anmeldung</span></div>
+          <div><strong>Mitarbeiter</strong><span>Arbeitsplatz und Einstellungen</span></div>
+        </div>
+        <div class="flow-topbar-actions">
+          <a class="flow-action secondary" href="index.html">Zur Übersicht</a>
         </div>
       </header>
 
-      <main class="flow-workspace flow-workspace--detail">
-        <section class="flow-page-intro" aria-labelledby="profile-title">
-          <div class="flow-page-intro__copy">
-            <span class="flow-page-intro__eyebrow">MYVELO Service</span>
-            <h1 id="profile-title">Mitarbeiterbereich</h1>
-            <p>Aktuelle Anmeldung, Sitzungsstatus und die Basis für spätere personenbezogene Mitarbeiterkonten.</p>
+      <main class="flow-workspace flow-workspace--detail flow-workspace--profile">
+        <section class="flow-profile-hero" aria-labelledby="profile-title">
+          <div class="flow-profile-hero__identity">
+            <span class="flow-profile-avatar flow-profile-avatar--large" aria-hidden="true">MA</span>
+            <div>
+              <span class="flow-page-intro__eyebrow">MYVELO Service</span>
+              <h1 id="profile-title">Mitarbeiter</h1>
+              <p>Arbeitsplatzprofil für den internen Servicebereich.</p>
+            </div>
+          </div>
+          <div class="flow-profile-hero__facts">
+            <div class="flow-profile-fact">
+              <span>Status</span>
+              <strong><i class="flow-profile-live-dot" aria-hidden="true"></i> Aktiv</strong>
+            </div>
+            <div class="flow-profile-fact">
+              <span>Zugang</span>
+              <strong>Firmenzugang</strong>
+            </div>
+            <div class="flow-profile-fact">
+              <span>Gültig bis</span>
+              <strong id="profile-session-expiry">–</strong>
+            </div>
           </div>
         </section>
 
-        <section class="flow-profile-grid">
-          <article class="flow-panel flow-profile-card">
-            <div class="flow-panel-head"><div><strong>Aktuelle Anmeldung</strong><span>Diese Browser-Sitzung</span></div></div>
-            <div class="flow-profile-identity">
-              <span class="flow-profile-avatar" aria-hidden="true">MA</span>
-              <div><strong>Mitarbeiter</strong><span>Firmenzugang</span></div>
-            </div>
-            <dl class="flow-profile-list">
-              <div><dt>Anmeldeart</dt><dd>Firmen-Key</dd></div>
-              <div><dt>Sitzung gültig bis</dt><dd id="profile-session-expiry">–</dd></div>
-              <div><dt>Status</dt><dd><span class="flow-profile-state">Aktiv</span></dd></div>
-            </dl>
-          </article>
+        <div class="flow-profile-layout">
+          <div class="flow-profile-primary">
+            <section class="flow-panel flow-profile-settings-card" aria-labelledby="workspace-settings-title">
+              <div class="flow-profile-section-head">
+                <span class="flow-profile-section-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10M14 4v6M8 14v6"/></svg>
+                </span>
+                <div>
+                  <strong id="workspace-settings-title">Arbeitsplatz</strong>
+                  <span>Darstellung und Verhalten auf diesem Gerät</span>
+                </div>
+              </div>
 
-          <article class="flow-panel flow-profile-card">
-            <div class="flow-panel-head"><div><strong>Google Workspace</strong><span>Vorbereitet, noch nicht aktiviert</span></div></div>
-            <div class="flow-profile-note">
-              <strong>OAuth kommt bewusst später.</strong>
-              <p>Die Oberfläche ist dafür vorbereitet. Bis Navigation, Statuslogik und Kundenflow stabil sind, bleibt die produktive Anmeldung beim bestehenden Firmen-Key.</p>
-            </div>
-            <div class="flow-profile-disabled-action" aria-disabled="true">Mit Firmen-Google-Account anmelden · später</div>
-          </article>
-        </section>
+              <div class="flow-profile-setting-list">
+                <div class="flow-profile-setting-row">
+                  <div>
+                    <strong>Standardbereich</strong>
+                    <span>Welche Vorgänge beim Öffnen des Dashboards zuerst erscheinen.</span>
+                  </div>
+                  <div class="flow-profile-segment" role="group" aria-label="Standardbereich">
+                    <button type="button" data-profile-setting="defaultView" data-setting-value="active">Aktiv</button>
+                    <button type="button" data-profile-setting="defaultView" data-setting-value="archive">Archiv</button>
+                  </div>
+                </div>
+
+                <div class="flow-profile-setting-row">
+                  <div>
+                    <strong>Darstellungsdichte</strong>
+                    <span>Bestimmt, wie kompakt Vorgänge und Arbeitsflächen dargestellt werden.</span>
+                  </div>
+                  <div class="flow-profile-segment" role="group" aria-label="Darstellungsdichte">
+                    <button type="button" data-profile-setting="density" data-setting-value="comfortable">Komfortabel</button>
+                    <button type="button" data-profile-setting="density" data-setting-value="compact">Kompakt</button>
+                  </div>
+                </div>
+
+                <div class="flow-profile-setting-row">
+                  <div>
+                    <strong>Bewegungen</strong>
+                    <span>Animationen normal anzeigen oder für einen ruhigeren Arbeitsplatz reduzieren.</span>
+                  </div>
+                  <div class="flow-profile-segment" role="group" aria-label="Bewegungen">
+                    <button type="button" data-profile-setting="motion" data-setting-value="full">Standard</button>
+                    <button type="button" data-profile-setting="motion" data-setting-value="reduced">Reduziert</button>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section class="flow-panel flow-profile-settings-card" aria-labelledby="session-title">
+              <div class="flow-profile-section-head">
+                <span class="flow-profile-section-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 4.6 2.9 8 7 10 4.1-2 7-5.4 7-10V6l-7-3Z"/><path d="m9.5 12 1.7 1.7 3.6-4"/></svg>
+                </span>
+                <div>
+                  <strong id="session-title">Aktuelle Anmeldung</strong>
+                  <span>Aktiver Zugriff auf diesem Gerät</span>
+                </div>
+              </div>
+
+              <dl class="flow-profile-detail-list">
+                <div><dt>Status</dt><dd><span class="flow-profile-state"><i></i> Aktiv</span></dd></div>
+                <div><dt>Anmeldeart</dt><dd>Firmen-Key</dd></div>
+                <div><dt>Gültig bis</dt><dd id="profile-session-expiry-detail">–</dd></div>
+              </dl>
+
+              <div class="flow-profile-action-strip">
+                <div>
+                  <strong>Anmeldung auf diesem Gerät beenden</strong>
+                  <span>Danach ist eine erneute Anmeldung erforderlich.</span>
+                </div>
+                <button class="flow-action secondary" id="profile-logout-button" type="button">Abmelden</button>
+              </div>
+            </section>
+          </div>
+
+          <aside class="flow-profile-secondary">
+            <section class="flow-panel flow-profile-side-card">
+              <div class="flow-profile-section-head flow-profile-section-head--compact">
+                <span class="flow-profile-section-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>
+                </span>
+                <div><strong>Portal</strong><span>Interner Servicebereich</span></div>
+              </div>
+              <dl class="flow-profile-detail-list flow-profile-detail-list--compact">
+                <div><dt>Produkt</dt><dd>MYVELO Service</dd></div>
+                <div><dt>Version</dt><dd>7.15.39</dd></div>
+                <div><dt>Bereich</dt><dd>Mitarbeiter</dd></div>
+              </dl>
+              <div class="flow-profile-link-list">
+                <a href="privacy.html">Datenschutz <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7.25 4.75 12.5 10l-5.25 5.25"/></svg></a>
+                <a href="imprint.html">Impressum <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7.25 4.75 12.5 10l-5.25 5.25"/></svg></a>
+              </div>
+            </section>
+
+            <section class="flow-panel flow-profile-side-card">
+              <div class="flow-profile-section-head flow-profile-section-head--compact">
+                <span class="flow-profile-section-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/><circle cx="12" cy="12" r="9"/></svg>
+                </span>
+                <div><strong>Lokale Einstellungen</strong><span>Nur Darstellung auf diesem Gerät</span></div>
+              </div>
+              <p class="flow-profile-side-copy">Setzt Standardbereich, Darstellungsdichte und Bewegungen auf die Ausgangswerte zurück.</p>
+              <button class="flow-profile-reset" id="profile-reset-preferences" type="button">Einstellungen zurücksetzen</button>
+            </section>
+          </aside>
+        </div>
       </main>
     </div>
   </div>
   <div class="flow-backdrop" id="flowBackdrop"></div>
-  <script type="module" src="assets/js/profile.js?v=7.15.1"></script>
+  <script type="module" src="assets/js/profile.js?v=7.15.39"></script>
   <script type="module" src="assets/js/internal-mobile.js?v=7.15.1"></script>
+  <script src="assets/js/legal-navigation.js?v=7.15.38"></script>
 </body>
 </html>

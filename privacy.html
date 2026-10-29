@@ -7,13 +7,14 @@
   <meta name="referrer" content="no-referrer">
   <meta name="robots" content="noindex,nofollow">
   <title>Datenschutz · MYVELO Service</title>
-  <link rel="stylesheet" href="assets/css/app.css?v=7.15.24">
+  <link rel="icon" href="assets/brand/favicon.png?v=7.15.34" type="image/png">
+  <link rel="stylesheet" href="assets/css/app.css?v=7.15.37">
   <script src="assets/js/security-bootstrap.js?v=7.10.6"></script>
   <script src="portal-config.js?v=7.14.2"></script>
 </head>
-<body>
+<body class="legal-page">
   <header class="topbar">
-    <a class="brand" href="index.html">
+    <a class="brand" href="#">
       <img class="brand-logo-image" src="assets/brand/myvelo-logo.png?v=7.0" width="132" height="25" alt="MYVELO" data-hide-on-error>
       <span class="brand-divider"></span>
       <span class="brand-section">SERVICE</span>
@@ -23,6 +24,12 @@
   <main class="detail-workspace legal-workspace">
     <section class="panel legal-panel">
       <div class="panel-head legal-panel-head">
+        <a class="legal-back-button" data-legal-back href="index.html" aria-label="Zurück zur vorherigen Seite">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span data-legal-back-label>Zurück</span>
+        </a>
         <div>
           <p class="eyebrow">Rechtliches</p>
           <h2>Datenschutz</h2>
@@ -104,5 +111,6 @@
       </div>
     </section>
   </main>
+  <script src="assets/js/legal-navigation.js?v=7.15.38"></script>
 </body>
 </html>

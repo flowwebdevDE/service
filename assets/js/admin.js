@@ -434,10 +434,14 @@ function updateStats(items) {
   setAdminText("sidebar-archive-count", String(archiveItems.length));
 }
 
+const initialViewParam = new URLSearchParams(location.search).get("view");
+const preferredDefaultView = window.MYVELOEmployeePreferences?.read?.().defaultView || "active";
 let activeWorkView =
-  new URLSearchParams(location.search).get("view") === "archive"
+  initialViewParam === "archive"
     ? "archive"
-    : "active";
+    : initialViewParam === "active"
+      ? "active"
+      : preferredDefaultView === "archive" ? "archive" : "active";
 let activeStatusFilter = "all";
 let cachedItems = [];
 const CASES_PER_PAGE = 15;
@@ -618,6 +622,7 @@ function renderCaseList(items) {
         </div>
       </div>
     `;
+    requestAnimationFrame(refreshDashboardFilterMorph);
     return;
   }
 
@@ -664,6 +669,7 @@ function renderCaseList(items) {
     `;
   }).join("");
   transitionSurface(caseList);
+  requestAnimationFrame(refreshDashboardFilterMorph);
 }
 
 async function renderCases() {
@@ -694,70 +700,170 @@ async function renderCases() {
 
 const dashboardFilterSection = document.querySelector(".flow-dashboard-section");
 const dashboardFilterSentinel = document.querySelector("#dashboard-filter-sentinel");
+const dashboardFilterCompensator = document.querySelector("#dashboard-morph-compensator");
 const employeeTopbar = document.querySelector(".flow-topbar");
 let dashboardScrollFrame = 0;
-let dashboardCompactState = false;
-let dashboardCollapseAt = Number.POSITIVE_INFINITY;
-let dashboardExpandAt = 0;
-let dashboardThresholdsReady = false;
+let dashboardMorphStart = 0;
+let dashboardMorphEnd = 120;
+let dashboardMorphReady = false;
+let dashboardLastProgress = -1;
+let dashboardMorphCompensationMax = 0;
 
-function measureDashboardFilterThresholds() {
-  if (!dashboardFilterSection || !dashboardFilterSentinel || window.innerWidth <= 860) {
-    dashboardThresholdsReady = false;
+const DASHBOARD_MORPH_RANGE = 124;
+const clamp01 = value => Math.max(0, Math.min(1, value));
+const lerp = (from, to, progress) => from + (to - from) * progress;
+
+function setDashboardMorphValue(target, name, value, suffix = "px") {
+  target?.style.setProperty(name, `${value.toFixed(3)}${suffix}`);
+}
+
+function writeDashboardMorphStyles(target, progress) {
+  if (!target) return;
+  const p = clamp01(progress);
+
+  target.style.setProperty("--dashboard-filter-progress", p.toFixed(4));
+  setDashboardMorphValue(target, "--filter-section-padding", lerp(18, 10, p));
+  setDashboardMorphValue(target, "--filter-section-radius", lerp(28, 20, p));
+  setDashboardMorphValue(target, "--filter-section-margin", lerp(28, 22, p));
+  setDashboardMorphValue(target, "--filter-heading-height", lerp(46, 0, p));
+  setDashboardMorphValue(target, "--filter-heading-margin", lerp(16, 0, p));
+  setDashboardMorphValue(target, "--filter-heading-offset", lerp(0, -7, p));
+  setDashboardMorphValue(target, "--filter-dashboard-gap", lerp(12, 7, p));
+  setDashboardMorphValue(target, "--filter-card-height", lerp(128, 66, p));
+  setDashboardMorphValue(target, "--filter-card-pad-y", lerp(18, 9, p));
+  setDashboardMorphValue(target, "--filter-card-pad-x", lerp(20, 13, p));
+  setDashboardMorphValue(target, "--filter-card-radius", lerp(20, 14, p));
+  setDashboardMorphValue(target, "--filter-label-size", lerp(9, 8.5, p));
+  setDashboardMorphValue(target, "--filter-value-margin", lerp(15, 2, p));
+  setDashboardMorphValue(target, "--filter-value-size", lerp(34, 21, p));
+  setDashboardMorphValue(target, "--filter-small-height", lerp(30, 0, p));
+  setDashboardMorphValue(target, "--filter-small-margin", lerp(12, 0, p));
+  setDashboardMorphValue(target, "--filter-small-offset", lerp(0, -3, p));
+
+  target.style.setProperty("--filter-heading-opacity", (1 - p).toFixed(4));
+  target.style.setProperty("--filter-small-opacity", (1 - p).toFixed(4));
+  target.style.setProperty("--filter-shadow-alpha", (0.065 * p).toFixed(4));
+  target.style.setProperty("--filter-card-shadow-alpha", (0.025 * (1 - p)).toFixed(4));
+  target.style.backgroundColor = `rgba(233, 233, 229, ${(1 - 0.08 * p).toFixed(4)})`;
+}
+
+function dashboardSectionOuterHeight(element) {
+  if (!element) return 0;
+  const style = getComputedStyle(element);
+  return element.getBoundingClientRect().height
+    + (Number.parseFloat(style.marginTop) || 0)
+    + (Number.parseFloat(style.marginBottom) || 0);
+}
+
+function measureDashboardMorphCompensation() {
+  if (!dashboardFilterSection || window.innerWidth <= 860) {
+    dashboardMorphCompensationMax = 0;
+    if (dashboardFilterCompensator) dashboardFilterCompensator.style.height = "0px";
     return;
   }
+
+  const clone = dashboardFilterSection.cloneNode(true);
+  clone.removeAttribute("id");
+  clone.setAttribute("aria-hidden", "true");
+  clone.style.setProperty("position", "absolute", "important");
+  clone.style.setProperty("visibility", "hidden", "important");
+  clone.style.setProperty("pointer-events", "none", "important");
+  clone.style.setProperty("left", "-100000px", "important");
+  clone.style.setProperty("top", "0", "important");
+  clone.style.setProperty("width", `${dashboardFilterSection.getBoundingClientRect().width}px`, "important");
+  clone.style.setProperty("z-index", "-1", "important");
+  document.body.appendChild(clone);
+
+  writeDashboardMorphStyles(clone, 0);
+  const expanded = dashboardSectionOuterHeight(clone);
+  writeDashboardMorphStyles(clone, 1);
+  const compact = dashboardSectionOuterHeight(clone);
+  clone.remove();
+
+  dashboardMorphCompensationMax = Math.max(0, expanded - compact);
+}
+
+function applyDashboardFilterProgress(progress) {
+  if (!dashboardFilterSection) return;
+
+  const p = clamp01(progress);
+  if (Math.abs(p - dashboardLastProgress) < 0.0005) return;
+  dashboardLastProgress = p;
+
+  // Visible geometry follows scroll position directly. The compensator grows by
+  // exactly the amount the sticky filter loses in document flow. This keeps the
+  // total page height stable and prevents scrollY from being clamped at the
+  // bottom of short result lists (the source of the old jump/ping-pong).
+  writeDashboardMorphStyles(dashboardFilterSection, p);
+  if (dashboardFilterCompensator) {
+    dashboardFilterCompensator.style.height = `${(dashboardMorphCompensationMax * p).toFixed(3)}px`;
+  }
+}
+
+function measureDashboardFilterMorph() {
+  if (!dashboardFilterSection || !dashboardFilterSentinel || window.innerWidth <= 860) {
+    dashboardMorphReady = false;
+    dashboardLastProgress = -1;
+    dashboardMorphCompensationMax = 0;
+    if (dashboardFilterCompensator) dashboardFilterCompensator.style.height = "0px";
+    applyDashboardFilterProgress(0);
+    return;
+  }
+
+  measureDashboardMorphCompensation();
 
   const stickyTop = Math.round((employeeTopbar?.getBoundingClientRect().height || 62) + 10);
   const sentinelDocumentTop = window.scrollY + dashboardFilterSentinel.getBoundingClientRect().top;
   const stickyStart = Math.max(0, sentinelDocumentTop - stickyTop);
+  const maxScroll = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+  const availableMorphRange = Math.max(0, maxScroll - stickyStart);
 
-  // V7.15.27: the dashboard intro was removed, so the filter now reaches the
-  // sticky edge almost immediately. A fixed hysteresis window prevents tiny
-  // trackpad movements around that edge from toggling compact mode repeatedly.
-  dashboardCollapseAt = stickyStart + 44;
-  dashboardExpandAt = stickyStart + 12;
-  dashboardThresholdsReady = true;
+  dashboardMorphStart = stickyStart;
+  // On short lists the bottom of the page becomes the natural 100% endpoint.
+  // On normal/long lists the familiar 124px morph distance is retained.
+  dashboardMorphEnd = stickyStart + Math.max(1, Math.min(DASHBOARD_MORPH_RANGE, availableMorphRange || DASHBOARD_MORPH_RANGE));
+  dashboardMorphReady = true;
   dashboardFilterSection.style.setProperty("--dashboard-sticky-top", `${stickyTop}px`);
 }
 
-function syncDashboardFilterState() {
+function syncDashboardFilterProgress() {
   dashboardScrollFrame = 0;
   if (!dashboardFilterSection) return;
 
   if (window.innerWidth <= 860 || dashboardFilterSection.classList.contains("hidden")) {
-    dashboardCompactState = false;
     dashboardFilterSection.classList.remove("is-compact");
-    dashboardThresholdsReady = false;
+    dashboardMorphReady = false;
+    dashboardLastProgress = -1;
+    applyDashboardFilterProgress(0);
     return;
   }
 
-  if (!dashboardThresholdsReady) measureDashboardFilterThresholds();
+  if (!dashboardMorphReady) measureDashboardFilterMorph();
 
   const scrollY = Math.max(0, window.scrollY || 0);
-  const shouldCompact = dashboardCompactState
-    ? scrollY > dashboardExpandAt
-    : scrollY >= dashboardCollapseAt;
+  const range = Math.max(1, dashboardMorphEnd - dashboardMorphStart);
+  const progress = clamp01((scrollY - dashboardMorphStart) / range);
 
-  if (shouldCompact !== dashboardCompactState) {
-    dashboardCompactState = shouldCompact;
-    dashboardFilterSection.classList.toggle("is-compact", shouldCompact);
-  }
+  // Legacy state class is deliberately removed. Morphing is fully continuous.
+  dashboardFilterSection.classList.remove("is-compact");
+  applyDashboardFilterProgress(progress);
 }
 
 function requestDashboardFilterSync() {
   if (dashboardScrollFrame) return;
-  dashboardScrollFrame = requestAnimationFrame(syncDashboardFilterState);
+  dashboardScrollFrame = requestAnimationFrame(syncDashboardFilterProgress);
 }
 
-function refreshDashboardFilterThresholds() {
-  dashboardThresholdsReady = false;
+function refreshDashboardFilterMorph() {
+  dashboardMorphReady = false;
+  dashboardLastProgress = -1;
   requestDashboardFilterSync();
 }
 
 window.addEventListener("scroll", requestDashboardFilterSync, { passive: true });
-window.addEventListener("resize", refreshDashboardFilterThresholds);
-window.addEventListener("pageshow", refreshDashboardFilterThresholds);
-requestAnimationFrame(() => requestAnimationFrame(refreshDashboardFilterThresholds));
+window.addEventListener("resize", refreshDashboardFilterMorph);
+window.addEventListener("pageshow", refreshDashboardFilterMorph);
+requestAnimationFrame(() => requestAnimationFrame(refreshDashboardFilterMorph));
 
 renderCases();
 
