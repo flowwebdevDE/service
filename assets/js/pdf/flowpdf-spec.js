@@ -1,4 +1,4 @@
-import { FlowPDF, mm } from "./flowpdf.js?v=7.15.32";
+import { FlowPDF, mm } from "./flowpdf.js?v=7.15.47";
 
 const DEFAULT_OPTIONS = {
   marginTop: 15,
@@ -170,5 +170,11 @@ export function renderFlowPdfSpec(spec) {
   });
 
   pdf.renderSchema(spec.schema, spec.data || {});
+
+  const maxPages = Number(spec.options?.maxPages || 0);
+  if (maxPages > 0 && pdf.pages.length > maxPages) {
+    throw new Error("Der Servicebericht passt mit den aktuellen Angaben nicht auf eine A4-Seite. Bitte Freitexte etwas kürzen.");
+  }
+
   return pdf.finalize();
 }

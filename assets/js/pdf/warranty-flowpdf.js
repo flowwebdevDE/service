@@ -1,6 +1,6 @@
-import { renderFlowPdfSpec } from "./flowpdf-spec.js?v=7.15.32";
+import { renderFlowPdfSpec } from "./flowpdf-spec.js?v=7.15.47";
 import { EMBEDDED_MYVELO_LOGO_BYTES } from "./brand-logo-data.js?v=7.5";
-import { decodePng, mm } from "./flowpdf.js?v=7.15.32";
+import { decodePng, mm } from "./flowpdf.js?v=7.15.47";
 import { confirmationRequirements } from "../case-confirmations.js?v=7.15.1";
 
 function formatDate(value) {
@@ -171,7 +171,52 @@ function batteryTestText(snapshot) {
   return lines.join("\n");
 }
 
+const PDF_TEXT_LIMITS = Object.freeze({
+  caseSubject: 180,
+  customerNote: 180,
+  workPerformed: 420,
+  workResult: 260,
+  batteryNote: 140
+});
+
+function assertPdfTextLimits(snapshot) {
+  const checks = [
+    ["Betreff", snapshot.case_subject, PDF_TEXT_LIMITS.caseSubject],
+    ["Kundenhinweis", snapshot.customer_note, PDF_TEXT_LIMITS.customerNote],
+    ["Durchgeführte Arbeiten", snapshot.work_performed, PDF_TEXT_LIMITS.workPerformed],
+    ["Ergebnis / Abschluss", snapshot.work_result, PDF_TEXT_LIMITS.workResult],
+    ["Akkutest-Hinweis", snapshot.battery_test_note, PDF_TEXT_LIMITS.batteryNote]
+  ];
+  for (const [label, value, limit] of checks) {
+    if (String(value || "").trim().length > limit) {
+      throw new Error(`${label} ist zu lang für den einseitigen Servicebericht (max. ${limit} Zeichen).`);
+    }
+  }
+}
+
+function batteryMetricFields(snapshot) {
+  if (!snapshot?.battery_test_enabled) return [];
+  const fields = [];
+  const push = (label, value, unit = "") => {
+    if (value === null || value === undefined || value === "") return;
+    const formatted = typeof value === "number" || Number.isFinite(Number(value))
+      ? formatMetric(value, unit === "V" ? 2 : 1)
+      : String(value);
+    if (!formatted) return;
+    fields.push({ label, value: `${formatted}${unit ? ` ${unit}` : ""}`, bold: true });
+  };
+  push("Nennkapazität", snapshot.battery_test_nominal_wh, "Wh");
+  push("Gemessen", snapshot.battery_test_measured_wh, "Wh");
+  push("SOH", snapshot.battery_test_soh_percent, "%");
+  push("Spannung", snapshot.battery_test_voltage_v, "V");
+  push("Ladezyklen", snapshot.battery_test_cycles, "");
+  const status = batteryStatusLabel(snapshot.battery_test_status);
+  if (status) fields.push({ label: "Bewertung", value: status, bold: true });
+  return fields;
+}
+
 export function buildWarrantyFlowSpec(snapshot, options = {}) {
+  assertPdfTextLimits(snapshot);
   const shopifyRef = String(snapshot.shopify_ref || "").trim();
   const documentId = shopifyRef || snapshot.public_id || "-";
   const documentLabel = shopifyRef ? "Shopify-Auftrag" : "Service-Referenz";
@@ -200,10 +245,15 @@ export function buildWarrantyFlowSpec(snapshot, options = {}) {
       note: snapshot.customer_note || "Kein zusätzlicher Hinweis",
       workPerformed: String(snapshot.work_performed || "").trim(),
       workResult: String(snapshot.work_result || "").trim(),
-      batteryTest: batteryTestText(snapshot),
-      hasWorkPerformed: Boolean(String(snapshot.work_performed || "").trim()),
-      hasWorkResult: Boolean(String(snapshot.work_result || "").trim()),
-      hasBatteryTest: Boolean(snapshot.battery_test_enabled && batteryTestText(snapshot)),
+      hasWorkReport: Boolean(String(snapshot.work_performed || "").trim() || String(snapshot.work_result || "").trim()),
+      hasWorkshopDocumentation: Boolean(
+        String(snapshot.work_performed || "").trim() ||
+        String(snapshot.work_result || "").trim() ||
+        (snapshot.battery_test_enabled && (batteryMetricFields(snapshot).length || String(snapshot.battery_test_note || "").trim()))
+      ),
+      batteryFields: batteryMetricFields(snapshot),
+      batteryNote: String(snapshot.battery_test_note || "").trim(),
+      hasBatteryTest: Boolean(snapshot.battery_test_enabled && (batteryMetricFields(snapshot).length || String(snapshot.battery_test_note || "").trim())),
       confirmations: confirmationRequirements(snapshot).map(rule => ({
         text: rule.pdfText || rule.copy,
         checked: !draft
@@ -224,11 +274,15 @@ export function buildWarrantyFlowSpec(snapshot, options = {}) {
           ? "Aktueller interner Stand - noch nicht vom Kunden bestätigt."
           : "Verbindlich dokumentierter, vom Kunden bestätigter Vorgangsstand.",
         status: draft ? "Nicht bestätigt" : "Bestätigt",
-        height: mm(25.5),
-        radius: mm(4.0),
-        padX: mm(5.2),
-        padY: mm(4.6),
-        gapAfter: mm(4.0)
+        height: mm(15.8),
+        radius: mm(3.6),
+        padX: mm(4.4),
+        padY: mm(2.7),
+        eyebrowSize: 5.8,
+        titleSize: 14.6,
+        subtitleSize: 6.2,
+        statusSize: 5.3,
+        gapAfter: mm(1.8)
       },
       {
         type: "metaPanel",
@@ -237,11 +291,13 @@ export function buildWarrantyFlowSpec(snapshot, options = {}) {
           { label: "Kunde", field: "case.customer" },
           { label: draft ? "Status" : "Bestätigt am", field: "case.confirmedAt" }
         ],
-        height: mm(18.5),
-        radius: mm(4.0),
-        padX: mm(5.2),
-        padY: mm(4.0),
-        gapAfter: mm(4.0)
+        height: mm(12.2),
+        radius: mm(3.5),
+        padX: mm(4.4),
+        padY: mm(2.4),
+        labelSize: 5.5,
+        valueSize: 7.2,
+        gapAfter: mm(1.8)
       },
       {
         type: "contentCard",
@@ -253,7 +309,8 @@ export function buildWarrantyFlowSpec(snapshot, options = {}) {
           { label: snapshot.item_type === "battery" ? "Akku von Modell" : "Modell", field: "case.model", bold: true },
           { label: "Farbe", field: "case.color" }
         ],
-        gapAfter: mm(4.0)
+        padX: mm(4.2), padY: mm(2.4), headerHeight: mm(6.6), badgeSize: mm(5.8), titleSize: 8.8, labelSize: 5.1, fieldSize: 6.8,
+        gapAfter: mm(1.8)
       },
       {
         type: "longTextCard",
@@ -261,14 +318,16 @@ export function buildWarrantyFlowSpec(snapshot, options = {}) {
         title: subjectTitle,
         bodyLabel: subjectTitle,
         bodyField: "case.subject",
-        gapAfter: mm(4.0)
+        padX: mm(4.2), padY: mm(2.4), headerHeight: mm(6.6), badgeSize: mm(5.8), titleSize: 8.8, labelSize: 5.1, bodySize: 6.3,
+        gapAfter: mm(1.8)
       },
       {
         type: "contentCard",
         number: "3",
         title: "Vereinbarter Lieferumfang",
         tagsField: "case.deliveryTags",
-        gapAfter: mm(4.0)
+        padX: mm(4.2), padY: mm(2.4), headerHeight: mm(6.6), badgeSize: mm(5.8), titleSize: 8.8, tagSize: 5.9,
+        gapAfter: mm(1.8)
       },
       ...(meta.service
         ? [{
@@ -279,7 +338,8 @@ export function buildWarrantyFlowSpec(snapshot, options = {}) {
             leadField: "case.service",
             bodyLabel: "Kundenhinweis",
             bodyField: "case.note",
-            gapAfter: mm(4.0)
+            padX: mm(4.2), padY: mm(2.4), headerHeight: mm(6.6), badgeSize: mm(5.8), titleSize: 8.8, labelSize: 5.1, bodySize: 6.2, leadSize: 6.4,
+            gapAfter: mm(1.8)
           }]
         : [{
             type: "longTextCard",
@@ -287,7 +347,8 @@ export function buildWarrantyFlowSpec(snapshot, options = {}) {
             title: "Hinweis des Kunden",
             bodyLabel: "Kundenhinweis",
             bodyField: "case.note",
-            gapAfter: mm(4.0)
+            padX: mm(4.2), padY: mm(2.4), headerHeight: mm(6.6), badgeSize: mm(5.8), titleSize: 8.8, labelSize: 5.1, bodySize: 6.2, leadSize: 6.4,
+            gapAfter: mm(1.8)
           }]),
       {
         type: "confirmationCard",
@@ -300,6 +361,8 @@ export function buildWarrantyFlowSpec(snapshot, options = {}) {
         customerField: "case.customer",
         confirmedAtField: "case.confirmedAt",
         legalField: "case.legal",
+        compact: true, showPill: false,
+        padX: mm(4.2), padY: mm(2.4), titleSize: 8.8, subtitleSize: 5.8, itemSize: 5.9, legalSize: 4.9,
         gapAfter: (!draft && (
           String(snapshot.work_performed || "").trim() ||
           String(snapshot.work_result || "").trim() ||
@@ -308,30 +371,15 @@ export function buildWarrantyFlowSpec(snapshot, options = {}) {
       },
       ...(!draft ? [
         {
-          type: "longTextCard",
-          when: "case.hasWorkPerformed",
+          type: "workshopReportCard",
+          when: "case.hasWorkshopDocumentation",
           number: "5",
-          title: "Durchgeführte Arbeiten",
-          bodyLabel: "Arbeitsdokumentation",
-          bodyField: "case.workPerformed",
-          gapAfter: mm(4.0)
-        },
-        {
-          type: "longTextCard",
-          when: "case.hasWorkResult",
-          number: "6",
-          title: "Ergebnis / Abschluss",
-          bodyLabel: "Ergebnis",
-          bodyField: "case.workResult",
-          gapAfter: mm(4.0)
-        },
-        {
-          type: "longTextCard",
-          when: "case.hasBatteryTest",
-          number: "7",
-          title: "Akkutest",
-          bodyLabel: "Messwerte & Ergebnis",
-          bodyField: "case.batteryTest",
+          title: "Werkstattbericht",
+          workPerformedField: "case.workPerformed",
+          workResultField: "case.workResult",
+          batteryFieldsField: "case.batteryFields",
+          batteryNoteField: "case.batteryNote",
+          padX: mm(4.2), padY: mm(2.2), titleSize: 8.7, labelSize: 4.9, bodySize: 5.6,
           gapAfter: 0
         }
       ] : [])
@@ -340,10 +388,11 @@ export function buildWarrantyFlowSpec(snapshot, options = {}) {
 
   return {
     options: {
-      marginTop: 24,
-      marginRight: 16,
-      marginBottom: 14,
-      marginLeft: 16,
+      marginTop: 18.5,
+      marginRight: 13.5,
+      marginBottom: 9.5,
+      marginLeft: 13.5,
+      maxPages: 1,
       textColor: [17, 18, 17],
       mutedColor: [98, 98, 94],
       lineColor: [218, 218, 213],
@@ -368,10 +417,10 @@ export function buildWarrantyFlowSpec(snapshot, options = {}) {
       brandSize: 15.2,
       labelSize: 6.6,
       rightSize: 6.4,
-      offsetTop: 7.2,
-      lineOffsetTop: 18.4,
-      logoWidth: 34.0,
-      logoHeight: 6.35,
+      offsetTop: 5.2,
+      lineOffsetTop: 15.6,
+      logoWidth: 30.5,
+      logoHeight: 5.7,
       bandHeight: 0,
       pageBackground: [255, 255, 255],
       showLine: false,

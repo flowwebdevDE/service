@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="de" class="auth-pending">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://myvelo-service.red-dawn-bec6.workers.dev https://*.myvelo.de; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'none'; worker-src 'self' blob:; upgrade-insecure-requests">
+  <meta name="referrer" content="no-referrer">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Benutzer · MYVELO Service</title>
+  <link rel="icon" href="assets/brand/favicon.png?v=7.15.34" type="image/png">
+  <link rel="stylesheet" href="assets/css/app.css?v=7.15.24">
+  <link rel="stylesheet" href="assets/css/employee-apple.css?v=7.15.45">
+  <script src="assets/js/auth-guard-oauth.js?v=7.15.44"></script>
+  <script src="assets/js/security-bootstrap.js?v=7.10.6"></script>
+  <script src="portal-config.js?v=7.15.1"></script>
+  <script src="assets/js/employee-preferences.js?v=7.15.39"></script>
+</head>
+<body class="flow-employee flow-users-page">
+  <div class="flow-shell">
+    <aside class="flow-sidebar" id="flowSidebar">
+      <div class="flow-brand">
+        <img class="brand-logo-image brand-logo-image--sidebar" src="assets/brand/myvelo-logo.png?v=7.0" width="118" height="22" alt="MYVELO" data-hide-on-error>
+        <span class="flow-brand-sub">SERVICE</span>
+      </div>
+      <nav class="flow-nav">
+        <a class="flow-nav-item" href="index.html"><span class="flow-nav-dot"></span><span>Vorgänge</span></a>
+      </nav>
+      <div class="flow-sidebar-spacer"></div>
+      <a class="flow-nav-item is-active" href="users.html" data-admin-only hidden>
+        <span class="flow-nav-users" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM3 21v-2.2A4.8 4.8 0 0 1 7.8 14h2.4a4.8 4.8 0 0 1 4.8 4.8V21M17 9a3 3 0 1 0 0-6M17 14h.8a4.2 4.2 0 0 1 4.2 4.2V21"/></svg></span>
+        <span>Benutzer</span>
+      </a>
+      <a class="flow-nav-item" href="profile.html">
+        <span class="flow-nav-person" aria-hidden="true" data-current-user-initials>MA</span>
+        <span data-current-user-name>Mitarbeiter</span>
+      </a>
+      <button class="flow-nav-item" id="logout-button" type="button"><span class="flow-nav-dot flow-nav-dot--muted"></span><span>Abmelden</span></button>
+    </aside>
+
+    <div class="flow-main">
+      <header class="flow-topbar">
+        <div class="flow-topbar-left">
+          <button class="flow-burger" id="mobileMenuButton" type="button" aria-label="Menü"><span></span><span></span><span></span></button>
+          <a class="flow-back-button" href="index.html" aria-label="Zurück zu den Vorgängen"><svg class="flow-ui-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M11.75 4.75 6.5 10l5.25 5.25"/></svg></a>
+          <div><strong>Benutzerverwaltung</strong><span>Teamzugänge und Rollen</span></div>
+        </div>
+        <div class="flow-topbar-actions"><button class="flow-action primary" id="new-user-button" type="button">Benutzer hinzufügen</button></div>
+      </header>
+
+      <main class="flow-workspace flow-workspace--detail flow-workspace--users">
+        <section class="flow-users-intro">
+          <div>
+            <span class="flow-page-intro__eyebrow">Administration</span>
+            <h1>Teamzugänge</h1>
+            <p>Verwalte freigeschaltete Firmenkonten, Rollen und den aktuellen Zugriffsstatus.</p>
+          </div>
+          <div class="flow-users-current-admin">
+            <span class="flow-user-avatar flow-user-avatar--admin" data-current-user-initials>MA</span>
+            <div><small>Angemeldet als</small><strong data-current-user-name>Mitarbeiter</strong><span data-current-user-email>–</span></div>
+          </div>
+        </section>
+
+        <section class="flow-users-summary" aria-label="Benutzerstatus">
+          <article><span class="flow-users-summary__dot is-active"></span><div><strong id="users-stat-active">0</strong><span>Aktiv</span></div></article>
+          <article><span class="flow-users-summary__dot is-admin"></span><div><strong id="users-stat-admins">0</strong><span>Administratoren</span></div></article>
+          <article><span class="flow-users-summary__dot is-pending"></span><div><strong id="users-stat-pending">0</strong><span>Noch nie angemeldet</span></div></article>
+          <article><span class="flow-users-summary__dot is-disabled"></span><div><strong id="users-stat-disabled">0</strong><span>Deaktiviert</span></div></article>
+        </section>
+
+        <section class="flow-panel flow-users-panel">
+          <div class="flow-users-toolbar">
+            <div class="flow-users-filter" role="group" aria-label="Benutzer filtern">
+              <button type="button" class="is-active" data-users-filter="all">Alle</button>
+              <button type="button" data-users-filter="active">Aktiv</button>
+              <button type="button" data-users-filter="admins">Admins</button>
+              <button type="button" data-users-filter="pending">Neu</button>
+              <button type="button" data-users-filter="disabled">Deaktiviert</button>
+            </div>
+            <label class="flow-users-search">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="m16 16 4 4"/></svg>
+              <input id="users-search" type="search" placeholder="Name oder E-Mail suchen" autocomplete="off">
+            </label>
+          </div>
+          <div class="flow-users-list-head"><div><strong>Firmenkonten</strong><span id="users-list-subtitle">Benutzer werden geladen</span></div><span class="flow-users-list-head__hint">Google Workspace</span></div>
+          <div class="flow-users-list" id="users-list" aria-live="polite"></div>
+          <div class="flow-users-empty" id="users-empty" hidden>
+            <span class="flow-users-empty__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3.5 19v-1.4A4.6 4.6 0 0 1 8.1 13h1.8a4.6 4.6 0 0 1 4.6 4.6V19M17 8h4M19 6v4"/></svg></span>
+            <strong>Keine Benutzer gefunden</strong><span>Prüfe Suche oder Filter.</span>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <div class="flow-backdrop" id="flowBackdrop"></div>
+
+  <dialog class="flow-dialog flow-user-dialog" id="new-user-dialog">
+    <form id="new-user-form">
+      <div class="flow-dialog-head">
+        <div><span>Neuer Zugang</span><strong>Firmenkonto freischalten</strong></div>
+        <button class="flow-dialog-close" type="button" data-close-dialog="new-user-dialog" aria-label="Schließen"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 5 10 10M15 5 5 15"/></svg></button>
+      </div>
+      <div class="flow-dialog-body flow-user-dialog-body">
+        <div class="flow-user-dialog-note"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5 6v5c0 4.6 2.9 8 7 10 4.1-2 7-5.4 7-10V6l-7-3Z"/><path d="m9.5 12 1.7 1.7 3.6-4"/></svg><span>Der Zugang wird für das Firmenkonto freigeschaltet. Name und Profilbild werden bei der ersten Google-Anmeldung automatisch übernommen.</span></div>
+        <label class="flow-field"><span>Firmen-E-Mail</span><input name="email" type="email" autocomplete="off" placeholder="name@myvelo.de" required></label>
+        <fieldset class="flow-user-role-fieldset">
+          <legend>Rolle</legend>
+          <label><input type="radio" name="role" value="staff" checked><span><strong>Mitarbeiter</strong><small>Kann Servicevorgänge bearbeiten und dokumentieren.</small></span></label>
+          <label><input type="radio" name="role" value="admin"><span><strong>Administrator</strong><small>Kann zusätzlich Benutzer, Rollen und Zugänge verwalten.</small></span></label>
+        </fieldset>
+      </div>
+      <div class="flow-dialog-actions"><button class="flow-action secondary" type="button" data-close-dialog="new-user-dialog">Abbrechen</button><button class="flow-action primary" type="submit">Freischalten</button></div>
+    </form>
+  </dialog>
+
+  <dialog class="flow-dialog flow-user-dialog" id="delete-user-dialog">
+    <form method="dialog" id="delete-user-form">
+      <div class="flow-dialog-head"><div><span>Benutzer entfernen</span><strong id="delete-user-title">Zugang entfernen?</strong></div><button class="flow-dialog-close" value="cancel" aria-label="Schließen"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 5 10 10M15 5 5 15"/></svg></button></div>
+      <div class="flow-dialog-body"><p class="flow-user-delete-copy">Das Konto wird aus der Benutzerverwaltung entfernt und verliert den Zugriff auf das Serviceportal.</p></div>
+      <div class="flow-dialog-actions"><button class="flow-action secondary" value="cancel">Abbrechen</button><button class="flow-action danger" id="confirm-delete-user" value="default">Entfernen</button></div>
+    </form>
+  </dialog>
+
+  <script type="module" src="assets/js/users.js?v=7.15.45"></script>
+  <script type="module" src="assets/js/employee-user-context.js?v=7.15.45"></script>
+  <script type="module" src="assets/js/internal-mobile.js?v=7.15.1"></script>
+  <script src="assets/js/legal-navigation.js?v=7.15.38"></script>
+</body>
+</html>

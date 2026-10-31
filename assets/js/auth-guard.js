@@ -46,9 +46,10 @@
     const payload = decodePayload(token);
     const expiresAt = typeof payload?.exp === "number" ? payload.exp * 1000 : 0;
 
+    const validType = payload?.typ === "staff-session" || payload?.typ === "company-session";
     const valid = Boolean(
       token &&
-      payload?.typ === "company-session" &&
+      validType &&
       expiresAt > Date.now()
     );
 

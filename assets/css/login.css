@@ -419,3 +419,6 @@ html{height:100%;overflow:hidden}
   .employee-login-footer{display:none}
   .employee-login-kicker{display:none}
 }
+
+/* V7.15.40 · Google Workspace login */
+.employee-login-oauth{display:grid;gap:12px}.employee-login-google{gap:11px}.employee-login-google-mark{display:inline-grid;place-items:center;width:25px;height:25px;border-radius:50%;background:#fff;color:#111;font-size:13px;font-weight:900;line-height:1;box-shadow:inset 0 0 0 1px rgba(255,255,255,.2)}.employee-login-oauth-copy{margin:0;color:#777770;font-size:12px;line-height:1.55;text-align:center}

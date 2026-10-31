@@ -3,13 +3,13 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://myvelo-service.red-dawn-bec6.workers.dev https://*.myvelo.de; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'none'; worker-src 'self' blob:; upgrade-insecure-requests">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://myvelo-service.red-dawn-bec6.workers.dev https://*.myvelo.de; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'none'; worker-src 'self' blob:; upgrade-insecure-requests">
   <meta name="referrer" content="no-referrer">
   <title>Mitarbeiter · MYVELO Service</title>
   <link rel="icon" href="assets/brand/favicon.png?v=7.15.34" type="image/png">
   <link rel="stylesheet" href="assets/css/app.css?v=7.15.24">
-  <link rel="stylesheet" href="assets/css/employee-apple.css?v=7.15.39">
-  <script src="assets/js/auth-guard.js?v=7.15.1"></script>
+  <link rel="stylesheet" href="assets/css/employee-apple.css?v=7.15.45">
+  <script src="assets/js/auth-guard-oauth.js?v=7.15.44"></script>
   <script src="assets/js/security-bootstrap.js?v=7.10.6"></script>
   <script src="portal-config.js?v=7.15.1"></script>
   <script src="assets/js/employee-preferences.js?v=7.15.39"></script>
@@ -28,9 +28,13 @@
         </a>
       </nav>
       <div class="flow-sidebar-spacer"></div>
+      <a class="flow-nav-item" href="users.html" data-admin-only hidden>
+        <span class="flow-nav-users" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM3 21v-2.2A4.8 4.8 0 0 1 7.8 14h2.4a4.8 4.8 0 0 1 4.8 4.8V21M17 9a3 3 0 1 0 0-6M17 14h.8a4.2 4.2 0 0 1 4.2 4.2V21"/></svg></span>
+        <span>Benutzer</span>
+      </a>
       <a class="flow-nav-item is-active" href="profile.html">
-        <span class="flow-nav-person" aria-hidden="true">MA</span>
-        <span>Mitarbeiter</span>
+        <span class="flow-nav-person" aria-hidden="true" data-current-user-initials>MA</span>
+        <span data-current-user-name>Mitarbeiter</span>
       </a>
       <button class="flow-nav-item" id="logout-button" type="button">
         <span class="flow-nav-dot flow-nav-dot--muted"></span>
@@ -53,11 +57,11 @@
       <main class="flow-workspace flow-workspace--detail flow-workspace--profile">
         <section class="flow-profile-hero" aria-labelledby="profile-title">
           <div class="flow-profile-hero__identity">
-            <span class="flow-profile-avatar flow-profile-avatar--large" aria-hidden="true">MA</span>
+            <span class="flow-profile-avatar flow-profile-avatar--large" aria-hidden="true" data-current-user-initials>MA</span>
             <div>
               <span class="flow-page-intro__eyebrow">MYVELO Service</span>
-              <h1 id="profile-title">Mitarbeiter</h1>
-              <p>Arbeitsplatzprofil für den internen Servicebereich.</p>
+              <h1 id="profile-title" data-current-user-name>Mitarbeiter</h1>
+              <p><span data-current-user-email>–</span> · <span data-current-user-role>Mitarbeiter</span></p>
             </div>
           </div>
           <div class="flow-profile-hero__facts">
@@ -66,8 +70,8 @@
               <strong><i class="flow-profile-live-dot" aria-hidden="true"></i> Aktiv</strong>
             </div>
             <div class="flow-profile-fact">
-              <span>Zugang</span>
-              <strong>Firmenzugang</strong>
+              <span>Rolle</span>
+              <strong data-current-user-role>Mitarbeiter</strong>
             </div>
             <div class="flow-profile-fact">
               <span>Gültig bis</span>
@@ -138,7 +142,8 @@
 
               <dl class="flow-profile-detail-list">
                 <div><dt>Status</dt><dd><span class="flow-profile-state"><i></i> Aktiv</span></dd></div>
-                <div><dt>Anmeldeart</dt><dd>Firmen-Key</dd></div>
+                <div><dt>Anmeldeart</dt><dd id="profile-login-method">Google Workspace</dd></div>
+                <div><dt>Konto</dt><dd data-current-user-email>–</dd></div>
                 <div><dt>Gültig bis</dt><dd id="profile-session-expiry-detail">–</dd></div>
               </dl>
 
@@ -162,10 +167,11 @@
               </div>
               <dl class="flow-profile-detail-list flow-profile-detail-list--compact">
                 <div><dt>Produkt</dt><dd>MYVELO Service</dd></div>
-                <div><dt>Version</dt><dd>7.15.39</dd></div>
+                <div><dt>Version</dt><dd>7.15.45</dd></div>
                 <div><dt>Bereich</dt><dd>Mitarbeiter</dd></div>
               </dl>
               <div class="flow-profile-link-list">
+                <a href="users.html" data-admin-only hidden>Benutzerverwaltung <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7.25 4.75 12.5 10l-5.25 5.25"/></svg></a>
                 <a href="privacy.html">Datenschutz <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7.25 4.75 12.5 10l-5.25 5.25"/></svg></a>
                 <a href="imprint.html">Impressum <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7.25 4.75 12.5 10l-5.25 5.25"/></svg></a>
               </div>
@@ -187,8 +193,9 @@
     </div>
   </div>
   <div class="flow-backdrop" id="flowBackdrop"></div>
-  <script type="module" src="assets/js/profile.js?v=7.15.39"></script>
+  <script type="module" src="assets/js/profile.js?v=7.15.44"></script>
   <script type="module" src="assets/js/internal-mobile.js?v=7.15.1"></script>
   <script src="assets/js/legal-navigation.js?v=7.15.38"></script>
+  <script type="module" src="assets/js/employee-user-context.js?v=7.15.45"></script>
 </body>
 </html>

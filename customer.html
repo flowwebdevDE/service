@@ -294,7 +294,7 @@
 
         <label class="customer-note-field">
           <span id="customer-subject-label">Betreff</span>
-          <input name="case_subject" id="customer-case-subject" placeholder="Angabe prüfen oder ergänzen">
+          <input name="case_subject" id="customer-case-subject" maxlength="180" placeholder="Angabe prüfen oder ergänzen">
         </label>
       </section>
 
@@ -375,6 +375,7 @@
         <textarea
           class="customer-textarea"
           name="customer_note"
+          maxlength="180"
           placeholder="Zusätzlicher Hinweis"
         ></textarea>
       </section>

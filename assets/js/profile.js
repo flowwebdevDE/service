@@ -1,4 +1,4 @@
-import { getPortalSession, logoutPortalSession, requirePortalSession } from "./api.js?v=7.15.4";
+import { getPortalSession, getCurrentPortalUser, logoutPortalSession, requirePortalSession } from "./api-oauth-core.js?v=7.15.47";
 import { showInfo, showSuccess } from "./banner.js?v=7.15.24";
 
 const session = requirePortalSession();
@@ -19,6 +19,15 @@ const expiryText = formatExpiry();
 document.querySelectorAll("#profile-session-expiry, #profile-session-expiry-detail").forEach(element => {
   element.textContent = expiryText;
 });
+
+try {
+  const user = await getCurrentPortalUser();
+  if (user?.legacy) {
+    document.querySelector("#profile-login-method")?.replaceChildren(document.createTextNode("Notfallzugang"));
+  }
+} catch {
+  // Shared user context handles expired/disabled sessions.
+}
 
 function syncPreferenceControls(preferences = prefsApi?.read?.()) {
   if (!preferences) return;

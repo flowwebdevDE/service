@@ -1,0 +1,709 @@
+import { renderWarrantyFlowPdf } from "./pdf/warranty-flowpdf.js?v=7.15.47";
+import { confirmationRequirements } from "./case-confirmations.js?v=7.15.1";
+import { CONFIG, hasBackendConfig } from "./config.js?v=7.15.1";
+import {
+  confirmDemoCase,
+  createDemoCase,
+  getDemoCaseById,
+  getDemoCaseByToken,
+  listDemoCases,
+  updateDemoCaseById,
+  updateDemoCaseByToken,
+  updateDemoCaseReport,
+  updateDemoCaseStatus
+} from "./demo-store.js?v=7.15.4";
+
+let backendAvailable;
+let brandLogoPromise;
+
+async function loadBrandLogoBytes() {
+  if (!brandLogoPromise) {
+    const logoUrl = new URL("../brand/myvelo-logo.png?v=7.0", import.meta.url);
+
+    brandLogoPromise = fetch(logoUrl, { cache: "no-store" })
+      .then(async response => {
+        if (!response.ok) return null;
+        return new Uint8Array(await response.arrayBuffer());
+      })
+      .catch(() => null);
+  }
+
+  return brandLogoPromise;
+}
+
+function apiBase() {
+  return CONFIG.apiBaseUrl;
+}
+
+function apiUrl(path = "") {
+  const base = apiBase().replace(/\/$/, "");
+  const clean = String(path || "").replace(/^\/+/, "");
+  return `${base}/api/${clean}`;
+}
+
+export function buildCustomerUrl(token) {
+  const url = new URL("customer.html", location.href);
+  url.search = "";
+  url.hash = "";
+  url.searchParams.set("token", token);
+  return url.href;
+}
+
+function commonHeaders() {
+  return {
+    "x-portal-client-version": "7.15.45-users"
+  };
+}
+
+function authStorageKey() {
+  return CONFIG.authSessionStorage || "garantieportal_company_session";
+}
+
+function readPortalSession() {
+  return sessionStorage.getItem(authStorageKey()) || "";
+}
+
+function writePortalSession(token) {
+  if (token) {
+    sessionStorage.setItem(authStorageKey(), token);
+  } else {
+    sessionStorage.removeItem(authStorageKey());
+  }
+}
+
+function decodeSessionPayload(token) {
+  try {
+    const [payload] = String(token || "").split(".");
+    if (!payload) return null;
+
+    const normalized = payload.replace(/-/g, "+").replace(/_/g, "/");
+    const padded = normalized + "=".repeat((4 - normalized.length % 4) % 4);
+    return JSON.parse(atob(padded));
+  } catch {
+    return null;
+  }
+}
+
+export function getPortalSession() {
+  const token = readPortalSession();
+  const payload = decodeSessionPayload(token);
+
+  if (!token || !payload?.exp || payload.exp * 1000 <= Date.now()) {
+    writePortalSession("");
+    return null;
+  }
+
+  return { token, payload };
+}
+
+export function requirePortalSession() {
+  const session = getPortalSession();
+
+  if (!session) {
+    const current = location.pathname.split("/").pop() || "index.html";
+    const next = encodeURIComponent(current + location.search);
+    location.replace(`login.html?next=${next}`);
+    return null;
+  }
+
+  return session;
+}
+
+export async function loginWithCompanyKey(companyKey) {
+  const key = String(companyKey || "");
+
+  if (!hasBackendConfig()) {
+    throw new Error("Cloudflare-Backend ist im Frontend noch nicht konfiguriert.");
+  }
+
+  if (!key) {
+    throw new Error("Login-Key fehlt.");
+  }
+
+  const response = await fetch(apiUrl("auth/login"), {
+    method: "POST",
+    headers: {
+      ...commonHeaders(),
+      "content-type": "application/json"
+    },
+    body: JSON.stringify({ key })
+  });
+
+  const result = await readJson(response, "Anmeldung fehlgeschlagen.");
+
+  if (!result?.session_token) {
+    throw new Error("Das Backend hat keine gültige Sitzung zurückgegeben.");
+  }
+
+  writePortalSession(result.session_token);
+  return result;
+}
+
+
+export function startGoogleOAuth() {
+  if (!hasBackendConfig()) {
+    throw new Error("Cloudflare-Backend ist im Frontend noch nicht konfiguriert.");
+  }
+  const returnTo = new URL(location.href);
+  returnTo.searchParams.delete("oauth_code");
+  returnTo.searchParams.delete("oauth_error");
+  const target = new URL(apiUrl("auth/google/start"));
+  target.searchParams.set("return_to", returnTo.toString());
+  location.assign(target.toString());
+}
+
+export async function exchangeGoogleOAuthCode(code) {
+  const response = await fetch(apiUrl("auth/google/exchange"), {
+    method: "POST",
+    headers: {
+      ...commonHeaders(),
+      "content-type": "application/json"
+    },
+    body: JSON.stringify({ code: String(code || "") })
+  });
+  const result = await readJson(response, "Google-Anmeldung konnte nicht abgeschlossen werden.");
+  if (!result?.session_token) throw new Error("Das Backend hat keine gültige Sitzung zurückgegeben.");
+  writePortalSession(result.session_token);
+  return result;
+}
+
+export async function getCurrentPortalUser() {
+  if (!hasBackendConfig()) {
+    const session = getPortalSession();
+    return {
+      id: null,
+      email: "demo@myvelo.de",
+      display_name: "Demo Mitarbeiter",
+      role: "admin",
+      status: "active",
+      legacy: true,
+      session: session?.payload || null
+    };
+  }
+  const response = await fetch(apiUrl("admin/me"), { headers: await adminHeaders() });
+  const result = await readJson(response, "Benutzerprofil konnte nicht geladen werden.");
+  return result.user;
+}
+
+export async function listPortalUsers() {
+  const response = await fetch(apiUrl("admin/users"), { headers: await adminHeaders() });
+  return (await readJson(response, "Benutzer konnten nicht geladen werden.")).items || [];
+}
+
+export async function createPortalUser(payload) {
+  const response = await fetch(apiUrl("admin/users"), {
+    method: "POST",
+    headers: await adminHeaders(true),
+    body: JSON.stringify(payload)
+  });
+  return (await readJson(response, "Benutzer konnte nicht angelegt werden.")).user;
+}
+
+export async function updatePortalUser(id, payload) {
+  const response = await fetch(apiUrl(`admin/users/${encodeURIComponent(id)}`), {
+    method: "PUT",
+    headers: await adminHeaders(true),
+    body: JSON.stringify(payload)
+  });
+  return (await readJson(response, "Benutzer konnte nicht aktualisiert werden.")).user;
+}
+
+export async function deletePortalUser(id) {
+  const response = await fetch(apiUrl(`admin/users/${encodeURIComponent(id)}`), {
+    method: "DELETE",
+    headers: await adminHeaders()
+  });
+  return readJson(response, "Benutzer konnte nicht entfernt werden.");
+}
+
+export function logoutPortalSession() {
+  writePortalSession("");
+}
+
+async function adminHeaders(json = false) {
+  const session = getPortalSession();
+
+  return {
+    ...commonHeaders(),
+    ...(json ? { "content-type": "application/json" } : {}),
+    ...(session?.token
+      ? { authorization: `Bearer ${session.token}` }
+      : {})
+  };
+}
+
+function customerSessionStorageKey(token) {
+  const normalized = String(token || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+  return `garantieportal_customer_session:${normalized}`;
+}
+
+function readCustomerSession(token) {
+  return sessionStorage.getItem(customerSessionStorageKey(token)) || "";
+}
+
+function writeCustomerSession(token, sessionToken) {
+  const key = customerSessionStorageKey(token);
+
+  if (sessionToken) {
+    sessionStorage.setItem(key, sessionToken);
+  } else {
+    sessionStorage.removeItem(key);
+  }
+}
+
+export function getCustomerSession(token) {
+  const sessionToken = readCustomerSession(token);
+  const payload = decodeSessionPayload(sessionToken);
+
+  if (
+    !sessionToken ||
+    payload?.typ !== "customer-session" ||
+    !payload?.exp ||
+    payload.exp * 1000 <= Date.now()
+  ) {
+    writeCustomerSession(token, "");
+    return null;
+  }
+
+  return { token: sessionToken, payload };
+}
+
+function customerHeaders(token, json = false) {
+  const session = getCustomerSession(token);
+
+  return {
+    ...commonHeaders(),
+    ...(json ? { "content-type": "application/json" } : {}),
+    ...(session?.token ? { authorization: `Bearer ${session.token}` } : {})
+  };
+}
+
+export async function verifyCustomerAccess(token, code) {
+  if (!(await hasBackend())) {
+    if (String(code || "") !== "123456") {
+      throw new Error("Demo-Code: 123456");
+    }
+
+    const expires = Math.floor(Date.now() / 1000) + 8 * 60 * 60;
+    const payload = btoa(JSON.stringify({
+      v: 1,
+      typ: "customer-session",
+      exp: expires
+    })).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+    const fake = `${payload}.demo`;
+    writeCustomerSession(token, fake);
+    return { ok: true, session_token: fake };
+  }
+
+  const response = await fetch(
+    apiUrl(`customer/${encodeURIComponent(token)}/verify`),
+    {
+      method: "POST",
+      headers: {
+        ...commonHeaders(),
+        "content-type": "application/json"
+      },
+      body: JSON.stringify({ code: String(code || "") })
+    }
+  );
+
+  const result = await readJson(response, "Verifizierung fehlgeschlagen.");
+
+  if (!result?.session_token) {
+    throw new Error("Backend hat keine Kundensitzung zurückgegeben.");
+  }
+
+  writeCustomerSession(token, result.session_token);
+  return result;
+}
+
+export function clearCustomerSession(token) {
+  writeCustomerSession(token, "");
+}
+
+async function readJson(response, fallbackMessage) {
+  let result = null;
+
+  try {
+    result = await response.json();
+  } catch {
+    // handled below
+  }
+
+  if (!response.ok) {
+    throw new Error(result?.error || fallbackMessage);
+  }
+
+  return result;
+}
+
+export async function hasBackend(force = false) {
+  if (!hasBackendConfig()) {
+    backendAvailable = false;
+    return false;
+  }
+
+  if (!force && backendAvailable !== undefined) return backendAvailable;
+
+  try {
+    const response = await fetch(apiUrl("health"), {
+      headers: commonHeaders(),
+      cache: "no-store"
+    });
+
+    backendAvailable = response.ok;
+  } catch {
+    backendAvailable = false;
+  }
+
+  return backendAvailable;
+}
+
+export async function listCases() {
+  if (!(await hasBackend())) {
+    return { items: listDemoCases(), demo: true };
+  }
+
+  const response = await fetch(apiUrl("admin/cases"), {
+    headers: await adminHeaders()
+  });
+
+  return readJson(response, "Vorgänge konnten nicht geladen werden.");
+}
+
+export async function createCase(data) {
+  if (!(await hasBackend())) {
+    return createDemoCase(data);
+  }
+
+  const response = await fetch(apiUrl("admin/cases"), {
+    method: "POST",
+    headers: await adminHeaders(true),
+    body: JSON.stringify(data)
+  });
+
+  const result = await readJson(response, "Vorgang konnte nicht erstellt werden.");
+
+  if (!result?.customer_token || !result?.public_id) {
+    throw new Error(
+      "Backend-Antwort unvollständig. Kundencode oder Vorgangs-ID fehlt."
+    );
+  }
+
+  return {
+    ...result,
+    customer_url: buildCustomerUrl(result.customer_token)
+  };
+}
+
+export async function getAdminCase(id) {
+  if (!(await hasBackend())) {
+    const item = getDemoCaseById(id);
+    if (!item) throw new Error("Vorgang nicht gefunden.");
+    return item;
+  }
+
+  const response = await fetch(apiUrl(`admin/cases/${encodeURIComponent(id)}`), {
+    headers: await adminHeaders()
+  });
+
+  return readJson(response, "Vorgang nicht gefunden.");
+}
+
+export async function updateAdminCase(id, data) {
+  if (!(await hasBackend())) {
+    return updateDemoCaseById(id, data);
+  }
+
+  const response = await fetch(apiUrl(`admin/cases/${encodeURIComponent(id)}`), {
+    method: "PUT",
+    headers: await adminHeaders(true),
+    body: JSON.stringify(data)
+  });
+
+  return readJson(response, "Speichern fehlgeschlagen.");
+}
+
+export async function updateAdminCaseReport(id, data) {
+  if (!(await hasBackend())) {
+    const item = updateDemoCaseReport(id, data);
+    if (!item) throw new Error("Vorgang nicht gefunden.");
+    return item;
+  }
+
+  const response = await fetch(apiUrl(`admin/cases/${encodeURIComponent(id)}/report`), {
+    method: "PUT",
+    headers: await adminHeaders(true),
+    body: JSON.stringify(data)
+  });
+
+  return readJson(response, "Arbeitsdokumentation konnte nicht gespeichert werden.");
+}
+
+export async function updateAdminCaseStatus(id, serviceStatus) {
+  if (!(await hasBackend())) {
+    const item = updateDemoCaseStatus(id, serviceStatus);
+    if (!item) throw new Error("Vorgang nicht gefunden.");
+    return item;
+  }
+
+  const response = await fetch(
+    apiUrl(`admin/cases/${encodeURIComponent(id)}/status`),
+    {
+      method: "PUT",
+      headers: await adminHeaders(true),
+      body: JSON.stringify({ service_status: serviceStatus })
+    }
+  );
+
+  return readJson(response, "Status konnte nicht gespeichert werden.");
+}
+
+export async function updateAdminCaseStage(id, internalStage) {
+  if (!(await hasBackend())) {
+    const item = updateDemoCaseStatus(
+      id,
+      internalStage === "completed" ? "completed" : internalStage === "received" ? "arrived" : "in_progress",
+      internalStage
+    );
+    if (!item) throw new Error("Vorgang nicht gefunden.");
+    return item;
+  }
+
+  const response = await fetch(
+    apiUrl(`admin/cases/${encodeURIComponent(id)}/stage`),
+    {
+      method: "PUT",
+      headers: await adminHeaders(true),
+      body: JSON.stringify({ internal_stage: internalStage })
+    }
+  );
+
+  return readJson(response, "Bearbeitungsstufe konnte nicht gespeichert werden.");
+}
+
+export async function deleteAdminCase(id) {
+  if (!(await hasBackend())) {
+    throw new Error("Löschen ist im Demo-Modus nicht verfügbar.");
+  }
+
+  const response = await fetch(apiUrl(`admin/cases/${encodeURIComponent(id)}`), {
+    method: "DELETE",
+    headers: await adminHeaders()
+  });
+
+  return readJson(response, "Vorgang konnte nicht gelöscht werden.");
+}
+
+export async function getAdminCustomerLink(id) {
+  if (!(await hasBackend())) {
+    throw new Error("Kundenlink ist im Demo-Modus nicht verfügbar.");
+  }
+
+  const response = await fetch(
+    apiUrl(`admin/cases/${encodeURIComponent(id)}/customer-link`),
+    {
+      method: "POST",
+      headers: await adminHeaders(true),
+      body: "{}"
+    }
+  );
+
+  const result = await readJson(
+    response,
+    "Kundenlink konnte nicht geladen werden."
+  );
+
+  if (!result?.customer_token) {
+    throw new Error("Das Backend hat keinen Kundencode zurückgegeben.");
+  }
+
+  return {
+    ...result,
+    customer_url: buildCustomerUrl(result.customer_token)
+  };
+}
+
+
+export async function getAdminCustomerAccess(id) {
+  if (!(await hasBackend())) {
+    return {
+      ok: true,
+      verification_code: "123456",
+      demo: true
+    };
+  }
+
+  const response = await fetch(
+    apiUrl(`admin/cases/${encodeURIComponent(id)}/customer-access`),
+    {
+      method: "GET",
+      headers: await adminHeaders()
+    }
+  );
+
+  return readJson(response, "Kundenzugang konnte nicht geladen werden.");
+}
+
+export async function getAdminCustomerPreview(id) {
+  if (!(await hasBackend())) {
+    const item = getDemoCaseById(id);
+    if (!item) throw new Error("Vorgang nicht gefunden.");
+    return item;
+  }
+
+  const response = await fetch(
+    apiUrl(`admin/cases/${encodeURIComponent(id)}/customer-preview`),
+    { headers: await adminHeaders() }
+  );
+
+  return readJson(response, "Kundenvorschau konnte nicht geladen werden.");
+}
+
+export async function getCustomerCase(token) {
+  if (!(await hasBackend())) {
+    const item = getDemoCaseByToken(token);
+    if (!item) throw new Error("Kundenlink ungültig.");
+    return item;
+  }
+
+  const response = await fetch(
+    apiUrl(`customer/${encodeURIComponent(token)}`),
+    { headers: customerHeaders(token) }
+  );
+
+  return readJson(response, "Kundenlink ungültig.");
+}
+
+export async function saveCustomerDraft(token, data) {
+  if (!(await hasBackend())) {
+    return updateDemoCaseByToken(token, data);
+  }
+
+  const response = await fetch(
+    apiUrl(`customer/${encodeURIComponent(token)}`),
+    {
+      method: "PUT",
+      headers: customerHeaders(token, true),
+      body: JSON.stringify(data)
+    }
+  );
+
+  return readJson(response, "Speichern fehlgeschlagen.");
+}
+
+export async function confirmCustomer(token, data) {
+  if (!(await hasBackend())) {
+    const item = getDemoCaseByToken(token);
+    if (!item) throw new Error("Kundenlink ungültig.");
+
+    const rules = confirmationRequirements({
+      case_type: item.case_type,
+      service_choice: data.service_choice || item.service_choice || "none"
+    });
+
+    const allConfirmed = rules.every(rule => {
+      if (data[`confirm_${rule.key}`]) return true;
+      if (rule.key === "primary") return Boolean(data.confirm_scope);
+      if (rule.key === "paid_service") return Boolean(data.confirm_accessories);
+      return false;
+    });
+
+    if (!allConfirmed) {
+      throw new Error("Bitte alle angezeigten Bestätigungen aktivieren.");
+    }
+
+    return {
+      ok: true,
+      case: confirmDemoCase(token, data)
+    };
+  }
+
+  const response = await fetch(
+    apiUrl(`customer/${encodeURIComponent(token)}/confirm`),
+    {
+      method: "POST",
+      headers: customerHeaders(token, true),
+      body: JSON.stringify(data)
+    }
+  );
+
+  return readJson(response, "Bestätigung fehlgeschlagen.");
+}
+
+function frozenPdfData(item) {
+  return item?.pdf_snapshot || item;
+}
+
+function safeFilenamePart(value, fallback = "Vorgang") {
+  const clean = String(value || fallback)
+    .trim()
+    .replace(/[\\/:*?"<>|]+/g, "-")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+  return clean || fallback;
+}
+
+export function casePdfFilename(item, mode = "confirmation") {
+  const type = {
+    warranty: "Garantiefall",
+    repair: "Reparatur",
+    return: "Rueckgabe",
+    exchange: "Tausch"
+  }[item?.case_type] || "Service";
+  const state = mode === "draft" ? "Entwurf" : "Bestaetigung";
+  const id = safeFilenamePart(item?.shopify_ref || item?.public_id || "Vorgang");
+  return `MYVELO-${type}-${state}-${id}.pdf`;
+}
+
+export async function customerPdfUrl(token) {
+  const item = await getCustomerCase(token);
+
+  if (!item || item.status !== "confirmed") {
+    throw new Error("PDF erst nach Bestätigung verfügbar.");
+  }
+
+  const bytes = await renderWarrantyFlowPdf(
+    frozenPdfData(item),
+    { logoBytes: await loadBrandLogoBytes() }
+  );
+
+  return URL.createObjectURL(new Blob([bytes], { type: "application/pdf" }));
+}
+
+export async function adminCasePdfUrl(id) {
+  const item = await getAdminCase(id);
+
+  if (!item) {
+    throw new Error("Vorgang nicht gefunden.");
+  }
+
+  const confirmed = item.status === "confirmed";
+  const source = confirmed
+    ? {
+        ...frozenPdfData(item),
+        work_performed: item.work_performed || "",
+        work_result: item.work_result || "",
+        battery_test_enabled: Boolean(item.battery_test_enabled),
+        battery_test_nominal_wh: item.battery_test_nominal_wh ?? null,
+        battery_test_measured_wh: item.battery_test_measured_wh ?? null,
+        battery_test_soh_percent: item.battery_test_soh_percent ?? null,
+        battery_test_voltage_v: item.battery_test_voltage_v ?? null,
+        battery_test_cycles: item.battery_test_cycles ?? null,
+        battery_test_status: item.battery_test_status || "",
+        battery_test_note: item.battery_test_note || "",
+        service_report_updated_at: item.service_report_updated_at || null
+      }
+    : item;
+
+  const bytes = await renderWarrantyFlowPdf(
+    source,
+    {
+      logoBytes: await loadBrandLogoBytes(),
+      mode: confirmed ? "confirmation" : "draft"
+    }
+  );
+
+  return URL.createObjectURL(new Blob([bytes], { type: "application/pdf" }));
+}

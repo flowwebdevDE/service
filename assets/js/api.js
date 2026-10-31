@@ -1,4 +1,4 @@
-import { renderWarrantyFlowPdf } from "./pdf/warranty-flowpdf.js?v=7.15.32";
+import { renderWarrantyFlowPdf } from "./pdf/warranty-flowpdf.js?v=7.15.47";
 import { confirmationRequirements } from "./case-confirmations.js?v=7.15.1";
 import { CONFIG, hasBackendConfig } from "./config.js?v=7.15.1";
 import {
@@ -51,7 +51,7 @@ export function buildCustomerUrl(token) {
 
 function commonHeaders() {
   return {
-    "x-portal-client-version": "7.15.32-eu"
+    "x-portal-client-version": "7.15.40-oauth"
   };
 }
 
@@ -137,6 +137,83 @@ export async function loginWithCompanyKey(companyKey) {
 
   writePortalSession(result.session_token);
   return result;
+}
+
+
+export function startGoogleOAuth() {
+  if (!hasBackendConfig()) {
+    throw new Error("Cloudflare-Backend ist im Frontend noch nicht konfiguriert.");
+  }
+  const returnTo = new URL(location.href);
+  returnTo.searchParams.delete("oauth_code");
+  returnTo.searchParams.delete("oauth_error");
+  const target = new URL(apiUrl("auth/google/start"));
+  target.searchParams.set("return_to", returnTo.toString());
+  location.assign(target.toString());
+}
+
+export async function exchangeGoogleOAuthCode(code) {
+  const response = await fetch(apiUrl("auth/google/exchange"), {
+    method: "POST",
+    headers: {
+      ...commonHeaders(),
+      "content-type": "application/json"
+    },
+    body: JSON.stringify({ code: String(code || "") })
+  });
+  const result = await readJson(response, "Google-Anmeldung konnte nicht abgeschlossen werden.");
+  if (!result?.session_token) throw new Error("Das Backend hat keine gültige Sitzung zurückgegeben.");
+  writePortalSession(result.session_token);
+  return result;
+}
+
+export async function getCurrentPortalUser() {
+  if (!hasBackendConfig()) {
+    const session = getPortalSession();
+    return {
+      id: null,
+      email: "demo@myvelo.de",
+      display_name: "Demo Mitarbeiter",
+      role: "admin",
+      status: "active",
+      legacy: true,
+      session: session?.payload || null
+    };
+  }
+  const response = await fetch(apiUrl("admin/me"), { headers: await adminHeaders() });
+  const result = await readJson(response, "Benutzerprofil konnte nicht geladen werden.");
+  return result.user;
+}
+
+export async function listPortalUsers() {
+  const response = await fetch(apiUrl("admin/users"), { headers: await adminHeaders() });
+  return (await readJson(response, "Benutzer konnten nicht geladen werden.")).items || [];
+}
+
+export async function createPortalUser(payload) {
+  const response = await fetch(apiUrl("admin/users"), {
+    method: "POST",
+    headers: await adminHeaders(true),
+    body: JSON.stringify(payload)
+  });
+  return (await readJson(response, "Benutzer konnte nicht angelegt werden.")).user;
+}
+
+export async function updatePortalUser(id, payload) {
+  const response = await fetch(apiUrl(`admin/users/${encodeURIComponent(id)}`), {
+    method: "PUT",
+    headers: await adminHeaders(true),
+    body: JSON.stringify(payload)
+  });
+  return (await readJson(response, "Benutzer konnte nicht aktualisiert werden.")).user;
+}
+
+export async function deletePortalUser(id) {
+  const response = await fetch(apiUrl(`admin/users/${encodeURIComponent(id)}`), {
+    method: "DELETE",
+    headers: await adminHeaders()
+  });
+  return readJson(response, "Benutzer konnte nicht entfernt werden.");
 }
 
 export function logoutPortalSession() {

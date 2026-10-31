@@ -895,11 +895,24 @@ export class FlowPDF {
 
     const x = options.x ?? this.margin.left;
     const width = options.width ?? this.availableWidth();
-    const height = options.height ?? mm(21.5);
     const padX = options.padX ?? mm(5);
     const padY = options.padY ?? mm(4.3);
     const radius = options.radius ?? mm(4.2);
     const cellWidth = width / normalized.length;
+    const labelSize = options.labelSize ?? 6.1;
+    const valueSize = options.valueSize ?? 9.0;
+    const valueLineHeight = valueSize * 1.22;
+    const maxValueLines = Math.max(
+      1,
+      ...normalized.map(item => wrapText(item.value ?? "-", cellWidth - padX * 2, valueSize, true).slice(0, 2).length)
+    );
+    const requiredHeight =
+      padY * 2 +
+      visualCapHeight(labelSize) + visualDescent(labelSize) +
+      mm(2.15) +
+      maxValueLines * valueLineHeight +
+      mm(1.0);
+    const height = Math.max(options.height ?? 0, requiredHeight, mm(12.2));
 
     this.ensureSpace(height + mm(4));
     const bottom = this.y - height;
@@ -918,14 +931,12 @@ export class FlowPDF {
           width: 0.5
         });
       }
-      const labelSize = options.labelSize ?? 6.1;
       const labelBaseline = baselineFromTop(this.y, padY, labelSize);
       this.text(String(item.label || "").toUpperCase(), cellX + padX, labelBaseline, {
         size: labelSize,
         bold: true,
         color: options.labelColor ?? [120, 120, 114]
       });
-      const valueSize = options.valueSize ?? 9.0;
       const lines = wrapText(item.value ?? "-", cellWidth - padX * 2, valueSize, true).slice(0, 2);
       const valueTopInset = padY + visualCapHeight(labelSize) + visualDescent(labelSize) + mm(2.15);
       let vy = baselineFromTop(this.y, valueTopInset, valueSize);
@@ -956,7 +967,8 @@ export class FlowPDF {
     const body = options.body == null ? "" : String(options.body);
     const bodyLabel = options.bodyLabel ? String(options.bodyLabel) : "";
     const columns = Math.max(1, Math.min(3, options.columns ?? 2));
-    const headerH = mm(7.6);
+    const badgeSize = options.badgeSize ?? mm(6.0);
+    const headerH = Math.max(options.headerHeight ?? mm(7.6), number ? badgeSize + mm(0.9) : mm(0));
     const fieldGapX = mm(6);
     const fieldWidth = (width - padX * 2 - fieldGapX * (columns - 1)) / columns;
     const fieldSize = options.fieldSize ?? 7.9;
@@ -1021,7 +1033,6 @@ export class FlowPDF {
       radius
     });
 
-    const badgeSize = mm(7.2);
     const badgeX = x + padX;
     const badgeY = top - padY - badgeSize;
     if (number) {
@@ -1151,9 +1162,10 @@ export class FlowPDF {
     const labelSize = options.labelSize ?? 6.0;
     const bodySize = options.bodySize ?? 7.7;
     const leadSize = options.leadSize ?? 7.9;
-    const bodyLineHeight = bodySize * 1.35;
-    const leadLineHeight = leadSize * 1.30;
-    const headerH = mm(7.6);
+    const bodyLineHeight = bodySize * 1.38;
+    const leadLineHeight = leadSize * 1.32;
+    const badgeSize = options.badgeSize ?? mm(6.0);
+    const headerH = Math.max(options.headerHeight ?? mm(7.6), number ? badgeSize + mm(0.9) : mm(0));
     const innerW = width - padX * 2;
     const bodyInnerPadX = mm(3.2);
     const bodyTextW = innerW - bodyInnerPadX * 2;
@@ -1197,8 +1209,7 @@ export class FlowPDF {
         radius
       });
 
-      const badgeSize = mm(7.2);
-      const badgeX = x + padX;
+        const badgeX = x + padX;
       const badgeY = top - padY - badgeSize;
       if (number && first) {
         this.rect(badgeX, badgeY, badgeSize, badgeSize, {
@@ -1287,6 +1298,127 @@ export class FlowPDF {
     return this;
   }
 
+  workshopReportCard(options = {}) {
+    const x = options.x ?? this.margin.left;
+    const width = options.width ?? this.availableWidth();
+    const radius = options.radius ?? mm(3.8);
+    const padX = options.padX ?? mm(4.4);
+    const padY = options.padY ?? mm(3.0);
+    const number = String(options.number ?? "5");
+    const title = String(options.title || "Werkstattbericht");
+    const workPerformed = String(options.workPerformed || "").trim();
+    const workResult = String(options.workResult || "").trim();
+    const batteryFields = Array.isArray(options.batteryFields) ? options.batteryFields.filter(Boolean) : [];
+    const batteryNote = String(options.batteryNote || "").trim();
+    const hasBattery = batteryFields.length > 0 || batteryNote;
+
+    const titleSize = options.titleSize ?? 9.2;
+    const labelSize = options.labelSize ?? 5.2;
+    const bodySize = options.bodySize ?? 5.9;
+    const valueLineHeight = bodySize * 1.34;
+    const headerH = mm(6.8);
+    const innerW = width - padX * 2;
+    const colGap = mm(5.0);
+    const colW = (innerW - colGap) / 2;
+    const workLines = wrapText(workPerformed || "-", colW, bodySize, false);
+    const resultLines = wrapText(workResult || "-", colW, bodySize, false);
+    const maxTextLines = Math.max(workLines.length, resultLines.length, 1);
+    const textAreaH = mm(3.4) + visualCapHeight(labelSize) + visualDescent(labelSize) + mm(1.5) + maxTextLines * valueLineHeight + mm(2.0);
+
+    const batteryValueSize = options.batteryValueSize ?? 6.1;
+    const metricCols = 3;
+    const metricGap = mm(3.6);
+    const metricW = (innerW - metricGap * (metricCols - 1)) / metricCols;
+    const metricRows = hasBattery ? Math.ceil(batteryFields.length / metricCols) : 0;
+    const metricRowH = mm(7.2);
+    const metricAreaH = metricRows * metricRowH;
+    const noteSize = options.noteSize ?? 5.7;
+    const noteLines = batteryNote ? wrapText(batteryNote, innerW, noteSize, false) : [];
+    const batteryHeaderH = hasBattery ? mm(5.2) : 0;
+    const batteryNoteH = noteLines.length ? (mm(3.0) + noteLines.length * noteSize * 1.30) : 0;
+    const batteryAreaH = hasBattery ? batteryHeaderH + metricAreaH + batteryNoteH + mm(1.4) : 0;
+    const separatorH = hasBattery ? mm(2.6) : 0;
+
+    const height = padY * 2 + headerH + textAreaH + separatorH + batteryAreaH;
+    this.ensureSpace(height + (options.gapAfter ?? 0));
+    const top = this.y;
+    const bottom = top - height;
+
+    this.rect(x, bottom, width, height, {
+      fill: options.fill ?? [255,255,255],
+      stroke: options.stroke ?? [218,218,213],
+      strokeWidth: 0.55,
+      radius
+    });
+
+    const badgeSize = mm(6.4);
+    const badgeX = x + padX;
+    const badgeY = top - padY - badgeSize;
+    this.rect(badgeX, badgeY, badgeSize, badgeSize, {
+      fill: [245,245,242], stroke: [196,196,190], strokeWidth: 0.5, radius: badgeSize / 2
+    });
+    const numSize = 6.4;
+    const numW = measureText(number, numSize, true);
+    this.text(number, badgeX + (badgeSize - numW) / 2, centeredBaseline(badgeY, badgeSize, numSize), {
+      size: numSize, bold: true, color: [35,35,33]
+    });
+    this.text(title, badgeX + badgeSize + mm(3.0), baselineFromTop(top, padY + mm(.1), titleSize), {
+      size: titleSize, bold: true, color: this.theme.text
+    });
+
+    const contentTop = top - padY - headerH;
+    const drawTextColumn = (colX, label, lines) => {
+      this.text(label.toUpperCase(), colX, baselineFromTop(contentTop, mm(.4), labelSize), {
+        size: labelSize, bold: true, color: [121,121,115]
+      });
+      let ty = baselineFromTop(contentTop, mm(.5) + visualCapHeight(labelSize) + visualDescent(labelSize) + mm(1.5), bodySize);
+      for (const line of lines) {
+        this.text(line, colX, ty, { size: bodySize, color: this.theme.text });
+        ty -= valueLineHeight;
+      }
+    };
+    drawTextColumn(x + padX, "Durchgeführte Arbeiten", workLines);
+    drawTextColumn(x + padX + colW + colGap, "Ergebnis / Abschluss", resultLines);
+
+    let cy = contentTop - textAreaH;
+    if (hasBattery) {
+      this.line(x + padX, cy + mm(.6), x + width - padX, cy + mm(.6), { color: [226,226,222], width: 0.45 });
+      cy -= mm(2.0);
+      this.text("AKKUTEST", x + padX, baselineFromTop(cy, 0, labelSize), {
+        size: labelSize, bold: true, color: [96,96,91]
+      });
+      cy -= batteryHeaderH;
+
+      batteryFields.forEach((field, index) => {
+        const row = Math.floor(index / metricCols);
+        const col = index % metricCols;
+        const mx = x + padX + col * (metricW + metricGap);
+        const mt = cy - row * metricRowH;
+        this.text(String(field.label || "").toUpperCase(), mx, baselineFromTop(mt, 0, 4.8), {
+          size: 4.8, bold: true, color: [125,125,119]
+        });
+        this.text(String(field.value ?? "-"), mx, baselineFromTop(mt, mm(2.6), batteryValueSize), {
+          size: batteryValueSize, bold: !!field.bold, color: this.theme.text
+        });
+      });
+      cy -= metricAreaH;
+
+      if (noteLines.length) {
+        this.text("MESSHINWEIS", x + padX, baselineFromTop(cy, mm(.2), 4.8), {
+          size: 4.8, bold: true, color: [125,125,119]
+        });
+        let ny = baselineFromTop(cy, mm(2.5), noteSize);
+        for (const line of noteLines) {
+          this.text(line, x + padX, ny, { size: noteSize, color: this.theme.text });
+          ny -= noteSize * 1.30;
+        }
+      }
+    }
+
+    this.y = bottom - (options.gapAfter ?? 0);
+    return this;
+  }
+
   confirmationCard(options = {}) {
     const x = options.x ?? this.margin.left;
     const width = options.width ?? this.availableWidth();
@@ -1304,13 +1436,25 @@ export class FlowPDF {
     const subSize = options.subtitleSize ?? 6.9;
     const itemSize = options.itemSize ?? 7.0;
     const legalSize = options.legalSize ?? 5.8;
+    const compact = !!options.compact;
+    const showPill = options.showPill !== false;
     const innerW = width - padX * 2;
-    const itemTextW = innerW - mm(11.5);
+    const itemTextW = innerW - (compact ? mm(9.8) : mm(11.5));
     const itemLines = items.map(item => wrapText(item.text ?? "-", itemTextW, itemSize, false));
-    const rowGap = mm(1.8);
-    const itemsHeight = itemLines.reduce((sum, lines) => sum + Math.max(mm(8.4), lines.length * itemSize * 1.35 + mm(3.4)), 0) + Math.max(0, items.length - 1) * rowGap;
+    const rowGap = compact ? mm(1.1) : mm(1.8);
+    const rowMinH = compact ? mm(6.6) : mm(8.4);
+    const rowPadH = compact ? mm(2.1) : mm(3.4);
+    const itemsHeight = itemLines.reduce((sum, lines) => sum + Math.max(rowMinH, lines.length * itemSize * 1.30 + rowPadH), 0) + Math.max(0, items.length - 1) * rowGap;
     const legalLines = legal ? wrapText(legal, innerW, legalSize, false) : [];
-    const height = padY * 2 + mm(12.2) + itemsHeight + mm(3.8) + mm(13.0) + (legalLines.length ? legalLines.length * legalSize * 1.30 + mm(7.5) : 0);
+    // Keep measurement in lockstep with the actual drawing offsets below.
+    // Previously the compact/no-pill card reserved only 6.2 mm but started
+    // its rows 9.0 mm below the top, so following content could visually
+    // slide into the card even though page counting still said it fit.
+    const headerArea = compact ? (showPill ? mm(13.0) : mm(9.0)) : mm(19.5);
+    const itemsAfter = compact ? mm(2.8) : mm(4.0);
+    const infoArea = compact ? mm(10.2) : mm(13.0);
+    const legalExtra = compact ? mm(5.0) : mm(7.5);
+    const height = padY * 2 + headerArea + itemsHeight + itemsAfter + infoArea + (legalLines.length ? legalLines.length * legalSize * 1.25 + legalExtra : 0);
 
     this.ensureSpace(height + mm(4));
     const top = this.y;
@@ -1324,38 +1468,42 @@ export class FlowPDF {
     });
 
     const pillText = draft ? "BESTÄTIGUNG AUSSTEHEND" : "BESTÄTIGT";
-    const pillSize = 6.0;
-    const pillH = mm(6.4);
-    const pillW = measureText(pillText, pillSize, true) + mm(6.0);
-    this.rect(x + padX, top - padY - pillH, pillW, pillH, {
-      fill: [255, 255, 255],
-      stroke: [199, 199, 193],
-      strokeWidth: 0.5,
-      radius: pillH / 2
-    });
-    this.text(pillText, x + padX + mm(3.0), centeredBaseline(top - padY - pillH, pillH, pillSize), {
-      size: pillSize,
-      bold: true,
-      color: [47, 47, 44]
-    });
+    const pillSize = compact ? 5.1 : 6.0;
+    const pillH = compact ? mm(5.0) : mm(6.4);
+    if (showPill) {
+      const pillW = measureText(pillText, pillSize, true) + (compact ? mm(4.6) : mm(6.0));
+      this.rect(x + padX, top - padY - pillH, pillW, pillH, {
+        fill: [255, 255, 255],
+        stroke: [199, 199, 193],
+        strokeWidth: 0.5,
+        radius: pillH / 2
+      });
+      this.text(pillText, x + padX + (compact ? mm(2.3) : mm(3.0)), centeredBaseline(top - padY - pillH, pillH, pillSize), {
+        size: pillSize,
+        bold: true,
+        color: [47, 47, 44]
+      });
+    }
 
-    const confirmationTitleTop = padY + pillH + mm(3.0);
+    const confirmationTitleTop = showPill
+      ? padY + pillH + (compact ? mm(1.5) : mm(3.0))
+      : padY;
     const confirmationTitleBaseline = baselineFromTop(top, confirmationTitleTop, titleSize);
     this.text(title, x + padX, confirmationTitleBaseline, {
       size: titleSize,
       bold: true,
       color: this.theme.text
     });
-    const confirmationSubtitleTop = confirmationTitleTop + visualCapHeight(titleSize) + visualDescent(titleSize) + mm(1.9);
+    const confirmationSubtitleTop = confirmationTitleTop + visualCapHeight(titleSize) + visualDescent(titleSize) + (compact ? mm(1.2) : mm(1.9));
     this.text(subtitle, x + padX, baselineFromTop(top, confirmationSubtitleTop, subSize), {
       size: subSize,
       color: [101, 101, 96]
     });
 
-    let cy = top - padY - mm(19.5);
+    let cy = top - padY - (compact ? (showPill ? mm(13.0) : mm(9.0)) : mm(19.5));
     items.forEach((item, index) => {
       const lines = itemLines[index];
-      const rowH = Math.max(mm(8.4), lines.length * itemSize * 1.35 + mm(3.4));
+      const rowH = Math.max(rowMinH, lines.length * itemSize * 1.30 + rowPadH);
       const rowBottom = cy - rowH;
       this.rect(x + padX, rowBottom, innerW, rowH, {
         fill: [255, 255, 255],
@@ -1364,7 +1512,7 @@ export class FlowPDF {
         radius: mm(2.8)
       });
 
-      const marker = mm(4.0);
+      const marker = compact ? mm(3.4) : mm(4.0);
       const mx = x + padX + mm(3.1);
       const my = rowBottom + (rowH - marker) / 2;
       this.rect(mx, my, marker, marker, {
@@ -1378,7 +1526,7 @@ export class FlowPDF {
         this.line(mx + mm(1.55), my + mm(1.15), mx + mm(3.2), my + mm(3.0), { width: 1.0, color: [40,40,37] });
       }
 
-      const itemLineHeight = itemSize * 1.35;
+      const itemLineHeight = itemSize * (compact ? 1.30 : 1.35);
       let ty = centeredTextBlockFirstBaseline(rowBottom, rowH, itemSize, itemLineHeight, lines.length);
       for (const line of lines) {
         this.text(line, mx + marker + mm(3.0), ty, {
@@ -1390,10 +1538,10 @@ export class FlowPDF {
       cy = rowBottom - rowGap;
     });
 
-    cy -= mm(2.7);
-    const splitGap = mm(4.0);
+    cy -= compact ? mm(1.6) : mm(2.7);
+    const splitGap = compact ? mm(2.8) : mm(4.0);
     const splitW = (innerW - splitGap) / 2;
-    const infoH = mm(11.0);
+    const infoH = compact ? mm(7.8) : mm(11.0);
     const infoY = cy - infoH;
     [["KUNDE", customer], ["BESTÄTIGT AM", confirmedAt]].forEach(([label, value], index) => {
       const ix = x + padX + index * (splitW + splitGap);
@@ -1403,22 +1551,22 @@ export class FlowPDF {
         strokeWidth: 0.45,
         radius: mm(2.8)
       });
-      const infoLabelSize = 5.9;
-      const infoValueSize = 7.4;
-      const infoPadTop = mm(2.7);
+      const infoLabelSize = compact ? 5.2 : 5.9;
+      const infoValueSize = compact ? 6.5 : 7.4;
+      const infoPadTop = compact ? mm(1.5) : mm(2.7);
       this.text(label, ix + mm(3.0), baselineFromTop(cy, infoPadTop, infoLabelSize), {
         size: infoLabelSize,
         bold: true,
         color: [124, 124, 118]
       });
-      const infoValueTopInset = infoPadTop + visualCapHeight(infoLabelSize) + visualDescent(infoLabelSize) + mm(1.65);
+      const infoValueTopInset = infoPadTop + visualCapHeight(infoLabelSize) + visualDescent(infoLabelSize) + (compact ? mm(.8) : mm(1.65));
       this.text(value, ix + mm(3.0), baselineFromTop(cy, infoValueTopInset, infoValueSize), {
         size: infoValueSize,
         bold: true,
         color: this.theme.text
       });
     });
-    cy = infoY - mm(3.0);
+    cy = infoY - (compact ? mm(1.8) : mm(3.0));
 
     for (const line of legalLines) {
       this.text(line, x + padX, cy - legalSize, {
@@ -1635,6 +1783,15 @@ export class FlowPDF {
             fields: (block.fields || []).map(i => ({ ...i, value: i.value ?? resolve(i.field) })),
             tags: block.tags ?? resolve(block.tagsField) ?? [],
             body: block.body ?? resolve(block.bodyField) ?? ""
+          });
+          break;
+        case "workshopReportCard":
+          this.workshopReportCard({
+            ...block,
+            workPerformed: block.workPerformed ?? resolve(block.workPerformedField) ?? "",
+            workResult: block.workResult ?? resolve(block.workResultField) ?? "",
+            batteryFields: block.batteryFields ?? resolve(block.batteryFieldsField) ?? [],
+            batteryNote: block.batteryNote ?? resolve(block.batteryNoteField) ?? ""
           });
           break;
         case "confirmationCard":

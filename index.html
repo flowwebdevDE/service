@@ -3,13 +3,13 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://myvelo-service.red-dawn-bec6.workers.dev https://*.myvelo.de; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'none'; worker-src 'self' blob:; upgrade-insecure-requests">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' https://myvelo-service.red-dawn-bec6.workers.dev https://*.myvelo.de; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'none'; worker-src 'self' blob:; upgrade-insecure-requests">
   <meta name="referrer" content="no-referrer">
 <title>MYVELO Service · Servicevorgänge</title>
   <link rel="icon" href="assets/brand/favicon.png?v=7.15.34" type="image/png">
 <link rel="stylesheet" href="assets/css/app.css?v=7.15.24">
-  <link rel="stylesheet" href="assets/css/employee-apple.css?v=7.15.35">
-  <script src="assets/js/auth-guard.js?v=7.15.1"></script>
+  <link rel="stylesheet" href="assets/css/employee-apple.css?v=7.15.45">
+  <script src="assets/js/auth-guard-oauth.js?v=7.15.44"></script>
   <script src="assets/js/security-bootstrap.js?v=7.10.6"></script>
   <script src="portal-config.js?v=7.15.1"></script>
   <script src="assets/js/employee-preferences.js?v=7.15.39"></script>
@@ -48,9 +48,13 @@
 
       <div class="flow-sidebar-spacer"></div>
 
+      <a class="flow-nav-item" href="users.html" data-admin-only hidden>
+        <span class="flow-nav-users" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM3 21v-2.2A4.8 4.8 0 0 1 7.8 14h2.4a4.8 4.8 0 0 1 4.8 4.8V21M17 9a3 3 0 1 0 0-6M17 14h.8a4.2 4.2 0 0 1 4.2 4.2V21"/></svg></span>
+        <span>Benutzer</span>
+      </a>
       <a class="flow-nav-item" href="profile.html">
-        <span class="flow-nav-person" aria-hidden="true">MA</span>
-        <span>Mitarbeiter</span>
+        <span class="flow-nav-person" aria-hidden="true" data-current-user-initials>MA</span>
+        <span data-current-user-name>Mitarbeiter</span>
       </a>
       <button class="flow-nav-item" id="logout-button" type="button">
         <span class="flow-nav-dot flow-nav-dot--muted"></span>
@@ -249,7 +253,7 @@
 
         <label class="flow-block-field">
           <span id="create-case-subject-label">Betreff</span>
-          <input name="case_subject" id="create-case-subject" placeholder="Kurzbeschreibung">
+          <input name="case_subject" id="create-case-subject" maxlength="180" placeholder="Kurzbeschreibung">
         </label>
 
         <div class="flow-create-pair flow-create-pair--switches">
@@ -313,7 +317,7 @@
             </div>
             <label class="span-2">
               <span>Hinweis an uns</span>
-              <textarea name="customer_note"></textarea>
+              <textarea name="customer_note" maxlength="180"></textarea>
             </label>
             
           </div>
@@ -354,7 +358,8 @@
     </div>
   </dialog>
 
-  <script type="module" src="assets/js/admin.js?v=7.15.35"></script>
+  <script type="module" src="assets/js/admin.js?v=7.15.47"></script>
   <script src="assets/js/legal-navigation.js?v=7.15.38"></script>
+  <script type="module" src="assets/js/employee-user-context.js?v=7.15.45"></script>
 </body>
 </html>
