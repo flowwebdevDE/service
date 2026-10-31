@@ -359,12 +359,19 @@ export async function hasBackend(force = false) {
   return backendAvailable;
 }
 
-export async function listCases() {
+export async function listCases({ search = "", view = "" } = {}) {
+  const normalizedSearch = String(search || "").trim();
+  const normalizedView = view === "archive" ? "archive" : view === "active" ? "active" : "";
+
   if (!(await hasBackend())) {
     return { items: listDemoCases(), demo: true };
   }
 
-  const response = await fetch(apiUrl("admin/cases"), {
+  const target = new URL(apiUrl("admin/cases"));
+  if (normalizedSearch) target.searchParams.set("q", normalizedSearch);
+  if (normalizedView) target.searchParams.set("view", normalizedView);
+
+  const response = await fetch(target, {
     headers: await adminHeaders()
   });
 

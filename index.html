@@ -8,7 +8,7 @@
 <title>MYVELO Service · Servicevorgänge</title>
   <link rel="icon" href="assets/brand/favicon.png?v=7.15.34" type="image/png">
 <link rel="stylesheet" href="assets/css/app.css?v=7.15.24">
-  <link rel="stylesheet" href="assets/css/employee-apple.css?v=7.15.45">
+  <link rel="stylesheet" href="assets/css/employee-apple.css?v=7.15.51">
   <script src="assets/js/auth-guard-oauth.js?v=7.15.44"></script>
   <script src="assets/js/security-bootstrap.js?v=7.10.6"></script>
   <script src="portal-config.js?v=7.15.1"></script>
@@ -70,6 +70,22 @@
           </button>
           <div>
             <strong>Übersicht</strong>
+          </div>
+        </div>
+
+        <div class="flow-global-search" id="global-case-search" role="search">
+          <div class="flow-global-search__field">
+            <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><circle cx="8.5" cy="8.5" r="5.25"></circle><path d="m12.4 12.4 4.1 4.1"></path></svg>
+            <input id="global-case-search-input" type="text" autocomplete="off" spellcheck="false" placeholder="Vorgänge durchsuchen …" aria-label="Vorgänge global durchsuchen" aria-controls="global-case-search-results" aria-expanded="false">
+            <span class="flow-global-search__shortcut" id="global-case-search-shortcut" aria-hidden="true">⌘ K</span>
+            <button class="flow-global-search__clear" id="global-case-search-clear" type="button" aria-label="Suche löschen" hidden>
+              <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M5.25 5.25 14.75 14.75M14.75 5.25 5.25 14.75"></path></svg>
+            </button>
+          </div>
+          <div class="flow-global-search__popover" id="global-case-search-results" hidden>
+            <div class="flow-global-search__state" id="global-case-search-state">Mindestens 2 Zeichen eingeben.</div>
+            <div class="flow-global-search__list" id="global-case-search-list"></div>
+            <div class="flow-global-search__footer" id="global-case-search-footer" hidden></div>
           </div>
         </div>
 
@@ -358,7 +374,8 @@
     </div>
   </dialog>
 
-  <script type="module" src="assets/js/admin.js?v=7.15.47"></script>
+  <script type="module" src="assets/js/admin.js?v=7.15.50"></script>
+  <script type="module" src="assets/js/global-case-search.js?v=7.15.50"></script>
   <script src="assets/js/legal-navigation.js?v=7.15.38"></script>
   <script type="module" src="assets/js/employee-user-context.js?v=7.15.45"></script>
 </body>
